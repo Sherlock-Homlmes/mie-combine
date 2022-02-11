@@ -9,6 +9,9 @@ from discord.ext import commands
 from waiting import wait
 from dotenv import load_dotenv
 
+from discord_slash import SlashCommand,SlashContext
+from discord_slash.utils.manage_commands import create_option
+
 #voice channel name
 def channel_name(name):
   global name_check
@@ -51,40 +54,6 @@ def xuly_cn():
   return kq
 
 
-#room pos
-def room_pos():
-  pos = 1
-  while str(pos) in db["pos"]:
-    pos = pos+1
-  kq = str(pos) 
-  db["pos"][str(pos)] = pos
-  return pos
-
-#take invite user id
-def take_data(str):
-  global number
-  kq = ""
-  i = len(str) - 1
-
-  while i>7:
-    if str[i] in number:
-      kq = str[i] + kq
-      i = i - 1
-    else: i=i-1
-
-  if kq != "":
-    return int(kq)
-
-
-#rename
-def take_name(str):
-  i=9
-  kq=""
-  while i<len(str):
-    kq = kq + str[i]
-    i = i+1
-  return kq
-
 #check avaiable name
 ban_word =[
   "đụ","địt","đ ụ","đjt","djt",
@@ -112,8 +81,11 @@ def check_avaiable_name(content):
 intents = discord.Intents.default()
 intents.members = True
 client = discord.Client(intents=intents)
+slash = SlashCommand(client, sync_commands=True)
 
-
+guild = client.get_guild(880360143768924210)
+guild_ids = [880360143768924210]
+everyone_id = 880360143768924210
 
 #default_data
 vc_value = {
@@ -169,22 +141,21 @@ number = [
 command_mess="""
 **Các lệnh:**
 ```
-m,public: mở phòng cho tất cả mọi người vào
+/public: mở phòng cho tất cả mọi người vào
 
-m,private: khóa phòng, chỉ những người được mời mới vào được
+/private: khóa phòng, chỉ những người được mời mới vào được
 
-m,allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
+/allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
 
-m,invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
+/invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
 
-m,disallow | m,kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
+/disallow | /kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
 
-m,limit + [số_người_giới_hạn]
+/limit + [số_người_giới_hạn]
 
-m,rename + [tên phòng]: đổi tên phòng
+/rename + [tên phòng]: đổi tên phòng
 
 ```
-Hãy dùng id hoặc vào kênh <#917395775347101787> để tag tên người bạn muốn mời
 
 ***Chú ý:**
 -Bạn chỉ có thể tạo 1 phòng cùng lúc
@@ -197,26 +168,25 @@ Hãy dùng id hoặc vào kênh <#917395775347101787> để tag tên người b�
 command_mess_ts="""
 **Các lệnh:**
 ```
-m,public: mở phòng cho tất cả mọi người vào
+/public: mở phòng cho tất cả mọi người vào
 
-m,private: khóa phòng, chỉ những người được mời mới vào được
+/private: khóa phòng, chỉ những người được mời mới vào được
 
-m,hide: ẩn phòng với mọi người
+/hide: ẩn phòng với mọi người
 
-m,show: hiện phòng với mọi người
+/show: hiện phòng với mọi người
 
-m,allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
+/allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
 
-m,invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
+/invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
 
-m,disallow | m,kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
+/disallow | /kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
 
-m,limit + [số_người_giới_hạn]
+/limit + [số_người_giới_hạn]
 
-m,rename + [tên phòng]: đổi tên phòng
+/rename + [tên phòng]: đổi tên phòng
 
 ```
-Hãy dùng id hoặc vào kênh <#917395775347101787> để tag tên người bạn muốn mời
 
 ***Chú ý:**
 -Bạn chỉ có thể tạo 1 phòng cùng lúc
@@ -231,22 +201,21 @@ Hãy dùng id hoặc vào kênh <#917395775347101787> để tag tên người b�
 command_mess_sg="""
 **Các lệnh:**
 ```
-m,public: mở phòng cho tất cả mọi người vào
+/public: mở phòng cho tất cả mọi người vào
 
-m,private: khóa phòng, chỉ những người được mời mới vào được
+/private: khóa phòng, chỉ những người được mời mới vào được
 
-m,allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
+/allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
 
-m,invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
+/invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
 
-m,disallow | m,kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
+/disallow | /kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
 
-m,limit + [số_người_giới_hạn]
+/limit + [số_người_giới_hạn]
 
-m,rename + [tên phòng]: đổi tên phòng
+/rename + [tên phòng]: đổi tên phòng
 
 ```
-Hãy dùng id hoặc vào kênh <#900441456475508756> để tag tên người bạn muốn mời
 
 ***Chú ý:**
 -Bạn chỉ có thể tạo 1 phòng cùng lúc
@@ -259,24 +228,23 @@ Hãy dùng id hoặc vào kênh <#900441456475508756> để tag tên người b�
 command_mess_cp="""
 **Các lệnh:**
 ```
-m,public: mở phòng cho tất cả mọi người vào
+/public: mở phòng cho tất cả mọi người vào
 
-m,private: khóa phòng, chỉ những người được mời mới vào được
+/private: khóa phòng, chỉ những người được mời mới vào được
 
-m,hide: ẩn phòng với mọi người
+/hide: ẩn phòng với mọi người
 
-m,show: hiện phòng với mọi người
+/show: hiện phòng với mọi người
 
-m,allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
+/allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
 
-m,invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
+/invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
 
-m,disallow | m,kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
+/disallow | /kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
 
-m,rename + [tên phòng]: đổi tên phòng
+/rename + [tên phòng]: đổi tên phòng
 
 ```
-Hãy dùng id hoặc vào kênh <#901767369054109756> để tag tên người bạn muốn mời
 
 ***Chú ý:**
 -Bạn chỉ có thể tạo 1 phòng cùng lúc
@@ -287,7 +255,7 @@ Hãy dùng id hoặc vào kênh <#901767369054109756> để tag tên người b�
 command_mess_sa="""
 **Các lệnh:**
 ```
-m,rename + [tên phòng]: đổi tên phòng
+/rename + [tên phòng]: đổi tên phòng
 ```
 ***Chú ý:**
 -Bạn chỉ có thể tạo 1 phòng cùng lúc
@@ -481,9 +449,12 @@ async def on_voice_state_update(member, member_before, member_after):
           clone_channel = db[vc]["channel_name"]
           if clone_channel in db["name"]:
             del db["name"][clone_channel]
-          del db[str(db[vc]["cc_id"])]
-          del db[str(db[vc]["host_id"])]
-          del db[vc]      
+
+          if str(db[vc]["cc_id"]) in db.keys():
+            del db[str(db[vc]["cc_id"])]
+          if str(db[vc]["cc_id"]) in db.keys():
+            del db[str(db[vc]["host_id"])]
+          del db[vc]    
 
       else:  
         cc_channel = get(client.get_all_channels(), id=db[vc]["cc_id"] )
@@ -536,262 +507,289 @@ async def on_voice_state_update(member, member_before, member_after):
               }
 
 
-@client.event
-async def on_message(message):
-  global can_clear
 
-  if message.author == client.user:
-    return
+######################################slash command
+#id
+@slash.slash(
+  name="Id",
+  description="Lấy id",
+  guild_ids=guild_ids,
+  options =[
+    create_option(
+      name="member",
+      description="Người bạn muốn mời",
+      required=True,
+      option_type=6)
 
-  if message.content == "m,clear clone" or message.content == "M,clear clone":
-      msg = await message.channel.send("Đợi 1 chút mình sẽ sửa lỗi")
-      wait(lambda: can_clear == True, timeout_seconds=None)
-      vc_list = []
-      cc_list = []
-      member_list = []
-    ######take list
-      for key in db.keys():
-        check = False
-        if "vc_id" in db[key] and "locate" in db[key]:
-          member_list.append(key)
-        elif "host_id" in db[key] and "vc_id" in db[key]:
-          cc_list.append(key)
-        elif "host_id" in db[key] and "cc_id" in db[key]:
-          vc_list.append(key)
-
-########clear member
-      for key in member_list:
-        check = False
-        #host
-        if "cc_id" in db[key]:
-          guild = client.get_guild(880360143768924210)
-          member = guild.get_member(int(key))
-          if member == None:
-            check = True
-          else:          
-            #voice_state = member.voice
-            vc_channel = get(client.get_all_channels(), id=db[key]["vc_id"]) 
-            if vc_channel != None:
-              if vc_channel.members == []:
-                check = True
-            else:
-              check = True
-      #member
-        else:
-          guild = client.get_guild(880360143768924210)
-          member = guild.get_member(int(key))
-          if member == None:
-            check = True
-          else:          
-            voice_state = member.voice
-            if voice_state == None:
-              check = True
-            else:
-              if voice_state.channel.id != db[key]["vc_id"]:
-                check = True
-        ########del dtb after test
-        if check == True: del db[key]
-
-########clear cc
-      for key in cc_list:
-        check = False
-        vc_channel = get(client.get_all_channels(), id=db[key]["vc_id"])   
-        cc_channel = get(client.get_all_channels(), id=int(key)) 
-        if vc_channel != None:
-          if vc_channel.members == []:
-            if cc_channel != None:
-              await cc_channel.delete()
-            check = True
-        else:
-          if cc_channel != None:
-            await cc_channel.delete()
-          check = True
-
-        if check == True: del db[key]
-            
-
-########clear vc
-      for key in vc_list:
-        check = False
-        vc_channel = get(client.get_all_channels(), id=int(key))   
-        if vc_channel != None:
-          if vc_channel.members == []:
-            print(vc_channel.name)
-            await vc_channel.delete()
-            check = True
-        else:
-          check = True
-          
-        if check == True: del db[key]
-
-      print("fix done")
-          
-      await msg.edit(content = "Lỗi đã được sửa bạn có thể tạo phòng bình thường rồi")
+  ]
+  )
+async def _hello(ctx:SlashContext,member:str):
+  await ctx.send(str(member.id))
 
 
+#################################public
+@slash.slash(
+  name="public",
+  description="Cho phép vào phòng",
+  guild_ids=guild_ids,
+  )
+async def _public(ctx:SlashContext):
+  if str(ctx.author.id) in db.keys():
+    vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] )      
+    overwrite = discord.PermissionOverwrite()
+    overwrite.connect=True
+    role = get(ctx.guild.roles, id=everyone_id)
+    await vc_channel.set_permissions(role, overwrite=overwrite)
+    await ctx.channel.send("Phòng đã được mở cho mọi người vào") 
 
+#################################private
+@slash.slash(
+  name="private",
+  description="Không phép vào phòng",
+  guild_ids=guild_ids,
+  )
+async def _private(ctx:SlashContext):
+  if str(ctx.author.id) in db.keys():
+    vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] )      
+    overwrite = discord.PermissionOverwrite()
+    overwrite.connect=False
+    role = get(ctx.guild.roles, id=everyone_id)
+    await vc_channel.set_permissions(role, overwrite=overwrite)
+    await ctx.channel.send("Phòng đã được mở cho mọi người vào") 
 
-
-
-  if str(message.author.id) in db.keys():
-    user_id = str(message.author.id)
-  
-    if message.content == "m,public" or message.content == "M,public" or message.content == "m, public" or message.content == "M, public":
-      vc_channel = get(client.get_all_channels(), id=db[user_id]["vc_id"] )      
+#################################show
+@slash.slash(
+  name="show",
+  description="Hiện phòng cho mọi người thấy",
+  guild_ids=guild_ids,
+  )
+async def _show(ctx:SlashContext):
+  if str(ctx.author.id) in db.keys():
+    check = db[str(ctx.author.id)]["locate"]
+    if check == "ts" or check == "cp":
+      vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] )     
       overwrite = discord.PermissionOverwrite()
-      overwrite.connect=True
-      role = get(message.guild.roles, id=880360143768924210)
-      await vc_channel.set_permissions(role, overwrite=overwrite)
-      await message.channel.send("Phòng đã được mở cho mọi người vào")
-  
-    elif message.content=="m,private" or message.content=="M,private" or message.content=="m, private" or message.content=="M, private":
-      vc_channel = get(client.get_all_channels(), id=db[user_id]["vc_id"] )     
-      overwrite = discord.PermissionOverwrite()
+      overwrite.view_channel=True
       overwrite.connect=False
-      role = get(message.guild.roles, id=880360143768924210)
+      role = get(ctx.guild.roles, id=everyone_id)
       await vc_channel.set_permissions(role, overwrite=overwrite)
-      await message.channel.send("Phòng đã được khóa không cho mọi người vào")
-  
-    elif message.content == "m,disable mic":
-      pass
-  
-    elif message.content == "m,enable mic":
-      pass     
-  
-    elif message.content.startswith("m,limit") or message.content.startswith("M,limit") or message.content.startswith("m, limit") or message.content.startswith("M, limit"): 
-      check = db[user_id]["locate"]
-      if check == "cr" or check == "ts":
-        vc_channel = get(client.get_all_channels(), id=db[user_id]["vc_id"] )  
-        lim = take_data(message.content)
-        if lim == None:
-          await message.channel.send("Bạn nhập sai cú pháp")
-        elif lim == 0: await message.channel.send("Bạn không thể đặt limit phòng là 0")
-        elif lim >25:
-          if lim <99:
-            await vc_channel.edit(user_limit= lim)
-            await message.channel.send("Bạn đã đặt limit phòng: "+str(lim))
-          else:
-            await vc_channel.edit(user_limit=0)
-            await message.channel.send("Bạn đã đặt limit phòng: Vô hạn")
-          await message.channel.send("Với những phòng lim>25, bạn sẽ không thể bật được CAM")
-        else:
-          await vc_channel.edit(user_limit = lim)
-          await message.channel.send("Bạn đã đặt limit phòng: "+str(lim))
-      elif check == "sg":
-        vc_channel = get(client.get_all_channels(), id=db[user_id]["vc_id"] )  
-        lim = take_data(message.content)
-        if lim == None:
-          await message.channel.send("Bạn nhập sai cú pháp")
-        elif lim == 0: await message.channel.send("Bạn không thể đặt limit phòng là 0")
-        elif lim >=1 and lim <=15:
+      await ctx.channel.send("Phòng đã được hiện cho mọi người thấy")
+
+#################################hide
+@slash.slash(
+  name="hide",
+  description="Ẩn phòng không cho mọi người thấy",
+  guild_ids=guild_ids,
+  )
+async def _hide(ctx:SlashContext):
+  if str(ctx.author.id) in db.keys():
+    check = db[str(ctx.author.id)]["locate"]
+    if check == "ts" or check == "cp":
+      vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] )     
+      overwrite = discord.PermissionOverwrite()
+      overwrite.view_channel=False
+      role = get(ctx.guild.roles, id=everyone_id)
+      await vc_channel.set_permissions(role, overwrite=overwrite)
+      await ctx.channel.send("Phòng đã ẩn không cho mọi người thấy")
+
+#################################limit
+@slash.slash(
+  name="limit",
+  description="Đặt giới hạn phòng",
+  guild_ids=guild_ids,
+  options =[
+  create_option(
+    name="limit",
+    description="Đặt limit cho phòng",
+    required=True,
+    option_type=4
+    )
+  ]
+  )
+async def _limit(ctx:SlashContext,limit:int):
+  if str(ctx.author.id) in db.keys():
+    check = db[str(ctx.author.id)]["locate"]
+    lim = limit
+    if check == "cr" or check == "ts":
+      vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] )  
+      if lim <= 0: await ctx.channel.send("Bạn không thể đặt limit phòng là 0 hoặc bé hơn")
+      elif lim >25:
+        if lim <99:
           await vc_channel.edit(user_limit= lim)
-          await message.channel.send("Bạn đã đặt limit phòng: "+str(lim))
+          await ctx.channel.send("Bạn đã đặt limit phòng: "+str(lim))
         else:
-          await message.channel.send("Bạn không thể đặt limit phòng Small Group lớn hơn 15 ")
-      elif check == "cp":
-        await message.channel.send("Bạn không thể đặt limit cho phòng Couple")
-      elif check == "sa":
-        await message.channel.send("Bạn không thể đặt limit cho phòng Study Alone")
-  
-  
-    elif message.content.startswith("m,rename") or message.content.startswith("M,rename") or message.content.startswith("m, rename") or message.content.startswith("M, rename"):
-  
-      msg_id = message.id
-      await asyncio.sleep(0.5)
-  
-      if message.channel.last_message.id == msg_id:
-        new_name = take_name(message.content)
-        if len(new_name) > 50:
-          await message.channel.send("Tên quá dài")
-        else:  
-          vc_channel = get(client.get_all_channels(), id=db[str(message.channel.id)]["vc_id"] ) 
-          await vc_channel.edit(name=new_name)
-          await message.channel.send("Tên kênh đã được đổi thành "+new_name)
+          await vc_channel.edit(user_limit=0)
+          await ctx.channel.send("Bạn đã đặt limit phòng: Vô hạn")
+        await ctx.channel.send("Với những phòng lim>25, bạn sẽ không thể bật được CAM")
       else:
-        await message.channel.send("**Không được đổi tên kênh có những từ cấm nha mầy, tau táng cho á**")
-  
-  
-  
-    if message.content.startswith("m,allow") or message.content.startswith("M,allow") or message.content.startswith("m, allow") or message.content.startswith("M, allow"):
-      mem_id = take_data(message.content)
-      if mem_id == None :
-        await message.channel.send("Bạn nhập sai cú pháp")
+        await vc_channel.edit(user_limit = lim)
+        await ctx.channel.send("Bạn đã đặt limit phòng: "+str(lim))
+    elif check == "sg":
+      vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] )  
+      if lim <= 0: await ctx.channel.send("Bạn không thể đặt limit phòng là 0 hoặc bé hơn")
+      elif lim >=1 and lim <=15:
+        await vc_channel.edit(user_limit= lim)
+        await ctx.channel.send("Bạn đã đặt limit phòng: "+str(lim))
       else:
-        guild = client.get_guild(880360143768924210)
-        member = guild.get_member(mem_id)
-        if member:
-          vc_channel = get(client.get_all_channels(), id=db[str(message.author.id)]["vc_id"] ) 
-          overwrite = discord.PermissionOverwrite()
-          overwrite.view_channel=True
-          overwrite.connect=True
-          await vc_channel.set_permissions(member, overwrite=overwrite) 
-          await message.channel.send("Đã cấp quyền cho <@"+str(mem_id)+"> vào phòng")
-        else :
-          await message.channel.send("Không tìm thấy người dùng")
-  
-        #member = message.guild.member_count
-  
-    elif message.content.startswith("m,invite") or message.content.startswith("M,invite") or message.content.startswith("m, invite") or message.content.startswith("M, invite"):
-      mem_id = take_data(message.content)
-      if mem_id == None :
-        await message.channel.send("Bạn nhập sai cú pháp")
-      else:
-        guild = client.get_guild(880360143768924210)
-        member = guild.get_member(mem_id)
-        if member:
-          vc_channel = get(client.get_all_channels(), id=db[str(message.author.id)]["vc_id"] ) 
-          overwrite = discord.PermissionOverwrite()
-          overwrite.view_channel=True
-          overwrite.connect=True
-          await vc_channel.set_permissions(member, overwrite=overwrite) 
-          invite_link = await vc_channel.create_invite(max_uses=1,unique=True)
-          await member.send("**"+str(message.author.name)+"** đã mời bạn vào học: "+str(invite_link))
-          await message.channel.send("Đã mời <@"+str(mem_id)+"> vào phòng")
-        else :
-          await message.channel.send("Không tìm thấy người dùng")
-  
-    elif message.content.startswith("m,disallow") or message.content.startswith("M,disallow") or message.content.startswith("m,kick") or message.content.startswith("M,kick"):
-      mem_id = take_data(message.content)
-      if mem_id == None :
-        await message.channel.send("Bạn nhập sai cú pháp")
-      else:
-        guild = client.get_guild(880360143768924210)
-        member = guild.get_member(mem_id)
-        if member:
-          vc_channel = get(client.get_all_channels(), id=db[str(message.author.id)]["vc_id"] ) 
-          if db[str(vc_channel.id)]["host_id"] != member.id:
-            overwrite = discord.PermissionOverwrite()
-            overwrite.connect=False
-            await vc_channel.set_permissions(member, overwrite=overwrite) 
-            await member.move_to(None)
-            await message.channel.send("<@"+str(mem_id)+"> đã mất quyền vào phòng")
-            #await message.channel.send("Do tính năng còn hạn chế nên bạn chỉ có thể kick bằng tay")
-          else: await message.channel.send("Bạn không thể kick chủ phòng")
-  
-        else :
-          await message.channel.send("Không tìm thấy người dùng")
-  
-    elif message.content=="m,hide" or message.content=="M,hide" or message.content=="m, hide" or message.content=="M, hide":
-      check = db[user_id]["locate"]
-      if check == "ts" or check == "cp":
-        vc_channel = get(client.get_all_channels(), id=db[user_id]["vc_id"] )     
+        await ctx.channel.send("Bạn không thể đặt limit phòng Small Group lớn hơn 15 ")
+    elif check == "cp":
+      await ctx.channel.send("Bạn không thể đặt limit cho phòng Couple")
+    elif check == "sa":
+      await ctx.channel.send("Bạn không thể đặt limit cho phòng Study Alone")
+
+
+#################################invite member
+@slash.slash(
+  name="invite",
+  description="Mời bạn vào phòng",
+  guild_ids=guild_ids,
+  options =[
+    create_option(
+      name="member",
+      description="Người bạn muốn mời",
+      required=True,
+      option_type=6
+      )
+  ]
+  )
+async def _invite(ctx:SlashContext,member:str):
+  if str(ctx.author.id) in db.keys():
+    if member:
+      vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] ) 
+      overwrite = discord.PermissionOverwrite()
+      overwrite.view_channel=True
+      overwrite.connect=True
+      await vc_channel.set_permissions(member, overwrite=overwrite) 
+      invite_link = await vc_channel.create_invite(max_uses=1,unique=True)
+      await member.send("**"+str(ctx.author.name)+"** đã mời bạn vào học: "+str(invite_link))
+      await ctx.send("Đã mời <@"+str(member.id)+"> vào phòng")
+    else :
+      await ctx.send("Không tìm thấy người dùng")  
+
+#############################allow member
+@slash.slash(
+  name="allow",
+  description="Cho phép vào phòng",
+  guild_ids=guild_ids,
+  options =[
+    create_option(
+      name="member",
+      description="Người bạn cho phép",
+      required=True,
+      option_type=6
+      )
+  ]
+  )
+async def _allow(ctx:SlashContext,member:str):
+  if str(ctx.author.id) in db.keys():
+    if member:
+      vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] ) 
+      overwrite = discord.PermissionOverwrite()
+      overwrite.view_channel=True
+      overwrite.connect=True
+      await vc_channel.set_permissions(member, overwrite=overwrite) 
+      await ctx.channel.send("Đã cấp quyền cho <@"+str(member.id)+"> vào phòng")
+    else :
+      await ctx.channel.send("Không tìm thấy người dùng")
+
+#############################disallow|kick member
+@slash.slash(
+  name="disallow",
+  description="Không phép vào phòng",
+  guild_ids=guild_ids,
+  options =[
+    create_option(
+      name="member",
+      description="Người bạn không cho phép",
+      required=True,
+      option_type=6
+      )
+  ]
+  )
+async def _disallow(ctx:SlashContext,member:str):
+  if str(ctx.author.id) in db.keys():
+    if member:
+      vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] ) 
+      if member in vc_channel.members and db[str(vc_channel.id)]["host_id"] != member.id:
         overwrite = discord.PermissionOverwrite()
-        overwrite.view_channel=False
-        role = get(message.guild.roles, id=880360143768924210)
-        await vc_channel.set_permissions(role, overwrite=overwrite)
-        await message.channel.send("Phòng đã được ẩn không cho mọi người thấy")
-  
-    elif message.content=="m,show" or message.content=="M,show" or message.content=="m, show" or message.content=="M, show":
-      check = db[user_id]["locate"]
-      if check == "ts" or check == "cp":
-        vc_channel = get(client.get_all_channels(), id=db[user_id]["vc_id"] )     
-        overwrite = discord.PermissionOverwrite()
-        overwrite.view_channel=True
         overwrite.connect=False
-        role = get(message.guild.roles, id=880360143768924210)
-        await vc_channel.set_permissions(role, overwrite=overwrite)
-        await message.channel.send("Phòng đã được hiện cho mọi người thấy")
-  
+        await vc_channel.set_permissions(member, overwrite=overwrite) 
+        await member.move_to(None)
+        await ctx.channel.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
+      elif db[str(vc_channel.id)]["host_id"] != member.id:
+        overwrite = discord.PermissionOverwrite()
+        overwrite.connect=False
+        await vc_channel.set_permissions(member, overwrite=overwrite) 
+        await ctx.channel.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
+      else: 
+        await ctx.channel.send("Bạn không thể kick chủ phòng")
+
+#############################disallow|kick member
+@slash.slash(
+  name="kick",
+  description="Kick khỏi phòng",
+  guild_ids=guild_ids,
+  options =[
+    create_option(
+      name="member",
+      description="Người bạn không cho phép",
+      required=True,
+      option_type=6
+      )
+  ]
+  )
+async def _kick(ctx:SlashContext,member:str):
+  if str(ctx.author.id) in db.keys():
+    if member:
+      vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] ) 
+      if member in vc_channel.members and db[str(vc_channel.id)]["host_id"] != member.id:
+        overwrite = discord.PermissionOverwrite()
+        overwrite.connect=False
+        await vc_channel.set_permissions(member, overwrite=overwrite) 
+        await member.move_to(None)
+        await ctx.channel.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
+      elif db[str(vc_channel.id)]["host_id"] != member.id:
+        overwrite = discord.PermissionOverwrite()
+        overwrite.connect=False
+        await vc_channel.set_permissions(member, overwrite=overwrite) 
+        await ctx.channel.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
+      else: 
+        await ctx.channel.send("Bạn không thể kick chủ phòng")
+
+##############rename channel
+@slash.slash(
+  name="rename",
+  description="Đổi tên phòng",
+  guild_ids=guild_ids,
+  options =[
+  create_option(
+    name="text",
+    description="Tên phòng",
+    required=True,
+    option_type=3
+    )
+  ]
+)
+async def _rename(ctx:SlashContext,text:str):
+  if str(ctx.author.id) in db.keys():
+    if check_avaiable_name(text) == True:
+      new_name = text
+      if len(new_name) > 50:
+        await ctx.channel.send("Tên quá dài")
+      else:  
+        vc_channel = get(client.get_all_channels(), id=db[str(ctx.channel.id)]["vc_id"] ) 
+        await vc_channel.edit(name=new_name)
+        await ctx.channel.send("Tên kênh đã được đổi thành "+new_name)
+    else:
+      await ctx.channel.send("**Không được đổi tên kênh có những từ cấm nha mầy, tau táng cho á**")
+
+
+
+
+
+
+
+
 
 async def fix_before_start():
       await client.wait_until_ready()
@@ -879,6 +877,5 @@ load_dotenv()
 my_secret = os.getenv('BOT_TOKEN', "value does not exist")
 client.loop.create_task(fix_before_start())
 client.run(my_secret) 
-
 
 

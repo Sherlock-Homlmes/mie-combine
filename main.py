@@ -452,7 +452,7 @@ async def on_voice_state_update(member, member_before, member_after):
 
           if str(db[vc]["cc_id"]) in db.keys():
             del db[str(db[vc]["cc_id"])]
-          if str(db[vc]["cc_id"]) in db.keys():
+          if str(db[vc]["host_id"]) in db.keys():
             del db[str(db[vc]["host_id"])]
           del db[vc]    
 

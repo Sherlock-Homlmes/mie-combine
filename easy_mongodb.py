@@ -35,13 +35,28 @@ def take_data(name):
     for test in tests:
         return test["value"]
 
+def stable_val(val):
+	return val
+
 db = take_data(data_key)
 stable_db = take_data(data_key)    
 ########def
 def open_again(name):
 	global db,stable_db
-	dtb.update_one({ "name": name },  {'$set': {'value':db}} )
+
+	tam_db = stable_val(db)
+	for key in tam_db.keys():
+		if key not in stable_db.keys():
+			dtb.update_one({ "name": name },  {'$set': {'value.{}'.format(key):db[key]}} )
+		else:
+			if db[key] != stable_db[key]:
+				dtb.update_one({ "name": name },  {'$set': {'value.{}'.format(key):db[key]}} )
+
+
 	stable_db = take_data(data_key)
+	not_in = list(filter(lambda x:x not in db, stable_db))
+	for key in not_in:
+		dtb.update_one({ "name": name }, {"$unset": { 'value.{}'.format(key):1 }} )
 	
 def run1():
   global db,stable_db

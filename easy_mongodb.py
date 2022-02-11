@@ -41,7 +41,7 @@ stable_db = take_data(data_key)
 def open_again(name):
     global db,stable_db
     dtb.update_one({ "name": name },  {'$set': {'value':db}} )
-    stable_db = take_data(access_db_key)
+    stable_db = take_data(data_key)
 	
 def run1():
   global db,stable_db

@@ -555,7 +555,7 @@ async def _private(ctx:SlashContext):
     overwrite.connect=False
     role = get(ctx.guild.roles, id=everyone_id)
     await vc_channel.set_permissions(role, overwrite=overwrite)
-    await ctx.channel.send("Phòng đã được mở cho mọi người vào") 
+    await ctx.channel.send("Phòng đã được đóng không cho mọi người vào") 
 
 #################################show
 @slash.slash(

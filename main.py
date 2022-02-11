@@ -552,8 +552,7 @@ async def on_message(message):
     ######take list
       for key in db.keys():
         check = False
-        if key == "old_time": pass
-        elif "vc_id" in db[key] and "locate" in db[key]:
+        if "vc_id" in db[key] and "locate" in db[key]:
           member_list.append(key)
         elif "host_id" in db[key] and "vc_id" in db[key]:
           cc_list.append(key)
@@ -801,8 +800,7 @@ async def fix_before_start():
       member_list = []
 ######take list
       for key in db.keys():
-        if key == "old_time": pass
-        elif "vc_id" in db[key] and "locate" in db[key]:
+        if "vc_id" in db[key] and "locate" in db[key]:
           member_list.append(key)
         elif "host_id" in db[key] and "vc_id" in db[key]:
           cc_list.append(key)

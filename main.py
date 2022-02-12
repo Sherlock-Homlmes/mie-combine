@@ -304,8 +304,8 @@ async def on_voice_state_update(member, member_before, member_after):
           await member.send("**Bạn hãy kiểm tra và đảm bảo trong tên của bạn không có từ cấm, tục tĩu**")
         else:
           #set channel
-          db[mem_id] = user_value
-          #print(db[mem_id])
+          db[mem_id] = None
+          db[mem_id] = {}
           if voice_channel_after.id == 918549426732142653:
             category=client.get_channel(900439704950956053)
             db[mem_id]["locate"]="sg"

@@ -540,7 +540,7 @@ async def _public(ctx:SlashContext):
     overwrite.connect=True
     role = get(ctx.guild.roles, id=everyone_id)
     await vc_channel.set_permissions(role, overwrite=overwrite)
-    await ctx.channel.send("Phòng đã được mở cho mọi người vào") 
+    await ctx.send("Phòng đã được mở cho mọi người vào") 
 
 #################################private
 @slash.slash(
@@ -555,7 +555,7 @@ async def _private(ctx:SlashContext):
     overwrite.connect=False
     role = get(ctx.guild.roles, id=everyone_id)
     await vc_channel.set_permissions(role, overwrite=overwrite)
-    await ctx.channel.send("Phòng đã được đóng không cho mọi người vào") 
+    await ctx.send("Phòng đã được đóng không cho mọi người vào") 
 
 #################################show
 @slash.slash(
@@ -573,7 +573,7 @@ async def _show(ctx:SlashContext):
       overwrite.connect=False
       role = get(ctx.guild.roles, id=everyone_id)
       await vc_channel.set_permissions(role, overwrite=overwrite)
-      await ctx.channel.send("Phòng đã được hiện cho mọi người thấy")
+      await ctx.send("Phòng đã được hiện cho mọi người thấy")
 
 #################################hide
 @slash.slash(
@@ -590,7 +590,7 @@ async def _hide(ctx:SlashContext):
       overwrite.view_channel=False
       role = get(ctx.guild.roles, id=everyone_id)
       await vc_channel.set_permissions(role, overwrite=overwrite)
-      await ctx.channel.send("Phòng đã ẩn không cho mọi người thấy")
+      await ctx.send("Phòng đã ẩn không cho mọi người thấy")
 
 #################################limit
 @slash.slash(
@@ -612,30 +612,30 @@ async def _limit(ctx:SlashContext,limit:int):
     lim = limit
     if check == "cr" or check == "ts":
       vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] )  
-      if lim <= 0: await ctx.channel.send("Bạn không thể đặt limit phòng là 0 hoặc bé hơn")
+      if lim <= 0: await ctx.send("Bạn không thể đặt limit phòng là 0 hoặc bé hơn")
       elif lim >25:
         if lim <99:
           await vc_channel.edit(user_limit= lim)
-          await ctx.channel.send("Bạn đã đặt limit phòng: "+str(lim))
+          await ctx.send("Bạn đã đặt limit phòng: "+str(lim))
         else:
           await vc_channel.edit(user_limit=0)
-          await ctx.channel.send("Bạn đã đặt limit phòng: Vô hạn")
-        await ctx.channel.send("Với những phòng lim>25, bạn sẽ không thể bật được CAM")
+          await ctx.send("Bạn đã đặt limit phòng: Vô hạn")
+        await ctx.send("Với những phòng lim>25, bạn sẽ không thể bật được CAM")
       else:
         await vc_channel.edit(user_limit = lim)
-        await ctx.channel.send("Bạn đã đặt limit phòng: "+str(lim))
+        await ctx.send("Bạn đã đặt limit phòng: "+str(lim))
     elif check == "sg":
       vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] )  
-      if lim <= 0: await ctx.channel.send("Bạn không thể đặt limit phòng là 0 hoặc bé hơn")
+      if lim <= 0: await ctx.send("Bạn không thể đặt limit phòng là 0 hoặc bé hơn")
       elif lim >=1 and lim <=15:
         await vc_channel.edit(user_limit= lim)
-        await ctx.channel.send("Bạn đã đặt limit phòng: "+str(lim))
+        await ctx.send("Bạn đã đặt limit phòng: "+str(lim))
       else:
-        await ctx.channel.send("Bạn không thể đặt limit phòng Small Group lớn hơn 15 ")
+        await ctx.send("Bạn không thể đặt limit phòng Small Group lớn hơn 15 ")
     elif check == "cp":
-      await ctx.channel.send("Bạn không thể đặt limit cho phòng Couple")
+      await ctx.send("Bạn không thể đặt limit cho phòng Couple")
     elif check == "sa":
-      await ctx.channel.send("Bạn không thể đặt limit cho phòng Study Alone")
+      await ctx.send("Bạn không thể đặt limit cho phòng Study Alone")
 
 
 #################################invite member
@@ -688,9 +688,9 @@ async def _allow(ctx:SlashContext,member:str):
       overwrite.view_channel=True
       overwrite.connect=True
       await vc_channel.set_permissions(member, overwrite=overwrite) 
-      await ctx.channel.send("Đã cấp quyền cho <@"+str(member.id)+"> vào phòng")
+      await ctx.send("Đã cấp quyền cho <@"+str(member.id)+"> vào phòng")
     else :
-      await ctx.channel.send("Không tìm thấy người dùng")
+      await ctx.send("Không tìm thấy người dùng")
 
 #############################disallow|kick member
 @slash.slash(
@@ -715,14 +715,14 @@ async def _disallow(ctx:SlashContext,member:str):
         overwrite.connect=False
         await vc_channel.set_permissions(member, overwrite=overwrite) 
         await member.move_to(None)
-        await ctx.channel.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
+        await ctx.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
       elif db[str(vc_channel.id)]["host_id"] != member.id:
         overwrite = discord.PermissionOverwrite()
         overwrite.connect=False
         await vc_channel.set_permissions(member, overwrite=overwrite) 
-        await ctx.channel.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
+        await ctx.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
       else: 
-        await ctx.channel.send("Bạn không thể kick chủ phòng")
+        await ctx.send("Bạn không thể kick chủ phòng")
 
 #############################disallow|kick member
 @slash.slash(
@@ -747,14 +747,14 @@ async def _kick(ctx:SlashContext,member:str):
         overwrite.connect=False
         await vc_channel.set_permissions(member, overwrite=overwrite) 
         await member.move_to(None)
-        await ctx.channel.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
+        await ctx.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
       elif db[str(vc_channel.id)]["host_id"] != member.id:
         overwrite = discord.PermissionOverwrite()
         overwrite.connect=False
         await vc_channel.set_permissions(member, overwrite=overwrite) 
-        await ctx.channel.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
+        await ctx.send("<@"+str(member.id)+"> đã mất quyền vào phòng")
       else: 
-        await ctx.channel.send("Bạn không thể kick chủ phòng")
+        await ctx.send("Bạn không thể kick chủ phòng")
 
 ##############rename channel
 @slash.slash(
@@ -775,13 +775,13 @@ async def _rename(ctx:SlashContext,text:str):
     if check_avaiable_name(text) == True:
       new_name = text
       if len(new_name) > 50:
-        await ctx.channel.send("Tên quá dài")
+        await ctx.send("Tên quá dài")
       else:  
-        vc_channel = get(client.get_all_channels(), id=db[str(ctx.channel.id)]["vc_id"] ) 
+        vc_channel = get(client.get_all_channels(), id=db[str(ctx.author.id)]["vc_id"] ) 
         await vc_channel.edit(name=new_name)
-        await ctx.channel.send("Tên kênh đã được đổi thành "+new_name)
+        await ctx.send("Tên kênh đã được đổi thành "+new_name)
     else:
-      await ctx.channel.send("**Không được đổi tên kênh có những từ cấm nha mầy, tau táng cho á**")
+      await ctx.send("**Không được đổi tên kênh có những từ cấm nha mầy, tau táng cho á**")
 
 
 

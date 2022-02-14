@@ -78,9 +78,8 @@ def check_avaiable_name(content):
 
 
 
-intents = discord.Intents.default()
-intents.members = True
-client = discord.Client(intents=intents)
+intents = discord.Intents().all()
+client = commands.Bot(command_prefix=["m,","M,"], intents = intents)
 slash = SlashCommand(client, sync_commands=True)
 
 guild = client.get_guild(880360143768924210)

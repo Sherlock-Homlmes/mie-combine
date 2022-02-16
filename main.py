@@ -283,7 +283,7 @@ async def on_voice_state_update(member, member_before, member_after):
 
   voice_channel_before = member_before.channel
   voice_channel_after = member_after.channel
-  #print("-------"+str(member)+"----------")
+  print("-------"+str(member)+"----------")
   #print(voice_channel_before)
   #print(voice_channel_after)
 

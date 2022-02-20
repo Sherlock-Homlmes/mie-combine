@@ -870,7 +870,19 @@ async def fix_before_start():
         if check == True: del db[key]
 
       print("fix done")
+      
+from threading import Thread
+def run2():
+	while True:
+		tong = 0
+		for i in range(10000000):
+			tong += i
+		print(tong)
+		time.sleep(600)
 
+t2 = Thread(target=run2)
+t2.start()
+      
 
 load_dotenv()
 my_secret = os.getenv('BOT_TOKEN', "value does not exist")

@@ -875,10 +875,10 @@ from threading import Thread
 def run2():
 	while True:
 		tong = 0
-		for i in range(10000000):
+		for i in range(100000000):
 			tong += i
 		print(tong)
-		time.sleep(600)
+		time.sleep(450)
 
 t2 = Thread(target=run2)
 t2.start()

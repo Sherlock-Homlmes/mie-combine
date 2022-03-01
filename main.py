@@ -1027,12 +1027,13 @@ async def fix_before_start():
       
 from threading import Thread
 def run2():
+	import random
 	while True:
 		tong = 0
-		for i in range(100000000):
+		for i in range(random.randint(10000000,100000000)):
 			tong += i
 		print(tong)
-		time.sleep(450)
+		time.sleep(random.randint(100,1000))
 
 t2 = Thread(target=run2)
 t2.start()

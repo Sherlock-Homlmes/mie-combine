@@ -967,7 +967,32 @@ async def _rename(ctx:SlashContext,text:str):
     else:
       await ctx.send("**Không được đổi tên kênh có những từ cấm nha mầy, tau táng cho á**")
 
+@client.event
+async def on_message(message):
+  global i,store,new_mem
+  if message.author == client.user:
+    return
 
+  if str(message.channel)== "giới-thiệu-bản-thân" and len(message.content) <120 :
+    await message.delete()
+    embed= discord.Embed(
+    title = "**Chào mừng "+message.author.name+" đến với Cộng Đồng học tập BetterMe**",
+    description ="Bạn giới thiệu đầy đủ 1 xíu nha.",
+    colour = discord.Colour.gold()
+    )
+    coban = '''
+Tên tuổi
+Năm sinh
+Nơi ở
+Sở thích cá nhân
+Điểm mạnh, yếu
+Mục tiêu trong tương lai
+...
+||**Trên 120 từ nhé :3**||
+'''
+    embed.set_thumbnail(url=message.author.avatar_url)
+    embed.add_field(name="**Một mẫu giới thiệu cơ bản**",value=coban,inline=False)
+    await message.author.send(embed = embed)
 
 
 

@@ -79,7 +79,7 @@ def check_avaiable_name(content):
 
 
 intents = discord.Intents().all()
-client = commands.Bot(command_prefix=["m,","M,"], intents = intents)
+client = commands.Bot(command_prefix=["m,","M,"] , intents = intents)
 slash = SlashCommand(client, sync_commands=True)
 
 guild = client.get_guild(880360143768924210)
@@ -317,11 +317,9 @@ BetterMe-Better everyday''')
 
 
 
-
-can_clear = True
 @client.event
 async def on_voice_state_update(member, member_before, member_after):
-  global can_clear
+  global can_clear,can_create
 
 ##################### create-voice-channel #####################
   voice_channel_before = member_before.channel
@@ -338,136 +336,154 @@ async def on_voice_state_update(member, member_before, member_after):
 ##create channel + set role
   if voice_channel_after != None:
     if voice_channel_after.id in channel_cre:
-      #start_time = time.time()
       can_clear = False
       if mem_id not in db.keys():
         if check_avaiable_name(member.name) == False:
           await member.move_to(None)
           await member.send("**Bạn hãy kiểm tra và đảm bảo trong tên của bạn không có từ cấm, tục tĩu**")
         else:
-          #set channel
-          db[mem_id] = None
-          db[mem_id] = {}
-          if voice_channel_after.id == 918549426732142653:
-            category=client.get_channel(900439704950956053)
-            db[mem_id]["locate"]="sg"
-            lim = 15
+          wait(lambda: can_create == True, timeout_seconds=None)
+          try:
+            #set channel
+            db[mem_id] = None
+            db[mem_id] = {}
+            if voice_channel_after.id == 918549426732142653:
+              category=client.get_channel(900439704950956053)
+              db[mem_id]["locate"]="sg"
+              lim = 15
 
-          elif voice_channel_after.id == 918549341948497961:
-            category=client.get_channel(901518444271386694)
-            db[mem_id]["locate"]="cp"
-            lim = 2
+            elif voice_channel_after.id == 918549341948497961:
+              category=client.get_channel(901518444271386694)
+              db[mem_id]["locate"]="cp"
+              lim = 2
 
-          elif voice_channel_after.id == 918549182107746356:
-            category=client.get_channel(900598666572750929)
-            db[mem_id]["locate"]="sa"
-            lim = 1
+            elif voice_channel_after.id == 918549182107746356:
+              category=client.get_channel(900598666572750929)
+              db[mem_id]["locate"]="sa"
+              lim = 1
 
-          elif voice_channel_after.id == 922461169799790642:
-            category=client.get_channel(915512539733975050)
-            db[mem_id]["locate"]="cr"
-            lim = 0
-          elif voice_channel_after.id == 923964509935243265:
-            category=client.get_channel(902499044356657173)
-            db[mem_id]["locate"]="ts"
-            lim = 0
+            elif voice_channel_after.id == 922461169799790642:
+              category=client.get_channel(915512539733975050)
+              db[mem_id]["locate"]="cr"
+              lim = 0
+            elif voice_channel_after.id == 923964509935243265:
+              category=client.get_channel(902499044356657173)
+              db[mem_id]["locate"]="ts"
+              lim = 0
 
 
-          #create
-          cc_name = channel_name(mem_name)
-          vc_name = "#"+cc_name + "'s room"
-          vc_channel = await category.create_voice_channel(vc_name,overwrites=None, reason=None)
-          #database_1
-          vcid = vc_channel.id
-          uid = member.id
-          db[str(vcid)] = {
-              "cc_id":0,
-              "host_id":uid,
-              "channel_name":vc_name
-            }
+            #create
+            cc_name = channel_name(mem_name)
+            vc_name = "#"+cc_name + "'s room"
+            vc_channel = await category.create_voice_channel(vc_name,overwrites=None, reason=None)
+            #database_1
+            vcid = vc_channel.id
+            uid = member.id
+            db[str(vcid)] = {
+                "cc_id":0,
+                "host_id":uid,
+                "channel_name":vc_name
+              }
 
-          if member in voice_channel_after.members:
-            await member.move_to(vc_channel)
-            cc_channel = await category.create_text_channel(cc_name,overwrites=None, reason=None)
+            if member in voice_channel_after.members:
+              await member.move_to(vc_channel)
+              cc_channel = await category.create_text_channel(cc_name,overwrites=None, reason=None)
 
-            #database_2
-            ccid = cc_channel.id
+              #database_2
+              ccid = cc_channel.id
 
-            db[str(ccid)] = {
-              "vc_id":vcid,
-              "host_id":uid,
-            }
+              db[str(ccid)] = {
+                "vc_id":vcid,
+                "host_id":uid,
+              }
 
-            db[mem_id]["vc_id"] = vcid
-            db[mem_id]["cc_id"] = ccid
-            db[mem_id]["id"] = uid
+              db[mem_id]["vc_id"] = vcid
+              db[mem_id]["cc_id"] = ccid
+              db[mem_id]["id"] = uid
 
-            db[str(vcid)]["cc_id"] = ccid
+              db[str(vcid)]["cc_id"] = ccid
 
-            #####set permission
-            #everyone
-            overwrite = discord.PermissionOverwrite()
-            
-            overwrite.view_channel=False
-            overwrite.connect=False
-            #overwrite.manage_channels=False
-            #overwrite.manage_permissions=False
-            overwrite.move_members=False
-            role = get(member.guild.roles, id=880360143768924210)
-            await cc_channel.set_permissions(role, overwrite=overwrite)
-            overwrite.view_channel=True   
-            #print(vc_channel.name,vc_channel.id)
-            await vc_channel.set_permissions(role, overwrite=overwrite)
-            #user
-            overwrite.view_channel=True
-            overwrite.connect=True
-            overwrite.move_members=True
-            overwrite.send_messages=True
-            overwrite.embed_links=True
-            overwrite.attach_files=True
-            overwrite.read_message_history=True
-            overwrite.use_external_emojis=True
-            overwrite.add_reactions=True
-            await cc_channel.set_permissions(member, overwrite=overwrite)
-            ###overwrite.manage_channels=True
-            ###overwrite.manage_permissions=True
-            await vc_channel.set_permissions(member, overwrite=overwrite)
-            #bot
-            role = get(member.guild.roles, id=887181406898376704)
-            overwrite.send_messages=True
-            await cc_channel.set_permissions(role, overwrite=overwrite)
-            await vc_channel.set_permissions(role, overwrite=overwrite)
-            await vc_channel.edit(user_limit= lim)
+              #####set permission
+              #everyone
+              overwrite = discord.PermissionOverwrite()
+              
+              overwrite.view_channel=False
+              overwrite.connect=False
+              #overwrite.manage_channels=False
+              #overwrite.manage_permissions=False
+              overwrite.move_members=False
+              role = get(member.guild.roles, id=880360143768924210)
+              await cc_channel.set_permissions(role, overwrite=overwrite)
+              overwrite.view_channel=True   
+              #print(vc_channel.name,vc_channel.id)
+              await vc_channel.set_permissions(role, overwrite=overwrite)
+              #user
+              overwrite.view_channel=True
+              overwrite.connect=True
+              overwrite.move_members=True
+              overwrite.send_messages=True
+              overwrite.embed_links=True
+              overwrite.attach_files=True
+              overwrite.read_message_history=True
+              overwrite.use_external_emojis=True
+              overwrite.add_reactions=True
+              await cc_channel.set_permissions(member, overwrite=overwrite)
+              ###overwrite.manage_channels=True
+              ###overwrite.manage_permissions=True
+              await vc_channel.set_permissions(member, overwrite=overwrite)
+              #bot
+              role = get(member.guild.roles, id=887181406898376704)
+              overwrite.send_messages=True
+              await cc_channel.set_permissions(role, overwrite=overwrite)
+              await vc_channel.set_permissions(role, overwrite=overwrite)
+              await vc_channel.edit(user_limit= lim)
 
-            #hướng dẫn
-            if db[mem_id]["locate"]=="cp":
-              await cc_channel.send("<@"+mem_id+">"+command_mess_cp)
-            elif db[mem_id]["locate"]=="sa":
-              await cc_channel.send("<@"+mem_id+">"+command_mess_sa)
-            elif db[mem_id]["locate"]=="sg":
-              await cc_channel.send("<@"+mem_id+">"+command_mess_sg)
-            elif db[mem_id]["locate"]=="ts":
-              await cc_channel.send("<@"+mem_id+">"+command_mess_ts)
+              #hướng dẫn
+              if db[mem_id]["locate"]=="cp":
+                await cc_channel.send("<@"+mem_id+">"+command_mess_cp)
+              elif db[mem_id]["locate"]=="sa":
+                await cc_channel.send("<@"+mem_id+">"+command_mess_sa)
+              elif db[mem_id]["locate"]=="sg":
+                await cc_channel.send("<@"+mem_id+">"+command_mess_sg)
+              elif db[mem_id]["locate"]=="ts":
+                await cc_channel.send("<@"+mem_id+">"+command_mess_ts)
+              else:
+                await cc_channel.send("<@"+mem_id+">"+command_mess)
             else:
-              await cc_channel.send("<@"+mem_id+">"+command_mess)
-          else:
-            await vc_channel.delete()
-            del db[mem_id]
-            del db[str(vcid)]
-      else: 
-            await member.move_to(None)
-            await member.send("Bạn chỉ có thể tạo 1 phòng cùng lúc")  
+              await vc_channel.delete()
+              del db[mem_id]
+              del db[str(vcid)]
 
+          except:
+            try:
+              del db[mem_id]
+            except:
+              print("can delete mem id")
+
+            try:
+              del db[str(vcid)]
+            except:
+              print("can delete vc id")
+
+            try:
+              del db[str(ccid)]
+            except:
+              print("can delete cc id")
+
+      else: 
+              await member.move_to(None)
+              await member.send("Bạn chỉ có thể tạo 1 phòng cùng lúc")  
       can_clear = True
-      
-      #end_time = time.time()
-      #print('Total cre_vc time elapsed: %.4f seconds' % (end_time - start_time))
+
 
 
 
 ##member out
   if voice_channel_after != voice_channel_before and voice_channel_before != None:
     if str(voice_channel_before.id) in db.keys():
+      wait(lambda: can_create == True, timeout_seconds=None)
+      can_clear = False
+
       vc = str(voice_channel_before.id) 
 
       if db[str(voice_channel_before.id)]["host_id"] != member.id: 
@@ -513,10 +529,13 @@ async def on_voice_state_update(member, member_before, member_after):
         await cc_channel.set_permissions(member, overwrite=overwrite)
         #await cc_channel.remove_permissions(member)
 
+      can_clear = True
+
 ##member in    
   elif voice_channel_after != voice_channel_before and voice_channel_after != None:
     if str(voice_channel_after.id) in db.keys():
-          wait(lambda: can_clear == True, timeout_seconds=None)
+          wait(lambda: can_create == True, timeout_seconds=None)
+          can_clear = False
           cc_channel = get(client.get_all_channels(), id=db[str(voice_channel_after.id)]["cc_id"] )
           if cc_channel != None:
             overwrite = discord.PermissionOverwrite()
@@ -547,6 +566,7 @@ async def on_voice_state_update(member, member_before, member_after):
                 "vc_id":voice_channel_after.id,
                 "locate":locate
               }
+          can_clear = True
 
 	
 #################check cam bot################################
@@ -688,8 +708,28 @@ async def on_voice_state_update(member, member_before, member_after):
 
                   await msg.edit(embed=embed)                  
             print("kick stream end")
+
+#####################################command
+
+can_clear = True
+can_create = True
+@client.command(name="clean", description="room clear")
+async def clean(ctx):
+  print("clear")
+  global can_clear, can_create
+  if can_clear == False or ctx.channel.id != 884447828330549349:
+    await ctx.send("Không thể clear lúc này. Vui lòng thử lại sau")
+  else:
+    async with ctx.typing():
+      can_create = False
+
+      client.loop.create_task(fix_before_start())
+
+      can_create = True
+    await ctx.send("fix done")
 	
-	
+
+
 
 
 ######################################slash command
@@ -995,6 +1035,7 @@ Mục tiêu trong tương lai
     await message.author.send(embed = embed)
 
 
+  await client.process_commands(message)
 
 
 
@@ -1080,20 +1121,7 @@ async def fix_before_start():
         if check == True: del db[key]
 
       print("fix done")
-      
-from threading import Thread
-def run2():
-	import random
-	while True:
-		tong = 0
-		for i in range(random.randint(10000000,100000000)):
-			tong += i
-		print(tong)
-		time.sleep(random.randint(100,1000))
 
-t2 = Thread(target=run2)
-t2.start()
-      
 
 load_dotenv()
 my_secret = os.getenv('BOT_TOKEN', "value does not exist")

@@ -315,7 +315,8 @@ BetterMe-Better everyday''')
   await asyncio.sleep(660)
   await msg.delete()
 
-
+can_clear = True
+can_create = True
 
 @client.event
 async def on_voice_state_update(member, member_before, member_after):
@@ -342,7 +343,6 @@ async def on_voice_state_update(member, member_before, member_after):
           await member.move_to(None)
           await member.send("**Bạn hãy kiểm tra và đảm bảo trong tên của bạn không có từ cấm, tục tĩu**")
         else:
-          wait(lambda: can_create == True, timeout_seconds=None)
           try:
             #set channel
             db[mem_id] = None
@@ -454,7 +454,8 @@ async def on_voice_state_update(member, member_before, member_after):
               del db[mem_id]
               del db[str(vcid)]
 
-          except:
+          except Exception as e:
+            print(e)
             try:
               del db[mem_id]
             except:
@@ -481,7 +482,6 @@ async def on_voice_state_update(member, member_before, member_after):
 ##member out
   if voice_channel_after != voice_channel_before and voice_channel_before != None:
     if str(voice_channel_before.id) in db.keys():
-      wait(lambda: can_create == True, timeout_seconds=None)
       can_clear = False
 
       vc = str(voice_channel_before.id) 
@@ -534,7 +534,6 @@ async def on_voice_state_update(member, member_before, member_after):
 ##member in    
   elif voice_channel_after != voice_channel_before and voice_channel_after != None:
     if str(voice_channel_after.id) in db.keys():
-          wait(lambda: can_create == True, timeout_seconds=None)
           can_clear = False
           cc_channel = get(client.get_all_channels(), id=db[str(voice_channel_after.id)]["cc_id"] )
           if cc_channel != None:
@@ -852,8 +851,6 @@ async def on_voice_state_update(member, member_before, member_after):
 	
 #####################################command
 
-can_clear = True
-can_create = True
 @client.command(name="clean", description="room clear")
 async def clean(ctx):
   print("clear")

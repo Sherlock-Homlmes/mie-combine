@@ -594,10 +594,10 @@ async def on_voice_state_update(member, member_before, member_after):
                 embed.set_thumbnail(url=pfp)
                 embed.set_footer(text='''BetterMe-Better everyday''')
 		
-		try:
-                	msg = await member.send(content=member.mention,embed=embed)
-		except Exception as e:
-			print(e)
+                try:
+                    msg = await member.send(content=member.mention,embed=embed)
+                except Exception as e:
+                    print(e)
 
                 #kick
                 await asyncio.sleep(45)
@@ -666,10 +666,10 @@ async def on_voice_state_update(member, member_before, member_after):
                 embed.set_thumbnail(url=pfp)
                 embed.set_footer(text='''BetterMe-Better everyday''')
 
-		try:
-                	msg = await member.send(content=member.mention,embed=embed)
-		except Exception as e:
-			print(e)
+                try:
+                    msg = await member.send(content=member.mention,embed=embed)
+                except Exception as e:
+                    print(e)
 
                 #kick
                 await asyncio.sleep(45)
@@ -738,10 +738,10 @@ async def on_voice_state_update(member, member_before, member_after):
                 embed.set_thumbnail(url=pfp)
                 embed.set_footer(text='''BetterMe-Better everyday''')
 
-		try:
-                	msg = await member.send(content=member.mention,embed=embed)
-		except Exception as e:
-			print(e)
+                try:
+                    msg = await member.send(content=member.mention,embed=embed)
+                except Exception as e:
+                    print(e)
 
                 #kick
                 await asyncio.sleep(45)
@@ -809,11 +809,11 @@ async def on_voice_state_update(member, member_before, member_after):
                 pfp = member.avatar_url
                 embed.set_thumbnail(url=pfp)
                 embed.set_footer(text='''BetterMe-Better everyday''')
-
-		try:
-                	msg = await member.send(content=member.mention,embed=embed)
-		except Exception as e:
-			print(e)
+                
+                try:
+                    msg = await member.send(content=member.mention,embed=embed)
+                except Exception as e:
+                    print(e)
 
                 #kick
                 await asyncio.sleep(45)

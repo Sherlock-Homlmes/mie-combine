@@ -18,8 +18,6 @@ distlib==0.3.4
 dnspython==2.2.0
 fastapi==0.73.0
 filelock==3.4.2
-Flask==2.0.2
-Flask-Cors==3.0.10
 fonttools==4.29.0
 h11==0.13.0
 idna==3.3

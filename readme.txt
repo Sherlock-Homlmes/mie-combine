@@ -7,7 +7,7 @@ Part 1: Schedule
 Part 2: Security
 - Check introduce content
 - Check language in language channels || not
-- Check the user camera on or off | X
+- Check the user camera on or off
 
 Part 3: Errands
 - Say hello to user join server | X

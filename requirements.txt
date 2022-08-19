@@ -13,9 +13,9 @@ Cython==0.29.27
 DateTime==4.3
 discord==1.7.3
 discord-py-slash-command==3.0.3
+discord-components==2.1.2
 discord.py==1.7.3
 distlib==0.3.4
-Django==4.0.1
 dnspython==2.2.0
 fastapi==0.73.0
 filelock==3.4.2

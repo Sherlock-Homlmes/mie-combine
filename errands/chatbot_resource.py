@@ -5,6 +5,7 @@ database_directory = "./data/chat_bot_conver/"
 resources_files = listdir(database_directory)
 file = resources_files[0]
 db_num = file.replace("resource_","")
+db_num = db_num.replace("_prevent","")
 db_num = db_num.replace(".json","")
 db_num = int(db_num)
 

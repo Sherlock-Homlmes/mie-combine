@@ -15,10 +15,9 @@ from base import (
     private_confession_channel_id,
     confession_dropdown_id,
     confession_category_id)
-from feature_func.stable_json import open_database, write_database, fix_database
 
-database_directory = "/confession/confession"
-fix_database(database_directory)
+from feature_func.mongodb import open_database, write_database
+database_directory = "confession"
 
 from .image_handle import save_image, delete_image
 from .channel_name import channel_name

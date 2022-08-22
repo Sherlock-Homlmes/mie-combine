@@ -1,0 +1,1 @@
+from .method import open_database, write_database

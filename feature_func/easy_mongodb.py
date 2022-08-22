@@ -1,21 +1,10 @@
-from threading import Thread
-import os
-from dotenv import load_dotenv
-import time
 ######database
 #
 from pymongo import MongoClient
-
 from threading import Thread
 from waiting import wait
 
-from functools import reduce
-
-## thuộc tính: database_url
-load_dotenv()
-database_url = os.getenv('database_url', "value does not exist")
-cluster = MongoClient(database_url)
-dtbs = cluster["discord_betterme"]
+from all_env import dtbs
 dtb = dtbs["create_vc"]
 
 #start
@@ -47,11 +36,7 @@ def run1():
   global db,stable_db
   while True:
     wait(lambda: db != stable_db, timeout_seconds=None)
-    #start
-    #start_time = time.time()
     open_again(data_key)
-    #end_time = time.time()
-    #print('Total all time elapsed: %.6f seconds' % (end_time - start_time))
     
 t1 = Thread(target=run1)
 t1.start()

@@ -289,7 +289,7 @@ async def on_member_join(member):
 
   embed.set_footer(text='''Chúc bạn có 1 khoảng thời gian vui vẻ. 
 BetterMe-Better everyday''')
-  embed.set_image(url="https://i.ibb.co/Wvw2CY9/Betterme.png")
+  embed.set_image(url="https://i.ibb.co/bNzBtyY/Betterme-banner.png")
   embed.set_thumbnail(url=pfp)
   embed.add_field(name="**Đọc kĩ luật**",value=field1,inline=False)
   embed.add_field(name="**Hướng dẫn cơ bản**",value=field2,inline=False)

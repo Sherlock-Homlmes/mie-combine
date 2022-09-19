@@ -11,9 +11,8 @@ colorama==0.4.4
 cycler==0.11.0
 Cython==0.29.27
 DateTime==4.3
-discord==1.7.3
-discord-py-slash-command==3.0.3
-discord.py==1.7.3
+discord==2.0.0
+discord.py==2.0.0
 distlib==0.3.4
 dnspython==2.2.0
 fastapi==0.73.0

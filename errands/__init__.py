@@ -4,6 +4,7 @@ from .dropdown_faq import *
 from .game_center import *
 from .study_club import *
 from .chatbot_resource import *
+from .welcome import *
 
 from base import bot
 @bot.listen()

@@ -1,16 +1,28 @@
 import discord
-import os
+from discord import (
+    Interaction,
+    app_commands
+)
 from discord.ext import commands, tasks
 from discord.utils import get
-from discord_slash import SlashCommand
 
 import datetime
 
 ####### BOT #######
+guild_id = 880360143768924210
+class Bot(commands.Bot):
+    def __init__(self):
+        intents = discord.Intents.all()
+        intents.message_content = True
+        super().__init__(command_prefix = ["test,"], intents = intents)
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=["M,", "m,"], intents=intents)
-slash = SlashCommand(bot, sync_commands=True)
+    async def setup_hook(self):
+        await self.tree.sync()
+        print(f"Synced slash commands for {self.user}.")
+
+    async def on_command_error(self, ctx, error):
+        await ctx.reply(error, ephemeral = True)
+bot = Bot()
 
 
 @bot.listen()
@@ -24,6 +36,7 @@ async def on_ready():
 ### Started: Discord
 guild_id = 880360143768924210
 admin_id = [880359404036317215, 278423331026501633]
+muted_id = 890553937445408839
 ### Part 1: SCHEDULE
 # 1.1:static_channels
 thpt_channel_id = 894578663893389403
@@ -61,12 +74,50 @@ confession_category_id = 902499044356657173
 confession_channel_id = 925086728497291394
 private_confession_channel_id = 925790946971508806
 
+### Part 6: Create voice channel
+channel_cre = {
+  #test
+#   "1021296228585185280":{
+#     "category_id": 917405878217490482,
+#     "locate": "SG",
+#     "limit": (2,15)
+#   },
+
+  #real
+  "918549426732142653":{
+    "category_id": 900439704950956053,
+    "locate": "SG",
+    "limit": (3,15)
+  },
+  "918549341948497961":{
+    "category_id": 901518444271386694,
+    "locate": "CP",
+    "limit": (2,2)
+  },
+  "918549182107746356":{
+    "category_id": 900598666572750929,
+    "locate": "SA",
+    "limit": (1,1)
+  },
+  "922461169799790642":{
+    "category_id": 915512539733975050,
+    "locate": "CR",
+    "limit": (1,99)
+  },
+  "923964509935243265":{
+    "category_id": 902499044356657173,
+    "locate": "Tâm sự",
+    "limit": (1,99)
+  }
+
+}
+
 ####### IMPORT MODULES #######
-from schedule import *
-from security import *
-from errands import *
-from easter_eggs import *
-from confession import *
-from create_vc import *
+# from schedule import *
+# from security import *
+# from errands import *
+# from easter_eggs import *
+# from confession import *
+# from create_vc import *
 
 # from test import *

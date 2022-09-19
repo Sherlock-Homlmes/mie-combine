@@ -5,10 +5,11 @@ from discord import (
     Embed,
     Attachment,
     AllowedMentions,
-    InvalidArgument,
     File,
     MessageFlags,
 )
+def InvalidArgument():
+    pass
 from discord.http import Route, HTTPClient
 from discord.abc import Messageable, Snowflake
 from discord.ext.commands import Context

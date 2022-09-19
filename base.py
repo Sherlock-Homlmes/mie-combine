@@ -14,7 +14,7 @@ class Bot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.all()
         intents.message_content = True
-        super().__init__(command_prefix = ["test,"], intents = intents)
+        super().__init__(command_prefix = ["m,", "M,"], intents = intents)
 
     async def setup_hook(self):
         await self.tree.sync()

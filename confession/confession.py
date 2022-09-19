@@ -27,7 +27,6 @@ from .channel_name import channel_name
 async def on_ready():
     global guild, confession_channel, private_confession_channel
 
-    DiscordComponents(bot)
     guild = bot.get_guild(guild_id)
     confession_channel = get(bot.get_all_channels(), id=confession_channel_id)
     private_confession_channel = get(bot.get_all_channels(),

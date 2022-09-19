@@ -43,8 +43,8 @@ async def on_voice_state_update(member, member_before, member_after):
                 description = member.name+", bạn đang ở trong phòng FULL CAM. Hãy bật camera, nếu không bạn sẽ bị kick sau 1 phút",
                 colour = discord.Colour.red()
                 )
-                pfp = member.avatar_url
-                embed.set_thumbnail(url=pfp)
+                # pfp = member.avatar_url
+                # embed.set_thumbnail(url=pfp)
                 embed.set_footer(text='''BetterMe-Better everyday''')
     
                 try:
@@ -64,8 +64,8 @@ async def on_voice_state_update(member, member_before, member_after):
                     description = member.name+", bạn đã bị kick ra khỏi phòng vì không bật cam",
                     colour = discord.Colour.red()
                     )
-                    pfp = member.avatar_url
-                    embed.set_thumbnail(url=pfp)
+                    # pfp = member.avatar_url
+                    # embed.set_thumbnail(url=pfp)
                     embed.set_footer(text='''BetterMe-Better everyday''')
                     await msg.edit(embed=embed)
                   else:
@@ -75,8 +75,8 @@ async def on_voice_state_update(member, member_before, member_after):
                     description = member.name+", cảm ơn bạn đã bật cam",
                     colour = discord.Colour.green()
                     )
-                    pfp = member.avatar_url
-                    embed.set_thumbnail(url=pfp)
+                    # pfp = member.avatar_url
+                    # embed.set_thumbnail(url=pfp)
                     embed.set_footer(text='''BetterMe-Better everyday''')
 
                     await msg.edit(embed=embed)
@@ -87,8 +87,8 @@ async def on_voice_state_update(member, member_before, member_after):
                       description = member.name+", cảm ơn bạn đã rời phòng",
                       colour = discord.Colour.green()
                       )
-                  pfp = member.avatar_url
-                  embed.set_thumbnail(url=pfp)
+                  # pfp = member.avatar_url
+                  # embed.set_thumbnail(url=pfp)
                   embed.set_footer(text='''BetterMe-Better everyday''')
 
                   await msg.edit(embed=embed)                  
@@ -115,8 +115,8 @@ async def on_voice_state_update(member, member_before, member_after):
                 description = member.name+", bạn đang ở trong phòng CAM/STREAM. Hãy bật camera hoặc stream, nếu không bạn sẽ bị kick sau 1 phút",
                 colour = discord.Colour.red()
                 )
-                pfp = member.avatar_url
-                embed.set_thumbnail(url=pfp)
+                # pfp = member.avatar_url
+                # embed.set_thumbnail(url=pfp)
                 embed.set_footer(text='''BetterMe-Better everyday''')
 
                 try:
@@ -136,8 +136,8 @@ async def on_voice_state_update(member, member_before, member_after):
                     description = member.name+", bạn đã bị kick ra khỏi phòng vì không bật cam hoặc stream",
                     colour = discord.Colour.red()
                     )
-                    pfp = member.avatar_url
-                    embed.set_thumbnail(url=pfp)
+                    # pfp = member.avatar_url
+                    # embed.set_thumbnail(url=pfp)
                     embed.set_footer(text='''BetterMe-Better everyday''')
 
                     await msg.edit(embed=embed)
@@ -148,8 +148,8 @@ async def on_voice_state_update(member, member_before, member_after):
                     description = member.name+", cảm ơn bạn đã bật cam/stream",
                     colour = discord.Colour.green()
                     )
-                    pfp = member.avatar_url
-                    embed.set_thumbnail(url=pfp)
+                    # pfp = member.avatar_url
+                    # embed.set_thumbnail(url=pfp)
                     embed.set_footer(text='''BetterMe-Better everyday''')
 
                     await msg.edit(embed=embed)
@@ -160,8 +160,8 @@ async def on_voice_state_update(member, member_before, member_after):
                       description = member.name+", cảm ơn bạn đã rời phòng",
                       colour = discord.Colour.green()
                       )
-                  pfp = member.avatar_url
-                  embed.set_thumbnail(url=pfp)
+                  # pfp = member.avatar_url
+                  # embed.set_thumbnail(url=pfp)
                   embed.set_footer(text='''BetterMe-Better everyday''')
 
                   await msg.edit(embed=embed)                  
@@ -187,8 +187,8 @@ async def on_voice_state_update(member, member_before, member_after):
                 description = member.name+", bạn đang ở trong phòng FULL CAM. Hãy bật camera, nếu không bạn sẽ bị kick sau 1 phút",
                 colour = discord.Colour.red()
                 )
-                pfp = member.avatar_url
-                embed.set_thumbnail(url=pfp)
+                # pfp = member.avatar_url
+                # embed.set_thumbnail(url=pfp)
                 embed.set_footer(text='''BetterMe-Better everyday''')
 
                 try:
@@ -208,8 +208,8 @@ async def on_voice_state_update(member, member_before, member_after):
                     description = member.name+", bạn đã bị kick ra khỏi phòng vì không bật cam",
                     colour = discord.Colour.red()
                     )
-                    pfp = member.avatar_url
-                    embed.set_thumbnail(url=pfp)
+                    # pfp = member.avatar_url
+                    # embed.set_thumbnail(url=pfp)
                     embed.set_footer(text='''BetterMe-Better everyday''')
                     await msg.edit(embed=embed)
                   else:
@@ -219,8 +219,8 @@ async def on_voice_state_update(member, member_before, member_after):
                     description = member.name+", cảm ơn bạn đã bật cam",
                     colour = discord.Colour.green()
                     )
-                    pfp = member.avatar_url
-                    embed.set_thumbnail(url=pfp)
+                    # pfp = member.avatar_url
+                    # embed.set_thumbnail(url=pfp)
                     embed.set_footer(text='''BetterMe-Better everyday''')
 
                     await msg.edit(embed=embed)
@@ -231,8 +231,8 @@ async def on_voice_state_update(member, member_before, member_after):
                       description = member.name+", cảm ơn bạn đã rời phòng",
                       colour = discord.Colour.green()
                       )
-                  pfp = member.avatar_url
-                  embed.set_thumbnail(url=pfp)
+                  # pfp = member.avatar_url
+                  # embed.set_thumbnail(url=pfp)
                   embed.set_footer(text='''BetterMe-Better everyday''')
 
                   await msg.edit(embed=embed)                  
@@ -259,8 +259,8 @@ async def on_voice_state_update(member, member_before, member_after):
                 description = member.name+", bạn đang ở trong phòng CAM/STREAM. Hãy bật camera hoặc stream, nếu không bạn sẽ bị kick sau 1 phút",
                 colour = discord.Colour.red()
                 )
-                pfp = member.avatar_url
-                embed.set_thumbnail(url=pfp)
+                # pfp = member.avatar_url
+                # embed.set_thumbnail(url=pfp)
                 embed.set_footer(text='''BetterMe-Better everyday''')
                 
                 try:
@@ -280,8 +280,8 @@ async def on_voice_state_update(member, member_before, member_after):
                     description = member.name+", bạn đã bị kick ra khỏi phòng vì không bật cam hoặc stream",
                     colour = discord.Colour.red()
                     )
-                    pfp = member.avatar_url
-                    embed.set_thumbnail(url=pfp)
+                    # pfp = member.avatar_url
+                    # embed.set_thumbnail(url=pfp)
                     embed.set_footer(text='''BetterMe-Better everyday''')
 
                     await msg.edit(embed=embed)
@@ -292,8 +292,8 @@ async def on_voice_state_update(member, member_before, member_after):
                     description = member.name+", cảm ơn bạn đã bật cam/stream",
                     colour = discord.Colour.green()
                     )
-                    pfp = member.avatar_url
-                    embed.set_thumbnail(url=pfp)
+                    # pfp = member.avatar_url
+                    # embed.set_thumbnail(url=pfp)
                     embed.set_footer(text='''BetterMe-Better everyday''')
 
                     await msg.edit(embed=embed)
@@ -304,8 +304,8 @@ async def on_voice_state_update(member, member_before, member_after):
                       description = member.name+", cảm ơn bạn đã rời phòng",
                       colour = discord.Colour.green()
                       )
-                  pfp = member.avatar_url
-                  embed.set_thumbnail(url=pfp)
+                  # pfp = member.avatar_url
+                  # embed.set_thumbnail(url=pfp)
                   embed.set_footer(text='''BetterMe-Better everyday''')
 
                   await msg.edit(embed=embed)                  

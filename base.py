@@ -14,9 +14,7 @@ import datetime
 guild_id = 880360143768924210
 class Bot(commands.Bot):
     def __init__(self):
-        intents = discord.Intents.all()
-        intents.message_content = True
-        super().__init__(command_prefix = ["m,","M,"], intents = intents)
+        super().__init__(command_prefix = ["m,","M,"], intents = discord.Intents.all())
 
     async def setup_hook(self):
         await self.tree.sync()
@@ -25,7 +23,6 @@ class Bot(commands.Bot):
     async def on_command_error(self, ctx, error):
         await ctx.reply(error, ephemeral = True)
 bot = Bot()
-
 
 @bot.listen()
 async def on_ready():

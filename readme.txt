@@ -42,6 +42,7 @@ Step 5: Run
 ####### File structure ? #######
 
 #### DOING
+- fix Dropdown
 - check bad words
 - check language in language channels
 - count study time

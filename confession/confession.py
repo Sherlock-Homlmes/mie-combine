@@ -1,5 +1,3 @@
-from discord_components import DiscordComponents, Select, SelectOption, Button, ButtonStyle
-import os
 import asyncio
 
 from base import (
@@ -7,14 +5,17 @@ from base import (
     discord,
     bot,
     tasks,
+    View, Select,
     get,
+    has_permissions, context,
     # var
     guild_id,
     admin_id,
     confession_channel_id,
     private_confession_channel_id,
     confession_dropdown_id,
-    confession_category_id)
+    confession_category_id
+)
 
 from feature_func.mongodb import open_database, write_database
 database_directory = "confession"
@@ -27,13 +28,31 @@ from .channel_name import channel_name
 async def on_ready():
     global guild, confession_channel, private_confession_channel
 
-    DiscordComponents(bot)
     guild = bot.get_guild(guild_id)
     confession_channel = get(bot.get_all_channels(), id=confession_channel_id)
     private_confession_channel = get(bot.get_all_channels(),
                                      id=private_confession_channel_id)
     print('5.Confession ready')
 
+class ConfessionOption(View):
+
+    @discord.ui.select(
+        placeholder="Lựa chọn",
+        options=[
+            discord.SelectOption(label= "Confession ẩn danh", value= 1, description= "Nơi bạn tâm sự những câu chuyện thầm kín"),
+            discord.SelectOption(label= "Confession công khai", value= 2, description= "Nơi bạn tâm sự những câu chuyện thầm kín"),
+        ]
+    )
+    async def select_callback(self, select, interaction):
+        print(1)
+        pass
+
+
+@bot.command(name="confession")
+@has_permissions(administrator=True)
+async def kick(ctx: context.Context):
+    view = ConfessionOption()
+    await ctx.send(view=view)
 
 ##### confession process
 async def set_confession(cc_channel, member, type: str):
@@ -191,8 +210,9 @@ async def _end_confess(ctx):
 
 @bot.listen()
 async def on_select_option(interaction):
-
+    print("confession call")
     if interaction.message.id == confession_dropdown_id:
+        
         await interaction.respond(type=6)
         db = open_database(database_directory)
         member = interaction.author

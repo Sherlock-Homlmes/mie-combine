@@ -61,7 +61,7 @@ async def on_ready():
 
   await fix_before_start()
 
-  print("cre_vc bot ready")
+  print("6.Create voice channel bot ready")
 
 
 @bot.listen()
@@ -362,7 +362,5 @@ async def fix_before_start():
         await cc_channel.delete()
         
     voice_channel.delete_vc(vc["vc_id"])
-
-  print("fix done")
 
   

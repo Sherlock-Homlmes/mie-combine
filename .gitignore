@@ -6,7 +6,15 @@ node_modules
 
 # Ignore files related to API keys
 .env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Ignore SASS config files
 .sass-cache.env
-env
+
+# Ignore cache file
+__pycache__/

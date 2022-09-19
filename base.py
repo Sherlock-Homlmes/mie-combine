@@ -4,7 +4,9 @@ from discord import (
     app_commands
 )
 from discord.ext import commands, tasks
+from discord.ext.commands import has_permissions, MissingPermissions, context
 from discord.utils import get
+from discord.ui import View, Select
 
 import datetime
 
@@ -14,7 +16,7 @@ class Bot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.all()
         intents.message_content = True
-        super().__init__(command_prefix = ["test,"], intents = intents)
+        super().__init__(command_prefix = ["m,","M,"], intents = intents)
 
     async def setup_hook(self):
         await self.tree.sync()

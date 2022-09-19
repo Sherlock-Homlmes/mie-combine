@@ -84,13 +84,12 @@ async def text_process(channel_id: int, mem_id: int):
             db = open_database(database_directory)
             if message.content not in ["", "m,end", "M,end"]:
                 db[str(message.author.id)]["content"] += message.content + ". "
-                write_database(db, database_directory)
             if message.attachments:
                 for attach in message.attachments:
                     image = save_image(attach.url)
                     db = open_database(database_directory)
                     db[str(message.author.id)]["files"].append(image)
-                    write_database(db, database_directory)
+            write_database(db, database_directory)
 
 
 async def send_files(file_list: list):
@@ -119,9 +118,7 @@ async def end_confession(channel_id: int):
             cc_channel = get(bot.get_all_channels(), id=channel_id)
             await cc_channel.delete()
             member = bot.get_user(int(mem_id))
-            await member.send(
-                "Nội dung confession của bạn rất ngắn nên sẽ không được gửi đi. Lưu ý nếu gửi confession khó hiểu, không có chủ đích sẽ bị mute ít nhất 3 ngày."
-            )
+            await member.send("Nội dung confession của bạn rất ngắn nên sẽ không được gửi đi. Lưu ý nếu gửi confession khó hiểu, không có chủ đích sẽ bị mute ít nhất 3 ngày.")
 
         elif db[str(channel_id)]["type"] == "private":
             await end_private_confession(channel_id, mem_id)
@@ -141,7 +138,7 @@ async def end_private_confession(channel_id: int, mem_id: str):
                           colour=discord.Colour.gold())
     files = await send_files(db[str(mem_id)]["files"])
     embed.set_footer(text='''BetterMe - Better everyday''')
-    await private_confession_channel.send(content=content,                                     embed=embed,                      files=files)
+    await private_confession_channel.send(content=content, embed=embed, files=files)
     embed.add_field(name="**Id**", value="||<@" + mem_id + ">||", inline=False)
     await confession_channel.send(content=content, embed=embed, files=files)
 
@@ -173,7 +170,7 @@ async def end_public_confession(channel_id: int, mem_id: str):
     await private_confession_channel.send(content=content,
                                         embed=embed,
                                         files=files)
-    await confession_channel.send(content=content, embed=embed,files=files)
+    await confession_channel.send(content=content, embed=embed, files=files)
 
     db = open_database(database_directory)
     db["confession_count"] = db["confession_count"] + 1

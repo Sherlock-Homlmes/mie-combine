@@ -4,7 +4,6 @@ from discord import (
     User,
     Embed,
     AllowedMentions,
-    InvalidArgument,
     Guild,
     NotFound,
     Member,
@@ -12,6 +11,8 @@ from discord import (
     MessageFlags,
     File,
 )
+def InvalidArgument():
+    pass
 from discord.state import ConnectionState
 from discord.abc import Messageable
 

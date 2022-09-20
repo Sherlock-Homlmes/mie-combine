@@ -29,27 +29,28 @@ async def on_interaction(interaction: Interaction):
             database_directory)["faq_interaction_id"]
         faqs = open_database("/faq/faq")
 
-    if interaction.message.id == faq_interaction_id and interaction.type == discord.InteractionType.component:
+    if interaction.message:
+        if interaction.message.id == faq_interaction_id and interaction.type == discord.InteractionType.component:
 
-        interact = interaction.data["values"][0]
-        if interact in faqs and interact != "none":
-            embed = discord.Embed(title=faqs[interact]["title"],
-                                  description=faqs[interact]["description"],
-                                  colour=discord.Colour.gold())
+            interact = interaction.data["values"][0]
+            if interact in faqs and interact != "none":
+                embed = discord.Embed(title=faqs[interact]["title"],
+                                    description=faqs[interact]["description"],
+                                    colour=discord.Colour.gold())
 
-            for field in faqs[interact]["fields"]:
-                embed.add_field(name=field[0], value=field[1], inline=False)
+                for field in faqs[interact]["fields"]:
+                    embed.add_field(name=field[0], value=field[1], inline=False)
 
-            embed.add_field(name="**Câu hỏi của**",
-                            value=f"||{interaction.user.mention}||",
-                            inline=False)
-            embed.set_image(url="https://i.ibb.co/Wvw2CY9/Betterme.png")
-            embed.set_footer(text='''BetterMe - Better everyday''')
+                embed.add_field(name="**Câu hỏi của**",
+                                value=f"||{interaction.user.mention}||",
+                                inline=False)
+                embed.set_image(url="https://i.ibb.co/Wvw2CY9/Betterme.png")
+                embed.set_footer(text='''BetterMe - Better everyday''')
 
-            msg = await interaction.channel.send(embed=embed)
-            await interaction.response.defer()
-            await asyncio.sleep(60)
-            await msg.delete()
+                msg = await interaction.channel.send(embed=embed)
+                await interaction.response.defer()
+                await asyncio.sleep(60)
+                await msg.delete()
 
 
 # @bot.command(name="faq")

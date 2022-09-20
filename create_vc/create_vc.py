@@ -74,6 +74,7 @@ async def on_voice_state_update(member, member_before, member_after):
 
 # thứ tự: mem out -> mem in -> cre
   if voice_channel_after != voice_channel_before:
+    print(all_created_vc_id)
 
   ##member out
     if voice_channel_before != None:
@@ -90,7 +91,7 @@ async def on_voice_state_update(member, member_before, member_after):
             await channel_del.delete()          
           channel_del = bot.get_channel(vc["cc_id"])
           if channel_del != None:
-            await channel_del.delete() 
+            await channel_del.delete()
           
           voice_channel.delete_vc(voice_channel_before.id)
           all_created_vc_id.remove(voice_channel_before.id)
@@ -355,12 +356,15 @@ async def fix_before_start():
         cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
         if cc_channel != None:
           await cc_channel.delete()
+
+        voice_channel.delete_vc(vc["vc_id"])
     
     else:
       cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
       if cc_channel != None:
         await cc_channel.delete()
+      voice_channel.delete_vc(vc["vc_id"])
         
-    voice_channel.delete_vc(vc["vc_id"])
+    
 
   

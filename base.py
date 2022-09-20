@@ -14,7 +14,12 @@ import datetime
 guild_id = 880360143768924210
 class Bot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix = ["m,","M,"], intents = discord.Intents.all())
+      # prefix = ["m,","M,"]
+      prefix = "test,"
+      super().__init__(command_prefix = prefix, intents = discord.Intents.all())
+    
+    async def on_ready(self):
+      print(f'We have logged in as {self.user} combine bot')
 
     async def setup_hook(self):
         await self.tree.sync()
@@ -23,12 +28,6 @@ class Bot(commands.Bot):
     async def on_command_error(self, ctx, error):
         await ctx.reply(error, ephemeral = True)
 bot = Bot()
-
-@bot.listen()
-async def on_ready():
-    #start
-    print('We have logged in as {0.user} combine bot'.format(bot))
-
 
 ####### VAR #######
 
@@ -58,6 +57,8 @@ color_roles = [
 khu_vui_choi = 923963988784590920
 # 3.3: bot resources
 bot_resource_channel_id = 1007151133439033374
+# 3.4: feedback
+feedback_channel_id = 1021693161720004618
 
 ### Part 4: Easter Egg
 easter_eggs_id = 1005365132546822184

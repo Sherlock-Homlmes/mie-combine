@@ -107,7 +107,7 @@ class Confession():
     async def text_process(self):
         channel = get(bot.get_all_channels(), id=self.cc_channel.id)
         messages = [message async for message in channel.history(limit=200)]
-        message.reverse()
+        messages.reverse()
         for message in messages:
             if message.author.id == self.member.id:
                 if message.content not in ["", "m,end", "M,end","/end_confession"]:

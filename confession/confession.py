@@ -80,7 +80,7 @@ class Confession():
             description=
             "Chúng mình luôn lắng nghe và chia sẻ mọi buồn vui cùng bạn",
             colour=discord.Colour.gold())
-        embed.set_thumbnail(url=self.member.avatar.url)
+        # embed.set_thumbnail(url=self.member.avatar.url)
         embed.add_field(
             name="**Chú ý**",
             value="Kênh sẽ biến mất sau 30 phút hoặc bạn gõ lệnh ``/end_confession`` ",
@@ -202,15 +202,16 @@ async def on_interaction(interaction: Interaction):
     if interaction.message:
         if interaction.message.id == confession_dropdown_id and interaction.type == discord.InteractionType.component:
             
-            db = open_database(database_directory)
             member = interaction.user
+            print(member)
+            db = open_database(database_directory)
             values = interaction.data["values"]
             await interaction.response.defer()
             
             if str(member.id) in db.keys():
                 await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
             elif "private-confession" in values or "public-confession" in values:
-                member = interaction.user
+                
                 cc_name = channel_name(member.name, "confession")
                 category = bot.get_channel(confession_category_id)
                 cc_channel = await category.create_text_channel(cc_name,reason=None)

@@ -12,6 +12,8 @@ if environment == "local":
 my_secret = os.environ.get('BOT_TOKEN')
 database_url = os.environ.get('database_url')
 
+status = os.environ.get('STATUS')
+
 if database:
 	from pymongo import MongoClient
 	cluster = MongoClient(database_url)

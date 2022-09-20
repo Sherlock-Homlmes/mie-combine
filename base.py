@@ -10,12 +10,13 @@ from discord.ui import View, Select
 
 import datetime
 
+from all_env import status
+
 ####### BOT #######
 guild_id = 880360143768924210
 class Bot(commands.Bot):
     def __init__(self):
-      # prefix = ["m,","M,"]
-      prefix = "test,"
+      prefix = ["m,","M,"]
       super().__init__(command_prefix = prefix, intents = discord.Intents.all())
     
     async def on_ready(self):
@@ -27,7 +28,25 @@ class Bot(commands.Bot):
 
     async def on_command_error(self, ctx, error):
         await ctx.reply(error, ephemeral = True)
-bot = Bot()
+
+class TestBot(commands.Bot):
+    def __init__(self):
+      prefix = "test,"
+      super().__init__(command_prefix = prefix, intents = discord.Intents.all())
+    
+    async def on_ready(self):
+      print(f'We have logged in as {self.user} combine bot')
+
+    async def setup_hook(self):
+        await self.tree.sync()
+        print(f"Synced slash commands for {self.user}.")
+
+if status == "test":
+  print("test bot")
+  bot = TestBot()
+else:
+  print("real bot")
+  bot = Bot()
 
 ####### VAR #######
 

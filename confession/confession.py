@@ -223,7 +223,6 @@ async def on_interaction(interaction: Interaction):
                 
                 confession = Confession(cc_channel=cc_channel, member= member, cfs_type=cfs_type)
                 await confession.set_confession()
-
                 await confession.end_confession()
 
 

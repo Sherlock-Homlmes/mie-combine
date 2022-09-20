@@ -1,23 +1,19 @@
 from base import (
   # necess
-  bot,tasks,get,
+  bot,tasks,get,app_commands,Interaction,
   # var
   color_roles
   )
 
 
-@bot.command(name="color")
-async def color(ctx,arg):
-  check = True
-  try:
-    color = int(arg)
-  except Exception as e:
-    check = False    
+@bot.tree.command(name="color", description="Đổi màu cho tên")
+@app_commands.describe(number="Số thứ tự của màu")
+async def limit(interaction: Interaction, number: int):  
 
-  if check == False or color > len(color_roles):
-    await ctx.send("Chọn sai số màu")
+  if number > len(color_roles):
+    await interaction.response.send_message("Chọn sai số màu")
   else:
-    user = ctx.author
+    user = interaction.user
     role_names = [role.name for role in user.roles]
     if "HOMIE" in role_names or "HỌC SINH TÍCH CỰC" in role_names:
         if "COLOR" in role_names:
@@ -26,20 +22,20 @@ async def color(ctx,arg):
           color_old = get(user.guild.roles, id=role_ids[pos])
           await user.remove_roles(color_old)
           
-        color_new = get(user.guild.roles, id=color_roles[color-1])
+        color_new = get(user.guild.roles, id=color_roles[number-1])
         await user.add_roles(color_new)
-        await ctx.channel.send(f"Bạn đã đổi sang màu **{color}** thành công")
+        await interaction.response.send_message(f"Bạn đã đổi sang màu **{number}** thành công")
 
     else: 
-      await ctx.channel.send("Bạn chưa có role HOMIE hoặc HSTC để đổi màu")
+      await interaction.response.send_message("Bạn chưa có role HOMIE hoặc HSTC để đổi màu")
 
-@bot.command(name="rmcolor")
-async def color(ctx):
-  user = ctx.author
+@bot.tree.command(name="rmcolor", description="Loại bỏ mảu khỏi tên")
+async def color(interaction: Interaction):
+  user = interaction.user
   role_names = [role.name for role in user.roles]
   if "COLOR" in role_names:
     pos = role_names.index("COLOR")
     role_ids = [role.id for role in user.roles]
     color_old = get(user.guild.roles, id=role_ids[pos])
     await user.remove_roles(color_old)
-  await ctx.channel.send("Bạn đã bỏ role màu")
+  await interaction.response.send_message("Bạn đã bỏ role màu")

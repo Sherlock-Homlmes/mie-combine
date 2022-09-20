@@ -1,4 +1,3 @@
-from discord_components import DiscordComponents, Select, SelectOption, Button, ButtonStyle
 import os
 import asyncio
 

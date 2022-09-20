@@ -44,7 +44,6 @@ class ConfessionOption(View):
         ]
     )
     async def select_callback(self, select, interaction):
-        print(1)
         pass
 
 
@@ -83,7 +82,6 @@ async def set_confession(cc_channel, member, type: str):
 
     await asyncio.sleep(1780)
     # await asyncio.sleep(20)
-    print(cc_channel)
     if cc_channel:
         await cc_channel.send(
             member.mention +
@@ -98,7 +96,6 @@ async def text_process(channel_id: int, mem_id: int):
     channel = get(bot.get_all_channels(), id=channel_id)
     messages = [message async for message in channel.history(limit=200)]
     for message in messages:
-        print(message.author.id, mem_id)
         if message.author.id == mem_id:
             db = open_database(database_directory)
             if message.content not in ["", "m,end", "M,end"]:
@@ -128,10 +125,8 @@ async def end_confession(channel_id: int):
     if str(channel_id) in db.keys():
         mem_id = db[str(channel_id)]["user_id"]
         await text_process(channel_id, mem_id)
-        print("done text process")
         mem_id = str(mem_id)
         db = open_database(database_directory)
-        print(db)
         if len(db[mem_id]["content"]) < 50 and db[mem_id]["files"] == []:
             del db[mem_id]
             del db[str(channel_id)]

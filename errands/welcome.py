@@ -20,7 +20,7 @@ async def on_member_join(member):
 
     welcome_channel = get(member.guild.channels, id=894594032947310602)
 
-    pfp = member.avatar_url
+    pfp = member.avatar.url
     field1="Hãy đọc kĩ luật ở <#880369537449619476> nha"
     field2="Nếu bạn chưa biết cách dùng Discord thì ở <#915949063403347968> có đó"
     field3="Hãy vào <#891909866355048548> để nhận role tương ứng nha"

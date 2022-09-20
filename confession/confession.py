@@ -149,7 +149,6 @@ class Confession():
                 message = "Cảm ơn bạn đã chia sẻ cùng chúng mình"
                 
             await self.cc_channel.delete()
-            db = open_database(database_directory)
             del db[str(channel_id)]
             write_database(db, database_directory)
             await self.member.send(message)

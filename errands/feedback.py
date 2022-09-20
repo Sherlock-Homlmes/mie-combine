@@ -1,5 +1,3 @@
-from dis import dis
-from turtle import title
 from base import (
     #neccess
     discord, bot, get, Interaction, app_commands,

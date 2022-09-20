@@ -32,35 +32,36 @@ async def on_interaction(interaction: Interaction):
             database_directory)["study_club_interaction_id"]
         study_clubs = open_database("/study_club/study_club")
 
-    if interaction.message.id == study_club_interaction_id and interaction.type == discord.InteractionType.component:
-        values = interaction.data["values"]
+    if interaction.message:
+        if interaction.message.id == study_club_interaction_id and interaction.type == discord.InteractionType.component:
+            values = interaction.data["values"]
 
-        if "none" in values:
-            for key, value in study_clubs.items():
-                if key != "none":
-                    category = bot.get_channel(value["category_id"])
-                    writing_channel = bot.get_channel(value["writing_channel"])
+            if "none" in values:
+                for key, value in study_clubs.items():
+                    if key != "none":
+                        category = bot.get_channel(value["category_id"])
+                        writing_channel = bot.get_channel(value["writing_channel"])
+                        await category.set_permissions(interaction.user,
+                                                    overwrite=None)
+                        await writing_channel.set_permissions(interaction.user,
+                                                            overwrite=None)
+                        await interaction.user.send(
+                            f"Bạn đã rời tất cả các Languages Club")
+            else:
+                for interact in values:
+                    category = bot.get_channel(
+                        study_clubs[interact]["category_id"])
+                    writing_channel = bot.get_channel(
+                        study_clubs[interact]["writing_channel"])
                     await category.set_permissions(interaction.user,
-                                                   overwrite=None)
+                                                read_messages=True)
                     await writing_channel.set_permissions(interaction.user,
-                                                          overwrite=None)
-                    await interaction.user.send(
-                        f"Bạn đã rời tất cả các Languages Club")
-        else:
-            for interact in values:
-                category = bot.get_channel(
-                    study_clubs[interact]["category_id"])
-                writing_channel = bot.get_channel(
-                    study_clubs[interact]["writing_channel"])
-                await category.set_permissions(interaction.user,
-                                               read_messages=True)
-                await writing_channel.set_permissions(interaction.user,
-                                                      read_messages=True,
-                                                      send_messages=False)
+                                                        read_messages=True,
+                                                        send_messages=False)
 
-                club = study_clubs[interact]["title"]
-                await interaction.response.defer()
-                await interaction.user.send(f"Chào mừng bạn đến với { club }")
+                    club = study_clubs[interact]["title"]
+                    await interaction.response.defer()
+                    await interaction.user.send(f"Chào mừng bạn đến với { club }")
 
 
 # @bot.command(name="study_club")

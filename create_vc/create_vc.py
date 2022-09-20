@@ -74,7 +74,6 @@ async def on_voice_state_update(member, member_before, member_after):
 
 # thứ tự: mem out -> mem in -> cre
   if voice_channel_after != voice_channel_before:
-    print(all_created_vc_id)
 
   ##member out
     if voice_channel_before != None:

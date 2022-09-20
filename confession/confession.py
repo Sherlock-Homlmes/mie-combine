@@ -7,7 +7,7 @@ from base import (
     tasks,
     View, Select,
     get,
-    has_permissions, context,
+    has_permissions, context, Interaction,
     # var
     guild_id,
     admin_id,
@@ -69,7 +69,7 @@ async def set_confession(cc_channel, member, type: str):
         description=
         "Chúng mình luôn lắng nghe và chia sẻ mọi buồn vui cùng bạn",
         colour=discord.Colour.gold())
-    embed.set_thumbnail(url=member.avatar_url)
+    embed.set_thumbnail(url=member.avatar.url)
     embed.add_field(
         name="**Chú ý**",
         value="Kênh sẽ biến mất sau 30 phút hoặc bạn gõ lệnh ``m,end`` ",
@@ -96,9 +96,9 @@ async def set_confession(cc_channel, member, type: str):
 async def text_process(channel_id: int, mem_id: int):
     #test
     channel = get(bot.get_all_channels(), id=channel_id)
-    messages = await channel.history(limit=200).flatten()
-    messages.reverse()
+    messages = [message async for message in channel.history(limit=200)]
     for message in messages:
+        print(message.author.id, mem_id)
         if message.author.id == mem_id:
             db = open_database(database_directory)
             if message.content not in ["", "m,end", "M,end"]:
@@ -128,8 +128,10 @@ async def end_confession(channel_id: int):
     if str(channel_id) in db.keys():
         mem_id = db[str(channel_id)]["user_id"]
         await text_process(channel_id, mem_id)
+        print("done text process")
         mem_id = str(mem_id)
         db = open_database(database_directory)
+        print(db)
         if len(db[mem_id]["content"]) < 50 and db[mem_id]["files"] == []:
             del db[mem_id]
             del db[str(channel_id)]
@@ -203,34 +205,34 @@ async def end_public_confession(channel_id: int, mem_id: str):
 
 
 # thực hiện lệnh
-@bot.command(name="end")
-async def _end_confess(ctx):
-    await end_confession(ctx.message.channel.id)
+@bot.tree.command(name="end_confession", description="Kết thúc confession")
+async def end(interaction: Interaction):
+    await interaction.response.defer()
+    await end_confession(interaction.channel.id)
 
 
 @bot.listen()
-async def on_select_option(interaction):
-    print("confession call")
-    if interaction.message.id == confession_dropdown_id:
+async def on_interaction(interaction: Interaction):
+    if interaction.message.id == confession_dropdown_id and interaction.type == discord.InteractionType.component:
         
-        await interaction.respond(type=6)
         db = open_database(database_directory)
-        member = interaction.author
+        member = interaction.user
+        values = interaction.data["values"]
+        await interaction.response.defer()
         if str(member.id) in db.keys():
             await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
-        elif "private-confession" in interaction.values or "public-confession" in interaction.values:
+        elif "private-confession" in values or "public-confession" in values:
             db[str(member.id)] = {"content": "", "files": []}
-            member = interaction.author
+            member = interaction.user
             cc_name = channel_name(member.name, "confession")
             category = bot.get_channel(confession_category_id)
-            cc_channel = await category.create_text_channel(cc_name,
-                                                            overwrites=None,
-                                                            reason=None)
+            cc_channel = await category.create_text_channel(cc_name,reason=None)
+
             #confession
             write_database(db, database_directory)
-            if "private-confession" in interaction.values:
+            if "private-confession" in values:
                 await set_confession(cc_channel, member, "private")
-            elif "public-confession" in interaction.values:
+            elif "public-confession" in values:
                 await set_confession(cc_channel, member, "public")
 
             db = open_database(database_directory)

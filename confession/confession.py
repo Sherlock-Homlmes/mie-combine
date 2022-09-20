@@ -72,7 +72,7 @@ async def set_confession(cc_channel, member, type: str):
     embed.set_thumbnail(url=member.avatar.url)
     embed.add_field(
         name="**Chú ý**",
-        value="Kênh sẽ biến mất sau 30 phút hoặc bạn gõ lệnh ``m,end`` ",
+        value="Kênh sẽ biến mất sau 30 phút hoặc bạn gõ lệnh ``/end_confession`` ",
         inline=False)
     embed.set_footer(text='''BetterMe - Better everyday''')
 
@@ -186,7 +186,7 @@ async def end_public_confession(channel_id: int, mem_id: str):
                           description=db[str(mem_id)]["content"],
                           colour=discord.Colour.gold())
     embed.add_field(name="**Id**", value="||<@" + mem_id + ">||", inline=False)
-    embed.set_thumbnail(url=member.avatar_url)
+    embed.set_thumbnail(url=member.avatar.url)
     embed.set_footer(text='''BetterMe - Better everyday''')
     await private_confession_channel.send(content=content,
                                         embed=embed,

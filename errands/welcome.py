@@ -61,7 +61,7 @@ Mục tiêu trong tương lai
 ...
 ||**Trên 120 từ nhé :3**||
 '''
-    embed.set_thumbnail(url=message.author.avatar_url)
+    embed.set_thumbnail(url=message.author.avatar.url)
     embed.add_field(name="**Một mẫu giới thiệu cơ bản**",value=coban,inline=False)
     await message.author.send(embed = embed)
 

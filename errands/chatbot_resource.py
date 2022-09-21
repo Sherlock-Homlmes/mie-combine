@@ -20,7 +20,7 @@ async def on_message(message: discord.Message):
     data = (message.author.id, message.content)
     ai_chatbot_data.append(data)
 
-    if len(ai_chatbot_data) >= 5:
+    if len(ai_chatbot_data) >= 1000:
       create_data(ai_chatbot_data)
       await update_homie(ai_chatbot_data)
 

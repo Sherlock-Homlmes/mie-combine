@@ -37,10 +37,6 @@ class TestBot(commands.Bot):
     async def on_ready(self):
       print(f'We have logged in as {self.user} combine bot')
 
-    async def setup_hook(self):
-        await self.tree.sync()
-        print(f"Synced slash commands for {self.user}.")
-
 if status == "test":
   print("test bot")
   bot = TestBot()

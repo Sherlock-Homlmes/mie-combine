@@ -10,6 +10,7 @@ welcome_member = []
 
 @bot.listen()
 async def on_member_join(member):
+  global welcome_member
   
   if member.id not in welcome_member:
     embed= discord.Embed(
@@ -34,9 +35,10 @@ async def on_member_join(member):
     embed.add_field(name="**Set role**",value=field3,inline=False)
     
     msg = await welcome_channel.send(content=member.mention,embed=embed)
-    welcome_channel.append(msg.id)
-    await asyncio.sleep(660)
+    welcome_member.append(member.id)
+    await asyncio.sleep(600)
     await msg.delete()
+    welcome_member.remove(member.id)
 
 @bot.listen()
 async def on_message(message):

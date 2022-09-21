@@ -1,3 +1,4 @@
+from re import M
 from base import (
     # necess
     bot,
@@ -8,13 +9,9 @@ from base import (
     homie_id,
     easter_eggs_id)
 
-from feature_func.stable_json import open_database, write_database, fix_database
-
-mess_count_directory = "/homie/homie"
-fix_database(mess_count_directory)
+from feature_func.mongodb.homie import homie_data, update_data
 
 homie_list = []
-
 
 @bot.listen()
 async def on_ready():
@@ -27,31 +24,34 @@ async def on_ready():
             homie_list.append(homie.id)
 
 
-@bot.listen()
-async def on_message(message):
-    global homie_list
+async def update_homie(data: list):
+    global guild
+    print(homie_data)
 
-    if message.author.id not in homie_list and message.author.bot == False:
-        db = open_database(mess_count_directory)
+    for d in data:
+        member_id = d[0]
+        if member_id not in homie_list:
+            member_id = str(member_id)
+            if member_id not in homie_data.keys():
+                homie_data[member_id] = 0
+            else:
+                homie_data[member_id] += 1
 
-        if str(message.author.id) in db.keys():
-            db[str(message.author.id)] += 1
-            if db[str(message.author.id)] >= 5000:
-                guild = bot.get_guild(guild_id)
+            if homie_data[member_id] >= 5000:
                 easter_eggs_role = get(guild.roles, id=easter_eggs_id)
                 homie_role = get(guild.roles, id=homie_id)
 
-                user = guild.get_member(message.author.id)
+                user = guild.get_member(int(member_id))
                 await user.add_roles(easter_eggs_role)
                 await user.add_roles(homie_role)
-                await message.channel.send(
-                    message.author.mention +
-                    "**Chúc mừng bạn đã có Easter Egg: Homie**")
+                homie_list.append(int(member_id))
+                del homie_data[member_id]
 
-                homie_list.append(message.author.id)
-                del db[str(message.author.id)]
+                try:
+                    await user.send(user.mention +"**Chúc mừng bạn đã có Easter Egg: Homie**")
+                except Exception as e:
+                    print(e)
 
-        else:
-            db[str(message.author.id)] = 1
+    print(homie_data)
+    update_data(homie_data)
 
-        write_database(db, mess_count_directory)

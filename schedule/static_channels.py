@@ -16,7 +16,7 @@ from math import trunc
 
 @tasks.loop(minutes=6)
 async def static_channels():
-  # await bot.wait_until_ready()
+  await bot.wait_until_ready()
 
   # count down
   cap3_channel = await bot.fetch_channel(cap3_channel_id)

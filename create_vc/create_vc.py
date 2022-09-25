@@ -4,7 +4,7 @@ from base import (
     Interaction, app_commands,
     get,
     # var
-    guild_id,muted_id,
+    guild_id, muted_role_id,
     channel_cre, 
 )
 
@@ -168,7 +168,7 @@ async def on_voice_state_update(member, member_before, member_after):
             await cc_channel.set_permissions(bot_role, overwrite=overwrite)
             await vc_channel.set_permissions(bot_role, overwrite=overwrite)
             #muted
-            muted_role = get(member.guild.roles, id=muted_id)
+            muted_role = get(member.guild.roles, id=muted_role_id)
             overwrite.send_messages=False
             await cc_channel.set_permissions(muted_role, overwrite=overwrite)
 

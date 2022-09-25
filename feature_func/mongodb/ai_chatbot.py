@@ -21,3 +21,5 @@ def create_data(value: list):
     data["time"] = pst_now
     data["value"] = value
     dtb.insert_one(data)
+
+    return number_docs

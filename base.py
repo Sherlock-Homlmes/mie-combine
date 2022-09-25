@@ -4,7 +4,7 @@ from discord import (
     app_commands
 )
 from discord.ext import commands, tasks
-from discord.ext.commands import has_permissions, MissingPermissions, context
+from discord.ext.commands import has_permissions, has_role, MissingPermissions, context
 from discord.utils import get
 from discord.ui import View, Select
 
@@ -13,7 +13,6 @@ import datetime
 from all_env import status
 
 ####### BOT #######
-guild_id = 880360143768924210
 class Bot(commands.Bot):
     def __init__(self):
       prefix = ["m,","M,"]
@@ -49,7 +48,8 @@ else:
 ### Started: Discord
 guild_id = 880360143768924210
 admin_id = [880359404036317215, 278423331026501633]
-muted_id = 890553937445408839
+admin_role_id = 890244740174467082
+muted_role_id = 890553937445408839
 ### Part 1: SCHEDULE
 # 1.1:static_channels
 thpt_channel_id = 894578663893389403
@@ -59,6 +59,11 @@ cap3day = datetime.datetime(2023, 6, 6)
 total_mem_channel_id = 933534750386307102
 online_mem_channel_id = 933534913347584081
 study_count_channel_id = 925813858105430046
+
+
+### Part 2: Security 
+# 2.1: Bad words
+diary_channel_id = 882702489902780416
 
 ### Part 3: ERRANDS
 # 3.1: color

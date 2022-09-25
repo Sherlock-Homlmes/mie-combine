@@ -21,13 +21,13 @@ async def on_message(message: discord.Message):
     ai_chatbot_data.append(data)
 
     if len(ai_chatbot_data) >= 1000:
-      create_data(ai_chatbot_data)
+      number_docs = create_data(ai_chatbot_data)
       await update_homie(ai_chatbot_data)
 
       channel = get(bot.get_all_channels(), id=bot_resource_channel_id)
-      with open('data.json', 'w', encoding='utf-8') as f1:
+      with open(f'data_{number_docs}.json', 'w', encoding='utf-8') as f1:
         json.dump(ai_chatbot_data, f1, ensure_ascii=False, indent=4)
-      with open('data.json', 'rb') as f2:
+      with open(f'data_{number_docs}.json', 'rb') as f2:
         await channel.send(file=discord.File(f2))
 
       ai_chatbot_data = None

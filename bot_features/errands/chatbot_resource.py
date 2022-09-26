@@ -8,7 +8,7 @@ from base import (
 import json
 
 from feature_func.mongodb.ai_chatbot import create_data
-from easter_eggs.homie import update_homie
+from bot_features.easter_eggs.homie import update_homie
 
 ai_chatbot_data = []
 

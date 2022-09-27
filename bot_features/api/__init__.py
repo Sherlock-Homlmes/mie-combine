@@ -1,13 +1,9 @@
+import imp
+from base import bot
+from .app import app
+
 import uvicorn
-from fastapi import FastAPI
 from threading import Thread
-
-app = FastAPI(docs_url="/all-api", redoc_url=None)
-
-
-@app.get("/")
-async def home():
-    return "Hello. I'm alive"
 
 
 def run_web():
@@ -18,3 +14,8 @@ def run_web():
 def keep_alive():
     t = Thread(target=run_web)
     t.start()
+
+@bot.listen()
+async def on_ready():
+    keep_alive()
+    print('8.API ready')

@@ -31,6 +31,8 @@ Part 8: API || not
 
 Part 9: AI Chatbot
 
+Part 10: Manage staff
+
 
 ####### How can i use bot ? #######
 Step 1: Set up .env file

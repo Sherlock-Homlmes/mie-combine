@@ -25,6 +25,7 @@ space_bad_words = []
 def check_bad_words(content: str) -> bool:
     global exact_bad_words, included_bad_words
 
+    content = content.lower()
     content_words = content.split(" ")
 
     for word in content_words:

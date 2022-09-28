@@ -15,7 +15,8 @@ from all_env import status
 ####### BOT #######
 class Bot(commands.Bot):
     def __init__(self):
-      prefix = ["m,","M,"]
+      # prefix = ["m,","M,"]
+      prefix = "test,"
       super().__init__(command_prefix = prefix, intents = discord.Intents.all())
     
     async def on_ready(self):

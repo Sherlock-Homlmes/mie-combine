@@ -35,7 +35,7 @@ def check_bad_words(content: str) -> bool:
             return False
 
         # check included
-        if word.startswith("http") and word.startswith(":"):
+        if word.startswith("http") or word.startswith(":"):
             pass
         else:
             for bad_word in included_bad_words:

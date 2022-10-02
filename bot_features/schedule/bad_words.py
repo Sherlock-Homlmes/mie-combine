@@ -15,14 +15,13 @@ async def unmute_badword():
     bad_user = open_database("bad_words")
 
     free_people = []
+    now = discord.utils.utcnow().replace(tzinfo=None)
+
     for user_id, value in bad_user.items():
         for bad_word in value['bad_word_list']:
             time_stamp = bad_word[0]
-            now = discord.utils.utcnow().replace(tzinfo=None)
             
             delta_time = now - time_stamp
-            print(delta_time)
-            print(delta_time.days)
             if delta_time.days >= 30:
                 bad_user[user_id]['bad_word_list'].remove(bad_word)
         if len(bad_user[user_id]['bad_word_list']) == 0:

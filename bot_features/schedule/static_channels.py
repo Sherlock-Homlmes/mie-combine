@@ -14,8 +14,13 @@ from datetime import timedelta
 import pytz
 from math import trunc
 
+total_member = 10000
+online_member = 1000
+
 @tasks.loop(minutes=6)
 async def static_channels():
+  global online_member, total_member
+
   await bot.wait_until_ready()
 
   # count down
@@ -49,9 +54,16 @@ async def static_channels():
   total_voice_member = 0
   for channel in voice_channel_list:
     total_voice_member += len(channel.members)
+  total_member = guild.member_count
 
-  await total_mem_channel.edit(name = f"Thành viên: {guild.member_count} người")
+  print(online_member, total_member)
+
+  await total_mem_channel.edit(name = f"Thành viên: {total_member} người")
   await online_mem_channel.edit(name = f"Online: {online_member} người")
   await study_count_channel.edit(name = f"Đang học: {total_voice_member} người")
   print("done")
 
+def member_info():
+  global total_member, online_member
+
+  return (total_member, online_member)

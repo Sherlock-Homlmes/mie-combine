@@ -56,8 +56,6 @@ async def static_channels():
     total_voice_member += len(channel.members)
   total_member = guild.member_count
 
-  print(online_member, total_member)
-
   await total_mem_channel.edit(name = f"Thành viên: {total_member} người")
   await online_mem_channel.edit(name = f"Online: {online_member} người")
   await study_count_channel.edit(name = f"Đang học: {total_voice_member} người")

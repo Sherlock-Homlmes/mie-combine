@@ -1,4 +1,3 @@
-import imp
 from base import (
   # necess
   bot, tasks, get, discord
@@ -15,10 +14,11 @@ async def unmute_badword():
     bad_user = open_database("bad_words")
 
     free_people = []
+    now = discord.utils.utcnow().replace(tzinfo=None)
+
     for user_id, value in bad_user.items():
         for bad_word in value['bad_word_list']:
             time_stamp = bad_word[0]
-            now = discord.utils.utcnow().replace(tzinfo=None)
             
             delta_time = now - time_stamp
             if delta_time.days >= 30:
@@ -30,4 +30,4 @@ async def unmute_badword():
         del bad_user[user_id]
 
     write_database(bad_user, "bad_words")  
-        
+  

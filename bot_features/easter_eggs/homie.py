@@ -26,7 +26,6 @@ async def on_ready():
 
 async def update_homie(data: list):
     global guild
-    print(homie_data)
 
     for d in data:
         member_id = d[0]

@@ -78,6 +78,7 @@ async def server_info():
     data = {
         "total_member": mem[0],
         "online_member": mem[1],
+        "study_hour": 1
     }
 
     return JSONResponse(data)

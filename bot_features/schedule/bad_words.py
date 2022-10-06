@@ -1,4 +1,3 @@
-import imp
 from base import (
   # necess
   bot, tasks, get, discord
@@ -31,4 +30,4 @@ async def unmute_badword():
         del bad_user[user_id]
 
     write_database(bad_user, "bad_words")  
-        
+  

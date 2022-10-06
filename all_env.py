@@ -1,14 +1,9 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
-# environment = "replit"
-environment = "heroku"
 database = True
-
-###
-if environment != "replit":
-	from dotenv import load_dotenv
-	load_dotenv()
-
+environment = os.environ.get('environment')
 my_secret = os.environ.get('BOT_TOKEN')
 database_url = os.environ.get('database_url')
 

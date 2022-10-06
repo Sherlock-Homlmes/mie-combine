@@ -1,11 +1,11 @@
 import os
 
 # environment = "replit"
-environment = "local"
+environment = "heroku"
 database = True
 
 ###
-if environment == "local":
+if environment != "replit":
 	from dotenv import load_dotenv
 	load_dotenv()
 

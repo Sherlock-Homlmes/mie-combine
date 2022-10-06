@@ -11,16 +11,18 @@ from feature_func.mongodb.ai_chatbot import create_data
 from bot_features.easter_eggs.homie import update_homie
 
 ai_chatbot_data = []
+can_insert = True
 
 @bot.listen()
 async def on_message(message: discord.Message):
   global ai_chatbot_data
 
-  if message.author.bot == False and message.content != "":
+  if message.author.bot == False and message.content != "" and can_insert == True:
     data = (message.author.id, message.content)
     ai_chatbot_data.append(data)
 
     if len(ai_chatbot_data) >= 1000:
+      can_insert = False
       number_docs = create_data(ai_chatbot_data)
       await update_homie(ai_chatbot_data)
 
@@ -32,3 +34,5 @@ async def on_message(message: discord.Message):
 
       ai_chatbot_data = None
       ai_chatbot_data =[]
+
+      can_insert = True

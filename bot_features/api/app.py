@@ -1,4 +1,3 @@
-
 # web
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -12,6 +11,7 @@ from base import (
     #var
     guild_id
 )
+from bot_features.schedule.static_channels import member_info
 
 # var
 gender_dict = {
@@ -71,3 +71,14 @@ async def member(member_id: int):
         return JSONResponse(member_info)
 
     return JSONResponse({"message": "Member not found"})
+
+@app.get("/server-info")
+async def server_info():
+    mem = member_info()
+    data = {
+        "total_member": mem[0],
+        "online_member": mem[1],
+        "study_hour": 1
+    }
+
+    return JSONResponse(data)

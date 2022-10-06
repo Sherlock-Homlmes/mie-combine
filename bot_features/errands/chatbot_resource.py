@@ -15,7 +15,7 @@ can_insert = True
 
 @bot.listen()
 async def on_message(message: discord.Message):
-  global ai_chatbot_data
+  global ai_chatbot_data, can_insert
 
   if message.author.bot == False and message.content != "" and can_insert == True:
     data = (message.author.id, message.content)

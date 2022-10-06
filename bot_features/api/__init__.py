@@ -1,4 +1,3 @@
-import imp
 from base import bot
 from .app import app
 
@@ -7,7 +6,6 @@ from threading import Thread
 
 
 def run_web():
-    print("Run web")
     uvicorn.run(app, host="0.0.0.0", port=8080)
 
 

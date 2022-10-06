@@ -1,9 +1,18 @@
 # web
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(docs_url="/all-api", redoc_url=None)
 
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # bot
 from base import (
     #neccess
@@ -74,6 +83,7 @@ async def member(member_id: int):
 
 @app.get("/server-info")
 async def server_info():
+
     mem = member_info()
     data = {
         "total_member": mem[0],

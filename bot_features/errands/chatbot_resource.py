@@ -6,6 +6,7 @@ from base import (
 )
 
 import json
+import os
 
 from feature_func.mongodb.ai_chatbot import create_data
 from bot_features.easter_eggs.homie import update_homie
@@ -31,6 +32,8 @@ async def on_message(message: discord.Message):
         json.dump(ai_chatbot_data, f1, ensure_ascii=False, indent=4)
       with open(f'data_{number_docs}.json', 'rb') as f2:
         await channel.send(file=discord.File(f2))
+
+      os.remove(f'data_{number_docs}.json')
 
       ai_chatbot_data = None
       ai_chatbot_data =[]

@@ -1,50 +1,40 @@
 ####### What can this bot do ? #######
 
 Part 1: Schedule
-- Schedule change the countdown channels | DONE
+- Schedule change the countdown channels
 - Schedule study remind | X
+- Schedule unmute member
 
 Part 2: Security
 - Check introduce content
-- Check language in language channels || not
-- Check the user camera on or off | DONE
-- Check bad words(match && included) || not
+- Check language in language channels | X
+- Check the user camera on or off
+- Check bad words
 
 Part 3: Errands
-- Say hello to user join server | DONE
-- Change user color, remove color | DONE
-- Dropdown FAQ | DONE
-- Game center: Add role to user | DONE
+- Say hello to user join server
+- Change user color, remove color
+- Dropdown FAQ
+- Game center: Add role to user
+- Study club
+- Save message for AI chatbot resource
+- Feedback using modal
 
 Part 4: Easter egg
 - HOMIE || 5000 mess count || Limit: none
 - Doi mat ke si tinh || Reaction post || Limit:10
 
-Part 5: Confession | DONE
+Part 5: Confession
 
-Part 6: Create voice channel | DONE
+Part 6: Create voice channel
 
-Part 7: Count Study Time
+Part 7: Count Study Time | ready for combine
 
-Part 8: API || not
+Part 8: API
 - FASTAPI included
+- API check member information
+- API check server information
 
-Part 9: AI Chatbot
+Part 9: AI Chatbot | X
 
-Part 10: Manage staff
-
-
-####### How can i use bot ? #######
-Step 1: Set up .env file
-Step 2: Install requirements: "pip3 install -r requirements.txt"
-Step 3: Setup value to channel in 'base.py'
-Step 4: Change environment to 'local' or 'replit'
-Step 5: Run
-
-####### File structure ? #######
-
-#### DOING
-- fix Dropdown
-- check bad words
-- check language in language channels
-- count study time
+Part 10: Manage staff | X

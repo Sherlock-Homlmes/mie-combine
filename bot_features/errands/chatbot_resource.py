@@ -1,6 +1,6 @@
 from base import (
   # necess
-  bot,tasks,get,discord,
+  bot,get,discord,
   #var
   bot_resource_channel_id
 )
@@ -33,9 +33,9 @@ async def on_message(message: discord.Message):
       with open(f'data_{number_docs}.json', 'rb') as f2:
         await channel.send(file=discord.File(f2))
 
-      os.remove(f'data_{number_docs}.json')
-
       ai_chatbot_data = None
       ai_chatbot_data =[]
 
       can_insert = True
+
+      os.remove(f'data_{number_docs}.json')

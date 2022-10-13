@@ -53,11 +53,9 @@ def check_bad_words(content: str) -> bool:
 
     
     # check space bad word
-    print(content_words, tempo_content)
     for tempo in tempo_content:
         content_words.remove(tempo)
 
-    print(content_words)
     content = "".join(content_words)
 
     for seper in seperate:

@@ -1,11 +1,12 @@
 from base import (
   # necess
-  bot,tasks,get,discord,
+  bot,get,discord,
   #var
   bot_resource_channel_id
 )
 
 import json
+import os
 
 from feature_func.mongodb.ai_chatbot import create_data
 from bot_features.easter_eggs.homie import update_homie
@@ -36,3 +37,5 @@ async def on_message(message: discord.Message):
       ai_chatbot_data =[]
 
       can_insert = True
+
+      os.remove(f'data_{number_docs}.json')

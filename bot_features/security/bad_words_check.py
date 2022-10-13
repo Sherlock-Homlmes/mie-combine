@@ -1,12 +1,12 @@
 from base import (
   # necess
-  discord, bot, tasks, 
+  discord, bot,
   get, has_role, Interaction, app_commands,
   # var
   diary_channel_id, admin_role_id
 )
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Optional, Union
 
 from feature_func.mongodb import open_database, write_database
@@ -20,13 +20,21 @@ included_bad_words = [
 'pussy', 'blowjob', 'titjob', 'wtf', 'fuck', 'fuk',
 ]
 
-space_bad_words = []
+space_bad_words = [
+'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đm', 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'cđm', 'vkl', 'vklm', 'đcm', 'dcm'
+'pussy', 'blowjob', 'titjob', 'wtf', 'fuck', 'fuk',
+]
+
+seperate = [
+    '-', ' ',
+]
 
 def check_bad_words(content: str) -> bool:
     global exact_bad_words, included_bad_words
 
     content = content.lower()
     content_words = content.split(" ")
+    tempo_content = []
 
     for word in content_words:
 
@@ -36,11 +44,30 @@ def check_bad_words(content: str) -> bool:
 
         # check included
         if word.startswith("http") or word.startswith(":"):
+            tempo_content.append(word)
             pass
         else:
             for bad_word in included_bad_words:
                 if bad_word in word:
                     return False
+
+    
+    # check space bad word
+    print(content_words, tempo_content)
+    for tempo in tempo_content:
+        content_words.remove(tempo)
+
+    print(content_words)
+    content = "".join(content_words)
+
+    for seper in seperate:
+        content = content.replace(seper,"")
+
+    for word in space_bad_words:
+        if word in content:
+            return False
+
+    
     
     return True
 

@@ -21,7 +21,7 @@ included_bad_words = [
 ]
 
 space_bad_words = [
-'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đm', 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'cđm', 'vkl', 'vklm', 'đcm', 'dcm'
+'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đm', 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'vkl', 'vklm', 'dcm'
 'pussy', 'blowjob', 'titjob', 'wtf', 'fuck', 'fuk',
 ]
 

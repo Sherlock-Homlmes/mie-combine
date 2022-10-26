@@ -12,17 +12,17 @@ from typing import Optional, Union
 from feature_func.mongodb import open_database, write_database
 
 exact_bad_words = [
-'lồn', 'conmemay', 'đĩ', 'cứt', 'cức', 'đụ', 'cuming', 'cock', 'đù', 'vl', 'lìn', 'mf', 'cmn'
+'lồn', 'conmemay', 'đĩ', 'cứt', 'cức', 'đụ', 'cuming', 'cock', 'đù', 'vl', 'lìn', 'cmn'
 ]
 
 included_bad_words = [
-'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đm', 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'cđm', 'vkl', 'vklm', 'vcc', 'vcđ', 'vcd',  'đcm', 'dcm'
-'pussy', 'blowjob', 'titjob', 'wtf', 'fuck', 'fuk',
+'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đm', 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'cđm', 'vkl', 'vklm', 'vcc', 'vcđ', 'vcd',  'đcm', 'dcm',
+'wtf', 'fuck', 'fuk',
 ]
 
 space_bad_words = [
-'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đm', 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'vkl', 'vklm', 'dcm'
-'pussy', 'blowjob', 'titjob', 'wtf', 'fuck', 'fuk',
+'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'vkl', 'vklm', 'dcm'
+'pussy', 'blowjob', 'titjob', 'wtf', 'fuck',
 ]
 
 seperate = [

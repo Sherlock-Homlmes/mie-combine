@@ -79,7 +79,7 @@ async def member(member_id: int):
         print(member_info)
         return JSONResponse(member_info)
 
-    return JSONResponse({"message": "Member not found"})
+    return JSONResponse({"message": "Member not found"}, status_code=400)
 
 @app.get("/server-info")
 async def server_info():

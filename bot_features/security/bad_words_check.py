@@ -7,7 +7,7 @@ from base import (
 )
 
 from datetime import timedelta
-from typing import Optional, Union
+from typing import Optional
 
 from feature_func.mongodb import open_database, write_database
 
@@ -17,11 +17,11 @@ exact_bad_words = [
 
 included_bad_words = [
 'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đm', 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'cđm', 'vkl', 'vklm', 'vcc', 'vcđ', 'vcd',  'đcm', 'dcm',
-'wtf', 'fuck', 'fuk',
+'wtf', 'fuk',
 ]
 
 space_bad_words = [
-'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'vkl', 'vklm', 'dcm'
+'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đéo', 'đ!t', 'd!t', 'vkl', 'vklm', 'dcmm', 'đcmm', 'vclm',
 'pussy', 'blowjob', 'titjob', 'wtf', 'fuck',
 ]
 

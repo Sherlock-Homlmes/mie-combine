@@ -19,3 +19,5 @@ venv.bak/
 # Ignore cache file
 __pycache__/
 data/
+
+tests.py

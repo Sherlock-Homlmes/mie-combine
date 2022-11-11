@@ -182,6 +182,8 @@ class Confession():
             embed.set_thumbnail(url=self.member.avatar.url)
         except CommandInvokeError as e:
             print(e)
+        except AttributeError as e:
+            print(e)
         embed.set_footer(text='''BetterMe - Better everyday''')
         await private_confession_channel.send(content=content,embed=embed,files=files)
         await confession_channel.send(content=content, embed=embed, files=files)

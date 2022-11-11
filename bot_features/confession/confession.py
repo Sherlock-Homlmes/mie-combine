@@ -17,6 +17,7 @@ from base import (
 
 import asyncio
 from typing import Optional, Union
+from discord.app_commands.errors import CommandInvokeError
 
 from feature_func.mongodb import open_database, write_database
 database_directory = "confession"
@@ -177,7 +178,10 @@ class Confession():
         content = "``` Confession " + str(db["confession_count"]) + "-công khai```"
         embed = discord.Embed(title="**Tâm sự của " + self.member.name + "**", description=self.content, colour=discord.Colour.gold())
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-        embed.set_thumbnail(url=self.member.avatar.url)
+        try:
+            embed.set_thumbnail(url=self.member.avatar.url)
+        except CommandInvokeError as e:
+            print(e)
         embed.set_footer(text='''BetterMe - Better everyday''')
         await private_confession_channel.send(content=content,embed=embed,files=files)
         await confession_channel.send(content=content, embed=embed, files=files)

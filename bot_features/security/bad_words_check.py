@@ -12,7 +12,7 @@ from typing import Optional
 from feature_func.mongodb import open_database, write_database
 
 exact_bad_words = [
-'lồn', 'conmemay', 'đĩ', 'cứt', 'cức', 'đụ', 'cuming', 'cock', 'đù', 'vl', 'lìn', 'cmn'
+'lồn', 'conmemay', 'đĩ', 'đụ', 'cuming', 'cock', 'đù', 'vl', 'lìn', 'cmn'
 ]
 
 included_bad_words = [

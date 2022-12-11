@@ -11,5 +11,5 @@ status = os.environ.get('STATUS')
 
 if database:
 	from pymongo import MongoClient
-	cluster = MongoClient(database_url)
+	cluster = MongoClient(database_url, connect=False)
 	dtbs = cluster["discord_betterme"]

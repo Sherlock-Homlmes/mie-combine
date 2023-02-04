@@ -1,24 +1,20 @@
-from base import (
-    # necess
-    discord,
-    bot,
-    Interaction,
-    app_commands,
-    get,
-    # var
-    guild_id,
-    muted_role_id,
-    channel_cre,
-)
-
+# default
 import asyncio
 from typing import Optional, Union
 
-from feature_func.mongodb import voice_channel
-from feature_func.discord_bot.channel_name import (
+# lib
+import discord
+from discord import Interaction, app_commands
+
+# local
+from base import bot, server_info
+
+from other_modules.discord_bot.channel_name import (
     check_avaiable_name,
     rewrite_channel_name,
 )
+
+from models import VoiceChannels
 
 command_mess = """
 **Các lệnh:**
@@ -55,19 +51,41 @@ command_mess = """
 # ----------START-----------
 can_clear = True
 can_create = True
+all_created_vc_id = []
 
 
 @bot.listen()
 async def on_ready():
-    global guild, guild_ids, everyone_id, all_created_vc_id
-
-    guild = bot.get_guild(880360143768924210)
-
-    all_created_vc_id = voice_channel.get_all_vc()
-
-    await fix_before_start()
 
     print("6.Create voice channel bot ready")
+    await bot.wait_until_ready()
+    await asyncio.sleep(20)
+    # delete empty voice channel
+    await fix_before_start()
+
+
+async def fix_before_start():
+    global can_clear, all_created_vc_id
+
+    for vc in all_created_vc_id:
+        vc = voice_channel.find_vc(vc)
+        vc_channel = get(bot.get_all_channels(), id=vc["vc_id"])
+
+        if vc_channel != None:
+            if vc_channel.members == []:
+                await vc_channel.delete()
+
+                cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
+                if cc_channel != None:
+                    await cc_channel.delete()
+
+                voice_channel.delete_vc(vc["vc_id"])
+
+        else:
+            cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
+            if cc_channel != None:
+                await cc_channel.delete()
+            voice_channel.delete_vc(vc["vc_id"])
 
 
 @bot.listen()
@@ -178,12 +196,6 @@ async def on_voice_state_update(member, member_before, member_after):
                         overwrite.send_messages = True
                         await cc_channel.set_permissions(bot_role, overwrite=overwrite)
                         await vc_channel.set_permissions(bot_role, overwrite=overwrite)
-                        # muted
-                        muted_role = get(member.guild.roles, id=muted_role_id)
-                        overwrite.send_messages = False
-                        await cc_channel.set_permissions(
-                            muted_role, overwrite=overwrite
-                        )
 
                         await vc_channel.edit(user_limit=lim[1])
                         await cc_channel.send(f"<@{member.id}>" + command_mess)
@@ -315,32 +327,27 @@ async def room_permission(
 
 @bot.tree.command(name="public", description="Cho phép mọi người vào phòng")
 async def public(interaction: Interaction):
-
     await room_permission(interaction, status="public")
 
 
 @bot.tree.command(name="private", description="Không cho phép mọi người vào phòng")
 async def private(interaction: Interaction):
-
     await room_permission(interaction, status="private")
 
 
 @bot.tree.command(name="show", description="Hiện phòng cho mọi người thấy")
 async def private(interaction: Interaction):
-
     await room_permission(interaction, status="show")
 
 
 @bot.tree.command(name="hide", description="Ẩn phòng không cho mọi người thấy")
 async def private(interaction: Interaction):
-
     await room_permission(interaction, status="hide")
 
 
 @bot.tree.command(name="rename", description="Đặt giới hạn phòng")
 @app_commands.describe(name="Đặt lại tên phòng")
 async def rename(interaction: Interaction, name: str):
-
     await room_permission(interaction, name=name)
 
 
@@ -354,7 +361,6 @@ async def limit(interaction: Interaction, limit: int):
 @bot.tree.command(name="invite", description="Mời bạn vào phòng")
 @app_commands.describe(member="Some one")
 async def invite(interaction: Interaction, member: Union[discord.User, discord.Member]):
-
     if member:
         await room_permission(interaction, status="invite", member=member)
     else:
@@ -364,7 +370,6 @@ async def invite(interaction: Interaction, member: Union[discord.User, discord.M
 @bot.tree.command(name="allow", description="Cho phép bạn vào phòng")
 @app_commands.describe(member="Some one")
 async def allow(interaction: Interaction, member: Union[discord.User, discord.Member]):
-
     if member:
         await room_permission(interaction, status="allow", member=member)
     else:
@@ -374,30 +379,4 @@ async def allow(interaction: Interaction, member: Union[discord.User, discord.Me
 @bot.tree.command(name="kick", description="Kick khỏi phòng")
 @app_commands.describe(member="Some one")
 async def kick(interaction: Interaction, member: Union[discord.User, discord.Member]):
-
     await room_permission(interaction, status="kick", member=member)
-
-
-async def fix_before_start():
-    global all_created_vc_id, can_clear
-    await bot.wait_until_ready()
-
-    for vc in all_created_vc_id:
-        vc = voice_channel.find_vc(vc)
-        vc_channel = get(bot.get_all_channels(), id=vc["vc_id"])
-
-        if vc_channel != None:
-            if vc_channel.members == []:
-                await vc_channel.delete()
-
-                cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
-                if cc_channel != None:
-                    await cc_channel.delete()
-
-                voice_channel.delete_vc(vc["vc_id"])
-
-        else:
-            cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
-            if cc_channel != None:
-                await cc_channel.delete()
-            voice_channel.delete_vc(vc["vc_id"])

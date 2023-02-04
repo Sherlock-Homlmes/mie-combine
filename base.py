@@ -1,5 +1,6 @@
 # default
 from dataclasses import dataclass
+import asyncio
 
 # library
 import discord
@@ -31,6 +32,8 @@ class Bot(commands.Bot):
 class ServerInfo:
     # guild
     guild: discord.Guild = None
+    # role
+    admin_role_id: int = None
     # confession
     confession_dropdown_id: int = None
     confession_channel: discord.TextChannel = None
@@ -42,6 +45,10 @@ class ServerInfo:
     total_mem_channel: discord.TextChannel = None
     online_mem_channel: discord.TextChannel = None
     study_count_channel: discord.TextChannel = None
+    # security
+    diary_channel: discord.TextChannel = None
+    full_cam_category: discord.CategoryChannel = None
+    cam_stream_category: discord.CategoryChannel = None
 
 
 ### START
@@ -58,11 +65,15 @@ async def on_ready():
     ### Connect to database
     await beanie.init_beanie(
         database=client.discord_betterme,
-        document_models=[Users, BadUsers, Confessions, ErrandData],
+        document_models=[Users, BadUsers, Confessions, ErrandData, VoiceChannels],
     )
     await get_server_info()
 
     print("Bot ready")
+
+
+async def get_channel(guild: discord.Guild, channel_id: int):
+    return await guild.fetch_channel(channel_id)
 
 
 async def get_server_info():
@@ -72,25 +83,37 @@ async def get_server_info():
 
     # get guild
     guild = await bot.fetch_guild(guild_id)
-    # get confession channels
-    confession_channel = await guild.fetch_channel(
-        server_info_data["confession_channel_id"]
+
+    channels = [
+        # get confession channels
+        "confession_channel_id",
+        "manage_confession_channel_id",
+        # get schedule channels
+        "cap3_channel_id",
+        "thpt_channel_id",
+        "total_mem_channel_id",
+        "online_mem_channel_id",
+        "study_count_channel_id",
+        # get security channels
+        "diary_channel_id",
+        "full_cam_category_id",
+        "cam_stream_category_id",
+    ]
+    (
+        confession_channel,
+        manage_confession_channel,
+        cap3_channel,
+        thpt_channel,
+        total_mem_channel,
+        online_mem_channel,
+        study_count_channel,
+        diary_channel,
+        full_cam_category,
+        cam_stream_category,
+    ) = await asyncio.gather(
+        *[get_channel(guild, server_info_data[channel]) for channel in channels]
     )
-    manage_confession_channel = await guild.fetch_channel(
-        server_info_data["manage_confession_channel_id"]
-    )
-    # get schedule channels
-    cap3_channel = await guild.fetch_channel(server_info_data["cap3_channel_id"])
-    thpt_channel = await guild.fetch_channel(server_info_data["thpt_channel_id"])
-    total_mem_channel = await guild.fetch_channel(
-        server_info_data["total_mem_channel_id"]
-    )
-    online_mem_channel = await guild.fetch_channel(
-        server_info_data["online_mem_channel_id"]
-    )
-    study_count_channel = await guild.fetch_channel(
-        server_info_data["study_count_channel_id"]
-    )
+
     # set value
     server_info.guild = guild
     server_info.confession_channel = confession_channel
@@ -101,6 +124,10 @@ async def get_server_info():
     server_info.total_mem_channel = total_mem_channel
     server_info.online_mem_channel = online_mem_channel
     server_info.study_count_channel = study_count_channel
+    server_info.diary_channel = diary_channel
+    server_info.admin_role_id = server_info_data["admin_role_id"]
+    server_info.full_cam_category = full_cam_category
+    server_info.cam_stream_category = cam_stream_category
 
 
 from bot_features import *

@@ -13,9 +13,9 @@ from discord.ui import View
 from base import bot, server_info
 from models import Confessions
 
-from feature_func.image_handle import save_image, delete_image
-from feature_func.discord_bot.overwrite import Overwrite
-from feature_func.discord_bot.channel_name import rewrite_channel_name
+from other_modules.image_handle import save_image, delete_image
+from other_modules.discord_bot.overwrite import Overwrite
+from other_modules.discord_bot.channel_name import rewrite_channel_name
 
 database_directory = "confession"
 

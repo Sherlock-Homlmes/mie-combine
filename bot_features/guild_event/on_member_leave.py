@@ -5,7 +5,7 @@ from beanie.odm.operators.update.general import Set
 # local
 from base import bot
 from models import Users
-from feature_func.time_modules import vn_now
+from other_modules.time_modules import vn_now
 
 
 @bot.listen()

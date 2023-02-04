@@ -6,17 +6,20 @@ from base import (
     discord,
     bot,
     tasks,
-    get, has_permissions, Interaction,
+    get,
+    has_permissions,
+    Interaction,
     # var
     admin_id,
 )
-from feature_func.stable_json import open_database, write_database, fix_database
+from other_modules.stable_json import open_database, write_database, fix_database
 
 database_directory = "/general/general"
 fix_database(database_directory)
 
-study_club_interaction_id = open_database(
-    database_directory)["study_club_interaction_id"]
+study_club_interaction_id = open_database(database_directory)[
+    "study_club_interaction_id"
+]
 study_clubs = open_database("/study_club/study_club")
 
 change = False
@@ -28,12 +31,16 @@ async def on_interaction(interaction: Interaction):
 
     if change:
         change = False
-        study_club_interaction_id = open_database(
-            database_directory)["study_club_interaction_id"]
+        study_club_interaction_id = open_database(database_directory)[
+            "study_club_interaction_id"
+        ]
         study_clubs = open_database("/study_club/study_club")
 
     if interaction.message:
-        if interaction.message.id == study_club_interaction_id and interaction.type == discord.InteractionType.component:
+        if (
+            interaction.message.id == study_club_interaction_id
+            and interaction.type == discord.InteractionType.component
+        ):
             values = interaction.data["values"]
 
             if "none" in values:
@@ -41,23 +48,23 @@ async def on_interaction(interaction: Interaction):
                     if key != "none":
                         category = bot.get_channel(value["category_id"])
                         writing_channel = bot.get_channel(value["writing_channel"])
-                        await category.set_permissions(interaction.user,
-                                                    overwrite=None)
-                        await writing_channel.set_permissions(interaction.user,
-                                                            overwrite=None)
+                        await category.set_permissions(interaction.user, overwrite=None)
+                        await writing_channel.set_permissions(
+                            interaction.user, overwrite=None
+                        )
                         await interaction.user.send(
-                            f"Bạn đã rời tất cả các Languages Club")
+                            f"Bạn đã rời tất cả các Languages Club"
+                        )
             else:
                 for interact in values:
-                    category = bot.get_channel(
-                        study_clubs[interact]["category_id"])
+                    category = bot.get_channel(study_clubs[interact]["category_id"])
                     writing_channel = bot.get_channel(
-                        study_clubs[interact]["writing_channel"])
-                    await category.set_permissions(interaction.user,
-                                                read_messages=True)
-                    await writing_channel.set_permissions(interaction.user,
-                                                        read_messages=True,
-                                                        send_messages=False)
+                        study_clubs[interact]["writing_channel"]
+                    )
+                    await category.set_permissions(interaction.user, read_messages=True)
+                    await writing_channel.set_permissions(
+                        interaction.user, read_messages=True, send_messages=False
+                    )
 
                     club = study_clubs[interact]["title"]
                     await interaction.response.defer()

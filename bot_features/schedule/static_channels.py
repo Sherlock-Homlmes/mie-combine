@@ -1,6 +1,5 @@
 # default
 import aiohttp
-import asyncio
 import datetime
 from datetime import timedelta
 from math import trunc
@@ -9,8 +8,8 @@ from math import trunc
 from discord.ext import tasks
 
 # local
-from base import bot, server_info
-from feature_func.time_modules import vn_now
+from base import server_info
+from other_modules.time_modules import vn_now
 
 total_member = 10000
 online_member = 1000
@@ -19,9 +18,6 @@ online_member = 1000
 @tasks.loop(minutes=6)
 async def static_channels():
     global online_member, total_member
-    await bot.wait_until_ready()
-    await asyncio.sleep(30)
-
     # count down
 
     now = vn_now()

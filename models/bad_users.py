@@ -6,7 +6,7 @@ from beanie import Document, Link
 
 # local
 from .users import Users
-from feature_func.time_modules import vn_now
+from other_modules.time_modules import vn_now
 
 
 class BadUsers(Document):

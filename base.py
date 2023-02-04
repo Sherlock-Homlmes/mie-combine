@@ -1,22 +1,14 @@
 # default
-import datetime
 from dataclasses import dataclass
 
 # library
 import discord
 import beanie
-from beanie.odm.operators.update.general import Set
-
-from discord import Interaction, app_commands
-from discord.ext import commands, tasks
-from discord.ext.commands import has_permissions, has_role, MissingPermissions, context
-from discord.utils import get
-from discord.ui import View, Select
+from discord.ext import commands
 
 # local
 from models import *
 from database.mongodb_async import client
-
 
 ####### BOT #######
 class Bot(commands.Bot):
@@ -44,6 +36,12 @@ class ServerInfo:
     confession_channel: discord.TextChannel = None
     manage_confession_channel: discord.TextChannel = None
     confession_count: int = None
+    # schedule
+    cap3_channel: discord.TextChannel = None
+    thpt_channel: discord.TextChannel = None
+    total_mem_channel: discord.TextChannel = None
+    online_mem_channel: discord.TextChannel = None
+    study_count_channel: discord.TextChannel = None
 
 
 ### START
@@ -60,39 +58,9 @@ async def on_ready():
     ### Connect to database
     await beanie.init_beanie(
         database=client.discord_betterme,
-        document_models=[Confessions, Users, ErrandData],
+        document_models=[Users, BadUsers, Confessions, ErrandData],
     )
     await get_server_info()
-
-    # messages = [message async for message in manage_confession_channel.history(limit=1)]
-    # messages.reverse()
-    # for message in messages:
-    #     embed = message.embeds[0]
-    #     print(embed.description)
-    #     print(embed.fields[0].value.split("||<@")[1].split(">||")[0])
-
-    # members = [
-    #     member
-    #     async for member in guild.fetch_members(limit=None)
-    #     if member.bot == False
-    # ]
-    # member_list = []
-    # for member in members:
-    #     print(member)
-    #     if not member.avatar:
-    #         avatar = member.default_avatar.url
-    #     else:
-    #         avatar = member.avatar.url
-    #     member_list.append(
-    #         Users(
-    #             discord_id=str(member.id),
-    #             name=member.name,
-    #             avatar=avatar,
-    #             created_at=member.created_at,
-    #             joined_at=member.joined_at,
-    #         )
-    #     )
-    # await Users.insert_many(member_list)
 
     print("Bot ready")
 
@@ -104,18 +72,35 @@ async def get_server_info():
 
     # get guild
     guild = await bot.fetch_guild(guild_id)
-    # get confession_channel
+    # get confession channels
     confession_channel = await guild.fetch_channel(
         server_info_data["confession_channel_id"]
     )
     manage_confession_channel = await guild.fetch_channel(
         server_info_data["manage_confession_channel_id"]
     )
+    # get schedule channels
+    cap3_channel = await guild.fetch_channel(server_info_data["cap3_channel_id"])
+    thpt_channel = await guild.fetch_channel(server_info_data["thpt_channel_id"])
+    total_mem_channel = await guild.fetch_channel(
+        server_info_data["total_mem_channel_id"]
+    )
+    online_mem_channel = await guild.fetch_channel(
+        server_info_data["online_mem_channel_id"]
+    )
+    study_count_channel = await guild.fetch_channel(
+        server_info_data["study_count_channel_id"]
+    )
     # set value
     server_info.guild = guild
     server_info.confession_channel = confession_channel
     server_info.manage_confession_channel = manage_confession_channel
     server_info.confession_dropdown_id = server_info_data["confession_dropdown_id"]
+    server_info.cap3_channel = cap3_channel
+    server_info.thpt_channel = thpt_channel
+    server_info.total_mem_channel = total_mem_channel
+    server_info.online_mem_channel = online_mem_channel
+    server_info.study_count_channel = study_count_channel
 
 
 from bot_features import *

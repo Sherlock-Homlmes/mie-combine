@@ -7,4 +7,4 @@ from base import bot
 
 @bot.listen()
 async def on_ready():
-    print(".Guild event")
+    print("2.Guild event ready")

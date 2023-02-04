@@ -7,10 +7,9 @@ from .guild_event import *
 ## Features
 # from .security import *
 # from .errands import *
-# from .easter_eggs import *
 from .confession import *
+from .create_vc import *
 
-# from .create_vc import *
 # from .manage import *
 
 ### api for bot

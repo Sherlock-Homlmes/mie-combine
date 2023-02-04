@@ -20,10 +20,6 @@ Part 3: Errands
 - Save message for AI chatbot resource
 - Feedback using modal
 
-Part 4: Easter egg
-- HOMIE || 5000 mess count || Limit: none
-- Doi mat ke si tinh || Reaction post || Limit:10
-
 Part 5: Confession
 
 Part 6: Create voice channel

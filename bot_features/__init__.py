@@ -1,12 +1,17 @@
-from .schedule import *
-from .security import *
-from .errands import *
-from .easter_eggs import *
+### bot features
+
+## Event and schedule
+# from .schedule import *
+from .guild_event import *
+
+## Features
+# from .security import *
+# from .errands import *
+# from .easter_eggs import *
 from .confession import *
-from .create_vc import *
-from .manage import *
 
-from all_env import environment
-if environment != "heroku":
-    from .api import *
+# from .create_vc import *
+# from .manage import *
 
+### api for bot
+# from api import *

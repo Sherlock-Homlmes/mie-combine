@@ -1,15 +1,15 @@
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 database = True
-environment = os.environ.get('environment')
-my_secret = os.environ.get('BOT_TOKEN')
-database_url = os.environ.get('database_url')
-
-status = os.environ.get('STATUS')
+environment = os.environ.get("environment")
+my_secret = os.environ.get("BOT_TOKEN")
+database_url = os.environ.get("database_url")
 
 if database:
-	from pymongo import MongoClient
-	cluster = MongoClient(database_url, connect=False)
-	dtbs = cluster["discord_betterme"]
+    from pymongo import MongoClient
+
+    cluster = MongoClient(database_url, connect=False)
+    dtbs = cluster["discord_betterme"]

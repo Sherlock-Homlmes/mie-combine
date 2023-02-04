@@ -1,137 +1,121 @@
+# default
+import datetime
+from dataclasses import dataclass
+
+# library
 import discord
-from discord import (
-    Interaction,
-    app_commands
-)
+import beanie
+from beanie.odm.operators.update.general import Set
+
+from discord import Interaction, app_commands
 from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, has_role, MissingPermissions, context
 from discord.utils import get
 from discord.ui import View, Select
 
-import datetime
+# local
+from models import *
+from database.mongodb_async import client
 
-from all_env import status
 
 ####### BOT #######
 class Bot(commands.Bot):
-    def __init__(self):
-      # prefix = ["m,","M,"]
-      prefix = "test,"
-      super().__init__(command_prefix = prefix, intents = discord.Intents.all())
-    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     async def on_ready(self):
-      print(f'We have logged in as {self.user} combine bot')
+        print(f"We have logged in as {self.user} combine bot")
 
     async def setup_hook(self):
+        # auto sync command on ready
         await self.tree.sync()
         print(f"Synced slash commands for {self.user}.")
 
     async def on_command_error(self, ctx, error):
-        await ctx.reply(error, ephemeral = True)
+        await ctx.reply(error, ephemeral=True)
 
-class TestBot(commands.Bot):
-    def __init__(self):
-      prefix = "test,"
-      super().__init__(command_prefix = prefix, intents = discord.Intents.all())
-    
-    async def on_ready(self):
-      print(f'We have logged in as {self.user} combine bot')
 
-if status == "test":
-  print("test bot")
-  bot = TestBot()
-else:
-  print("real bot")
-  bot = Bot()
+@dataclass
+class ServerInfo:
+    # guild
+    guild: discord.Guild = None
+    # confession
+    confession_dropdown_id: int = None
+    confession_channel: discord.TextChannel = None
+    manage_confession_channel: discord.TextChannel = None
+    confession_count: int = None
 
-####### VAR #######
 
-### Started: Discord
+### START
 guild_id = 880360143768924210
-admin_id = [880359404036317215, 278423331026501633]
-admin_role_id = 890244740174467082
-muted_role_id = 890553937445408839
-### Part 1: SCHEDULE
-# 1.1:static_channels
-thpt_channel_id = 894578663893389403
-cap3_channel_id = 894578664300249159
-thptday = datetime.datetime(2023, 7, 7)
-cap3day = datetime.datetime(2023, 6, 6)
-total_mem_channel_id = 933534750386307102
-online_mem_channel_id = 933534913347584081
-study_count_channel_id = 925813858105430046
+prefix = "dump,"
+bot = Bot(command_prefix=prefix, intents=discord.Intents.all())
+server_info = ServerInfo()
 
 
-### Part 2: Security 
-# 2.1: Bad words
-diary_channel_id = 882702489902780416
+@bot.listen()
+async def on_ready():
+    global server_info
 
-### Part 3: ERRANDS
-# 3.1: color
-color_roles = [
-    909419355127816242, 909418177178529812, 909420197390196826,
-    909418887853010964, 909420320996335636, 909418878306750514,
-    909414569921904690, 914494643671015484, 915929478260195368,
-    885803187410464788, 915934631566643221
-]
-# 3.2: game center
-khu_vui_choi = 923963988784590920
-# 3.3: bot resources
-bot_resource_channel_id = 1007151133439033374
-# 3.4: feedback
-feedback_channel_id = 1021693161720004618
+    ### Connect to database
+    await beanie.init_beanie(
+        database=client.discord_betterme,
+        document_models=[Confessions, Users, ErrandData],
+    )
+    await get_server_info()
 
-### Part 4: Easter Egg
-easter_eggs_id = 1005365132546822184
-# 4.1: Homie
-homie_id = 882810518400798750
-# 4.2: Love sick eyes
-lovesick_id = 998642382083985621
+    # messages = [message async for message in manage_confession_channel.history(limit=1)]
+    # messages.reverse()
+    # for message in messages:
+    #     embed = message.embeds[0]
+    #     print(embed.description)
+    #     print(embed.fields[0].value.split("||<@")[1].split(">||")[0])
 
-### Part 5: Confession
-# 5.1: dropdown
-confession_dropdown_id = 927991226920222831
-confession_category_id = 902499044356657173
-confession_channel_id = 925086728497291394
-private_confession_channel_id = 925790946971508806
+    # members = [
+    #     member
+    #     async for member in guild.fetch_members(limit=None)
+    #     if member.bot == False
+    # ]
+    # member_list = []
+    # for member in members:
+    #     print(member)
+    #     if not member.avatar:
+    #         avatar = member.default_avatar.url
+    #     else:
+    #         avatar = member.avatar.url
+    #     member_list.append(
+    #         Users(
+    #             discord_id=str(member.id),
+    #             name=member.name,
+    #             avatar=avatar,
+    #             created_at=member.created_at,
+    #             joined_at=member.joined_at,
+    #         )
+    #     )
+    # await Users.insert_many(member_list)
 
-### Part 6: Create voice channel
-channel_cre = {
-  #test
-#   "1021296228585185280":{
-#     "category_id": 917405878217490482,
-#     "locate": "SG",
-#     "limit": (2,15)
-#   },
+    print("Bot ready")
 
-  #real
-  "918549426732142653":{
-    "category_id": 900439704950956053,
-    "locate": "SG",
-    "limit": (3,15)
-  },
-  "918549341948497961":{
-    "category_id": 901518444271386694,
-    "locate": "CP",
-    "limit": (2,2)
-  },
-  "918549182107746356":{
-    "category_id": 900598666572750929,
-    "locate": "SA",
-    "limit": (1,1)
-  },
-  "922461169799790642":{
-    "category_id": 915512539733975050,
-    "locate": "CR",
-    "limit": (1,99)
-  },
-  "923964509935243265":{
-    "category_id": 902499044356657173,
-    "locate": "Tâm sự",
-    "limit": (1,99)
-  }
 
-}
+async def get_server_info():
+    ### Get server info
+    server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
+    server_info_data = server_info_data.value
 
-####### IMPORT MODULES #######
+    # get guild
+    guild = await bot.fetch_guild(guild_id)
+    # get confession_channel
+    confession_channel = await guild.fetch_channel(
+        server_info_data["confession_channel_id"]
+    )
+    manage_confession_channel = await guild.fetch_channel(
+        server_info_data["manage_confession_channel_id"]
+    )
+    # set value
+    server_info.guild = guild
+    server_info.confession_channel = confession_channel
+    server_info.manage_confession_channel = manage_confession_channel
+    server_info.confession_dropdown_id = server_info_data["confession_dropdown_id"]
+
+
 from bot_features import *

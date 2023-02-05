@@ -153,7 +153,7 @@ def check_avaiable_name(content):
         return False
 
 
-def rewrite_channel_name(name, type):
+def rewrite_confession_channel_name(name, type):
     global name_check
 
     kq = "-"
@@ -166,4 +166,16 @@ def rewrite_channel_name(name, type):
     if kq == "" or kq == "-":
         kq = f"{type} của " + kq
 
+    return kq
+
+
+def rewrite_create_voice_channel_name(name):
+    global name_check
+
+    kq = ""
+    for i in range(len(name)):
+        if name[i].lower() in name_check:
+            kq += name[i].lower()
+        elif name[i] == " " and name[i - 1] != " " and kq[len(kq) - 1] != "-":
+            kq += "-"
     return kq

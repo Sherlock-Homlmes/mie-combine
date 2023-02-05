@@ -1,10 +1,11 @@
 # default
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 
 # library
 import discord
 from discord.ext import commands
+
 
 ####### BOT #######
 class Bot(commands.Bot):
@@ -29,6 +30,7 @@ class ServerInfo:
     guild: discord.Guild = None
     # role
     admin_role_id: int = None
+    feature_bot_role_id: int = None
     # confession
     confession_dropdown_id: int = None
     confession_channel: discord.TextChannel = None
@@ -44,6 +46,12 @@ class ServerInfo:
     diary_channel: discord.TextChannel = None
     full_cam_channels: List[discord.VoiceChannel] = None
     cam_stream_channels: List[discord.VoiceChannel] = None
+    # create voice channel
+    channel_cre: Dict = None
+    # errands
+    color_roles: List[int] = None
+    game_roles: Dict = None
+    welcome_channel: discord.TextChannel = None
 
 
 ### START

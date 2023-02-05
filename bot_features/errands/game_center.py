@@ -1,31 +1,17 @@
-import os
+# default
 import asyncio
 
-from base import (
-    # necess
-    discord,
-    bot,
-    tasks,
-    get,
-    Interaction,
-    # var
-    admin_id,
-    khu_vui_choi,
-)
-from other_modules.stable_json import open_database, write_database, fix_database
+# lib
+import discord
+from discord import Interaction
 
-database_directory = "/game_center/game_center"
-fix_database(database_directory)
-
-game_roles = open_database(database_directory)
-game_center_interaction_id = open_database("/general/general")[
-    "game_center_interaction_id"
-]
+# local
+from base import bot, server_info
 
 
 @bot.listen()
 async def on_interaction(interaction: Interaction):
-    global khu_vui_choi, game_roles, game_center_interaction_id
+    global khu_vui_choi, game_center_interaction_id
 
     ####game
     if interaction.message:
@@ -33,22 +19,19 @@ async def on_interaction(interaction: Interaction):
             interaction.message.id == game_center_interaction_id
             and interaction.type == discord.InteractionType.component
         ):
-
-            kvc_role = discord.utils.get(interaction.guild.roles, id=khu_vui_choi)
-
+            game_roles = server_info.game_roles
+            kvc_role = server_info.guild.get_role(game_roles["game_center"])
             values = interaction.data["values"]
 
             if "none game" in values:
                 for key in game_roles.keys():
-                    role = discord.utils.get(
-                        interaction.guild.roles, id=game_roles[key]
-                    )
+                    server_info.guild.get_role(game_roles[key])
                     await interaction.user.remove_roles(role)
 
                 await interaction.user.remove_roles(kvc_role)
 
                 msg = await interaction.message.channel.send(
-                    "**" + interaction.user.mention + " đã chọn không chơi game**"
+                    f"**{interaction.user.mention} đã chọn không chơi game**"
                 )
 
             elif "game all" in values or set(list(game_roles.keys())) == set(values):
@@ -61,7 +44,7 @@ async def on_interaction(interaction: Interaction):
                     await interaction.user.remove_roles(role)
 
                 msg = await interaction.message.channel.send(
-                    "**" + interaction.user.mention + " đã chọn chơi tất cả mọi game**"
+                    f"**{interaction.user.mention} đã chọn chơi tất cả mọi game**"
                 )
 
             else:
@@ -77,7 +60,7 @@ async def on_interaction(interaction: Interaction):
 
                 game = game.rstrip(game[-1])
                 msg = await interaction.message.channel.send(
-                    "**" + interaction.user.mention + " đã chọn chơi: " + game + "**"
+                    f"**{interaction.user.mention} đã chọn chơi: " + game + "**"
                 )
 
             await interaction.response.defer()

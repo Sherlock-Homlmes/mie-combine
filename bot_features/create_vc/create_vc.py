@@ -5,16 +5,19 @@ from typing import Optional, Union
 # lib
 import discord
 from discord import Interaction, app_commands
+from discord.ext.commands import has_role
+from discord.errors import NotFound
+
 
 # local
 from base import bot, server_info
+from models import VoiceChannels, Users
 
 from other_modules.discord_bot.channel_name import (
     check_avaiable_name,
-    rewrite_channel_name,
+    rewrite_create_voice_channel_name,
 )
 
-from models import VoiceChannels
 
 command_mess = """
 **Các lệnh:**
@@ -26,6 +29,10 @@ command_mess = """
 /hide: ẩn phòng với mọi người
 
 /show: hiện phòng với mọi người
+
+/mute: tắt âm phòng
+
+/unmute: bỏ tắt âm phòng
 
 /allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
 
@@ -49,48 +56,63 @@ command_mess = """
 
 
 # ----------START-----------
-can_clear = True
-can_create = True
 all_created_vc_id = []
 
 
 @bot.listen()
 async def on_ready():
+    global all_created_vc_id
 
-    print("6.Create voice channel bot ready")
-    await bot.wait_until_ready()
-    await asyncio.sleep(20)
+    print("6.Create voice channel ready")
+    await asyncio.sleep(10)
+    # get all created voice channel
+    voice_channels = await VoiceChannels.find({}).to_list()
+    all_created_vc_id = [int(voice_channel.vc_id) for voice_channel in voice_channels]
+
     # delete empty voice channel
-    await fix_before_start()
+    await fix_room()
 
 
-async def fix_before_start():
-    global can_clear, all_created_vc_id
+async def fix_room():
+    global all_created_vc_id
 
-    for vc in all_created_vc_id:
-        vc = voice_channel.find_vc(vc)
-        vc_channel = get(bot.get_all_channels(), id=vc["vc_id"])
+    for vc_id in all_created_vc_id:
+        try:
+            vc_channel = await server_info.guild.fetch_channel(vc_id)
+        except:
+            vc_channel = None
 
-        if vc_channel != None:
+        if vc_channel:
             if vc_channel.members == []:
                 await vc_channel.delete()
-
-                cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
-                if cc_channel != None:
+                vc = await VoiceChannels.find_one(VoiceChannels.vc_id == vc_id)
+                try:
+                    cc_channel = await server_info.guild.fetch_channel(vc.cc_id)
+                except:
+                    cc_channel = None
+                if cc_channel:
                     await cc_channel.delete()
-
-                voice_channel.delete_vc(vc["vc_id"])
-
+                await vc.delete()
         else:
-            cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
-            if cc_channel != None:
+            vc = await VoiceChannels.find_one(VoiceChannels.vc_id == vc_id)
+            try:
+                cc_channel = await server_info.guild.fetch_channel(vc.cc_id)
+            except:
+                cc_channel = None
+            if cc_channel:
                 await cc_channel.delete()
-            voice_channel.delete_vc(vc["vc_id"])
+            await vc.delete()
+
+    print("fix done")
 
 
 @bot.listen()
-async def on_voice_state_update(member, member_before, member_after):
-    global can_clear, can_create
+async def on_voice_state_update(
+    member: discord.Member,
+    member_before: discord.VoiceState,
+    member_after: discord.VoiceState,
+):
+    global all_created_vc_id
 
     ##################### create-voice-channel #####################
     voice_channel_before = member_before.channel
@@ -103,126 +125,90 @@ async def on_voice_state_update(member, member_before, member_after):
         if voice_channel_before != None:
             if voice_channel_before.id in all_created_vc_id:
                 await asyncio.sleep(5)
-                can_clear = False
-
-                vc = voice_channel.find_vc(voice_channel_before.id)
+                vc = await VoiceChannels.find_one(
+                    VoiceChannels.vc_id == voice_channel_before.id
+                )
 
                 if voice_channel_before.members == []:
-
-                    channel_del = bot.get_channel(vc["vc_id"])
+                    channel_del = server_info.guild.get_channel(vc.vc_id)
+                    if channel_del:
+                        await channel_del.delete()
+                    channel_del = server_info.guild.get_channel(vc.cc_id)
                     if channel_del != None:
                         await channel_del.delete()
-                    channel_del = bot.get_channel(vc["cc_id"])
-                    if channel_del != None:
-                        await channel_del.delete()
 
-                    voice_channel.delete_vc(voice_channel_before.id)
+                    await vc.delete()
                     all_created_vc_id.remove(voice_channel_before.id)
 
-                elif member.bot == False:
-                    cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
+                elif not member.bot:
+                    cc_channel = server_info.guild.get_channel(vc.cc_id)
                     await cc_channel.set_permissions(member, overwrite=None)
-
-                can_clear = True
 
         ###member in
         if voice_channel_after != None:
+            # set member's permission to text channel
             if voice_channel_after.id in all_created_vc_id:
-                try:
-                    can_clear = False
-                    vc = voice_channel.find_vc(voice_channel_after.id)
-                    cc_channel = get(bot.get_all_channels(), id=vc["cc_id"])
+                await asyncio.sleep(3)
+                vc = await VoiceChannels.find_one(
+                    VoiceChannels.vc_id == voice_channel_after.id
+                )
+                cc_channel = server_info.guild.get_channel(vc.cc_id)
+                overwrite = discord.PermissionOverwrite()
+                overwrite.view_channel = True
+                await cc_channel.set_permissions(member, overwrite=overwrite)
 
-                    overwrite = discord.PermissionOverwrite()
-                    overwrite.view_channel = True
-                    await cc_channel.set_permissions(member, overwrite=overwrite)
-                except Exception as e:
-                    print(e)
-                can_clear = True
-
-            ##create channel + set role
-            elif str(voice_channel_after.id) in channel_cre.keys():
-                while can_create == False:
-                    await asyncio.sleep(1)
-                can_clear = False
+            ## create channel + set role
+            elif str(voice_channel_after.id) in server_info.channel_cre.keys():
                 if check_avaiable_name(member.name) == False:
                     await member.move_to(None)
                     await member.send(
                         "**Bạn hãy kiểm tra và đảm bảo trong tên của bạn không có từ cấm, tục tĩu**"
                     )
                 else:
-                    channel = channel_cre[str(voice_channel_after.id)]
-                    category_id = channel["category_id"]
-                    lim = channel["limit"]
-                    category = bot.get_channel(category_id)
+                    channel_info = server_info.channel_cre[str(voice_channel_after.id)]
+                    category_id = channel_info["category_id"]
+                    lim = channel_info["limit"]
+                    category = await server_info.guild.fetch_channel(category_id)
 
                     ##### create
-                    cc_name = channel_name(str(member.name))
-                    vc_name = "#" + cc_name + "'s room"
+                    cc_name = rewrite_create_voice_channel_name(member.name)
+                    vc_name = f"#{cc_name}'s room"
                     vc_channel = await category.create_voice_channel(vc_name)
                     all_created_vc_id.append(vc_channel.id)
+                    await member.move_to(vc_channel)
+                    cc_channel = await category.create_text_channel(cc_name)
 
-                    if member in voice_channel_after.members:
-                        await member.move_to(vc_channel)
-                        cc_channel = await category.create_text_channel(cc_name)
+                    await VoiceChannels(
+                        owner=await Users.find_one(Users.discord_id == str(member.id)),
+                        cc_id=cc_channel.id,
+                        vc_id=vc_channel.id,
+                    ).insert()
+                    #####set permission
+                    overwrite = discord.PermissionOverwrite()
 
-                        ccid = cc_channel.id
-                        vcid = vc_channel.id
-                        uid = member.id
-
-                        # database
-                        voice_channel.create_vc(uid, vcid, ccid)
-
-                        #####set permission
-                        overwrite = discord.PermissionOverwrite()
-
-                        # everyone
-                        overwrite.connect = False
-                        everyone_role = get(member.guild.roles, id=guild_id)
-                        await vc_channel.set_permissions(
-                            everyone_role, overwrite=overwrite
-                        )
-                        overwrite.view_channel = False
-                        await cc_channel.set_permissions(
-                            everyone_role, overwrite=overwrite
-                        )
-                        # user
-                        overwrite.view_channel = True
-                        overwrite.connect = True
-                        await cc_channel.set_permissions(member, overwrite=overwrite)
-                        await vc_channel.set_permissions(member, overwrite=overwrite)
-                        # bot
-                        bot_role = get(member.guild.roles, id=887181406898376704)
-                        overwrite.send_messages = True
-                        await cc_channel.set_permissions(bot_role, overwrite=overwrite)
-                        await vc_channel.set_permissions(bot_role, overwrite=overwrite)
-
-                        await vc_channel.edit(user_limit=lim[1])
-                        await cc_channel.send(f"<@{member.id}>" + command_mess)
-                    else:
-                        all_created_vc_id.remove(vc_channel.id)
-                        await vc_channel.delete()
-
-            can_clear = True
+                    # everyone
+                    overwrite.connect = False
+                    everyone_role = server_info.guild.get_role(server_info.guild.id)
+                    await vc_channel.set_permissions(everyone_role, overwrite=overwrite)
+                    overwrite.view_channel = False
+                    await cc_channel.set_permissions(everyone_role, overwrite=overwrite)
+                    # user
+                    overwrite.view_channel = True
+                    overwrite.connect = True
+                    await cc_channel.set_permissions(member, overwrite=overwrite)
+                    await vc_channel.set_permissions(member, overwrite=overwrite)
+                    # bot
+                    bot_role = server_info.guild.get_role(
+                        server_info.feature_bot_role_id
+                    )
+                    overwrite.send_messages = True
+                    await cc_channel.set_permissions(bot_role, overwrite=overwrite)
+                    await vc_channel.set_permissions(bot_role, overwrite=overwrite)
+                    await vc_channel.edit(user_limit=lim[1])
+                    await cc_channel.send(f"<@{member.id}>" + command_mess)
 
 
-#####################################command
-@bot.command(name="clean", description="room clear")
-async def clean(ctx):
-    global can_clear, can_create
-    if can_clear == False or ctx.channel.id != 884447828330549349:
-        await ctx.send("Không thể clear lúc này. Vui lòng thử lại sau")
-    else:
-        async with ctx.typing():
-            can_create = False
-            await fix_before_start()
-            can_create = True
-        await ctx.send("fix done")
-
-
-######################################slash command
-
-
+### slash command
 async def room_permission(
     interaction: Interaction,
     status: Optional[str] = None,
@@ -235,9 +221,9 @@ async def room_permission(
 
     if current_channel:
         if current_channel.id in all_created_vc_id:
-            vc_channel = get(bot.get_all_channels(), id=current_channel.id)
+            vc_channel = server_info.guild.get_channel(current_channel.id)
 
-            if status in ["public", "private", "show", "hide"]:
+            if status in ["public", "private", "show", "hide", "mute", "unmute"]:
                 overwrite = discord.PermissionOverwrite()
 
                 if status == "public":
@@ -252,9 +238,15 @@ async def room_permission(
                 elif status == "hide":
                     overwrite.view_channel = False
                     message = "Phòng đã được ẩn không cho mọi người thấy"
+                elif status == "mute":
+                    overwrite.speak = False
+                    message = "Đã tắt âm phòng"
+                elif status == "unmute":
+                    overwrite.speak = True
+                    message = "Đã bỏ tắt âm phòng"
 
-                role = get(interaction.guild.roles, id=guild_id)
-                await vc_channel.set_permissions(role, overwrite=overwrite)
+                everyone_role = server_info.guild.get_role(server_info.guild.id)
+                await vc_channel.set_permissions(everyone_role, overwrite=overwrite)
                 await send(message)
 
             if name:
@@ -272,7 +264,7 @@ async def room_permission(
 
             if limit:
                 category_id = interaction.channel.category.id
-                for key, value in channel_cre.items():
+                for key, value in server_info.channel_cre.items():
                     if value["category_id"] == category_id:
                         if value["limit"][0] == value["limit"][1]:
                             await send(
@@ -320,9 +312,15 @@ async def room_permission(
 
         else:
             await send("Bạn không ở trong phòng được tạo bởi Mie")
-
     else:
         await send("Bạn không ở trong phòng được tạo bởi Mie")
+
+
+@bot.tree.command(name="clean", description="room clear")
+@has_role(server_info.admin_role_id)
+async def clean(interaction: Interaction):
+    await fix_room()
+    await interaction.response.send_message("Fix done")
 
 
 @bot.tree.command(name="public", description="Cho phép mọi người vào phòng")
@@ -354,7 +352,6 @@ async def rename(interaction: Interaction, name: str):
 @bot.tree.command(name="limit", description="Đặt giới hạn phòng")
 @app_commands.describe(limit="Đặt giới hạn phòng")
 async def limit(interaction: Interaction, limit: int):
-
     await room_permission(interaction, limit=limit)
 
 
@@ -374,6 +371,16 @@ async def allow(interaction: Interaction, member: Union[discord.User, discord.Me
         await room_permission(interaction, status="allow", member=member)
     else:
         await interaction.response.send_message("Không tìm thấy người dùng")
+
+
+@bot.tree.command(name="mute", description="Tắt âm phòng")
+async def private(interaction: Interaction):
+    await room_permission(interaction, status="mute")
+
+
+@bot.tree.command(name="unmute", description="Mở âm phòng")
+async def private(interaction: Interaction):
+    await room_permission(interaction, status="unmute")
 
 
 @bot.tree.command(name="kick", description="Kick khỏi phòng")

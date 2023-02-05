@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 # library
 import discord
-from discord.app_commands.errors import CommandInvokeError
 from discord.ext.commands import has_permissions, context
 from discord.ui import View
 
@@ -15,9 +14,8 @@ from models import Confessions
 
 from other_modules.image_handle import save_image, delete_image
 from other_modules.discord_bot.overwrite import Overwrite
-from other_modules.discord_bot.channel_name import rewrite_channel_name
+from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
 
-database_directory = "confession"
 
 ##### Create choose confession message
 class ConfessionOption(View):
@@ -101,7 +99,7 @@ class Confession:
         await asyncio.sleep(10)
 
     async def text_process(self):
-        channel = await server_info.guild.fetch_channel(self.channel.id)
+        channel = server_info.guild.get_channel(self.channel.id)
         messages = [message async for message in channel.history(limit=200)]
         messages.reverse()
         for message in messages:
@@ -215,7 +213,6 @@ async def end(interaction: discord.Interaction):
 @bot.listen()
 async def on_interaction(interaction: discord.Interaction):
     if interaction.message:
-        print(server_info.confession_dropdown_id)
         if (
             interaction.message.id == server_info.confession_dropdown_id
             and interaction.type == discord.InteractionType.component
@@ -229,7 +226,7 @@ async def on_interaction(interaction: discord.Interaction):
                 await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
             elif "private-confession" in values or "public-confession" in values:
 
-                chanel_name = rewrite_channel_name(member.name, "confession")
+                chanel_name = rewrite_confession_channel_name(member.name, "confession")
                 category = await interaction.guild.fetch_channel(
                     server_info.confession_channel.category_id
                 )

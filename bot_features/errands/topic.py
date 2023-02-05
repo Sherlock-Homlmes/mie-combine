@@ -1,25 +1,25 @@
-from base import (
-    # necess
-    bot,
-    tasks,
-    get,
-    Interaction,
-    # var
-    color_roles,
-)
-
+# default
 import random
 
-from other_modules.stable_json import open_database
+# lib
+from discord import Interaction
+
+# local
+from base import bot
+from models import ErrandData
 
 
 @bot.tree.command(name="etopic", description="Gợi ý 1 topic tiếng Anh")
 async def etopic(interaction: Interaction):
-    topic = random.choice(open_database("/topic/etopic"))
+    server_info = await ErrandData.find_one(ErrandData.name == "server_info")
+    topics = server_info.value["etopic"]
+    topic = random.choice(topics)
     await interaction.response.send_message(f"Chủ đề: **{topic}**")
 
 
 @bot.tree.command(name="vtopic", description="Gợi ý 1 topic tiếng Việt")
 async def vtopic(interaction: Interaction):
-    topic = random.choice(open_database("/topic/vtopic"))
+    server_info = await ErrandData.find_one(ErrandData.name == "server_info")
+    topics = server_info.value["vtopic"]
+    topic = random.choice(topics)
     await interaction.response.send_message(f"Chủ đề: **{topic}**")

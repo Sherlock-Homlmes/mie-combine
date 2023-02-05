@@ -1,21 +1,18 @@
 # default
-from typing import Union, List
 import asyncio
 
 # lib
-import discord
 import beanie
-from bson.int64 import Int64
 
 # local
 from .settings import bot, guild_id, server_info
 from models import *
 from database.mongodb_async import client
+from other_modules.discord_bot.get_object import get_channel
 
 
 @bot.listen()
 async def on_ready():
-    global server_info
 
     ### Connect to database
     await beanie.init_beanie(
@@ -27,22 +24,17 @@ async def on_ready():
     print("Bot ready")
 
 
-async def get_channel(guild: discord.Guild, channel_ids: Union[int, Int64, List]):
-    if type(channel_ids) in [int, Int64]:
-        return await guild.fetch_channel(channel_ids)
-    elif type(channel_ids) == list:
-        return await asyncio.gather(
-            *[get_channel(guild, channel_id) for channel_id in channel_ids]
-        )
-
-
 async def get_server_info():
+    global server_info
+
     ### Get server info
     server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
+    server_info_data.value["welcome_channel_id"] = 894594032947310602
+    await server_info_data.save()
     server_info_data = server_info_data.value
 
     # get guild
-    guild = await bot.fetch_guild(guild_id)
+    server_info.guild = await bot.fetch_guild(guild_id)
 
     channels = [
         # get confession channels
@@ -58,6 +50,8 @@ async def get_server_info():
         "diary_channel_id",
         "full_cam_channel_ids",
         "cam_stream_channel_ids",
+        # errands
+        "welcome_channel_id",
     ]
     (
         confession_channel,
@@ -70,20 +64,37 @@ async def get_server_info():
         diary_channel,
         full_cam_channels,
         cam_stream_channels,
+        welcome_channel,
     ) = await asyncio.gather(
-        *[get_channel(guild, server_info_data[channel]) for channel in channels]
+        *[
+            get_channel(server_info.guild, server_info_data[channel])
+            for channel in channels
+        ]
     )
     # set value
-    server_info.guild = guild
+
+    # role
+    server_info.admin_role_id = server_info_data["admin_role_id"]
+    server_info.feature_bot_role_id = server_info_data["feature_bot_role_id"]
+
+    # confession
     server_info.confession_channel = confession_channel
     server_info.manage_confession_channel = manage_confession_channel
     server_info.confession_dropdown_id = server_info_data["confession_dropdown_id"]
+    # schedule
     server_info.cap3_channel = cap3_channel
     server_info.thpt_channel = thpt_channel
     server_info.total_mem_channel = total_mem_channel
     server_info.online_mem_channel = online_mem_channel
     server_info.study_count_channel = study_count_channel
+    # security
     server_info.diary_channel = diary_channel
-    server_info.admin_role_id = server_info_data["admin_role_id"]
     server_info.full_cam_channels = full_cam_channels
     server_info.cam_stream_channels = cam_stream_channels
+    # create voice channel
+    server_info.channel_cre = server_info_data["channel_cre"]
+
+    # errands
+    server_info.color_roles = server_info_data["color_roles"]
+    server_info.game_roles = server_info_data["game_roles"]
+    server_info.welcome_channel = welcome_channel

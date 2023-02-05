@@ -12,7 +12,7 @@ from other_modules.time_modules import vn_now
 class VoiceChannels(Document):
 
     owner: Link[Users]
-    vc_id: str
-    cc_id: str
+    vc_id: int
+    cc_id: int
 
     created_at: datetime.datetime = vn_now()

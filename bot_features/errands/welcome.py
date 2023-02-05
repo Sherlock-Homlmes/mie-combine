@@ -1,16 +1,17 @@
-from base import (
-    # necess
-    discord,
-    bot,
-    get,
-)
+# default
 import asyncio
+
+# lib
+import discord
+
+# local
+from base import bot, server_info
 
 welcome_member = []
 
 
 @bot.listen()
-async def on_member_join(member):
+async def on_member_join(member: discord.Member):
     global welcome_member
 
     if member.id not in welcome_member:
@@ -22,9 +23,10 @@ async def on_member_join(member):
             colour=discord.Colour.gold(),
         )
 
-        welcome_channel = get(member.guild.channels, id=894594032947310602)
-
-        pfp = member.avatar.url
+        if member.avatar:
+            pfp = member.avatar.url
+        else:
+            pfp = member.default_avatar.url
         field1 = "Hãy đọc kĩ luật ở <#880369537449619476> nha"
         field2 = "Nếu bạn chưa biết cách dùng Discord thì ở <#915949063403347968> có đó"
         field3 = "Hãy vào <#891909866355048548> để nhận role tương ứng nha"
@@ -39,7 +41,9 @@ async def on_member_join(member):
         embed.add_field(name="**Hướng dẫn cơ bản**", value=field2, inline=False)
         embed.add_field(name="**Set role**", value=field3, inline=False)
 
-        msg = await welcome_channel.send(content=member.mention, embed=embed)
+        msg = await server_info.welcome_channel.send(
+            content=member.mention, embed=embed
+        )
         welcome_member.append(member.id)
         await asyncio.sleep(600)
         await msg.delete()
@@ -47,12 +51,11 @@ async def on_member_join(member):
 
 
 @bot.listen()
-async def on_message(message):
-    global i, store, new_mem
-    if message.author == bot.user:
-        return
+async def on_message(message: discord.Message):
 
-    if str(message.channel) == "giới-thiệu-bản-thân" and len(message.content) < 120:
+    if message.author == bot.user:
+        pass
+    elif message.channel == server_info.welcome_channel and len(message.content) < 120:
         await message.delete()
         embed = discord.Embed(
             title="**Chào mừng "
@@ -61,7 +64,7 @@ async def on_message(message):
             description="Bạn giới thiệu đầy đủ 1 xíu nha.",
             colour=discord.Colour.gold(),
         )
-        coban = """
+        basic_info = """
 Tên tuổi
 Năm sinh
 Nơi ở
@@ -72,7 +75,9 @@ Mục tiêu trong tương lai
 ||**Trên 120 từ nhé :3**||
 """
         embed.set_thumbnail(url=message.author.avatar.url)
-        embed.add_field(name="**Một mẫu giới thiệu cơ bản**", value=coban, inline=False)
+        embed.add_field(
+            name="**Một mẫu giới thiệu cơ bản**", value=basic_info, inline=False
+        )
         await message.author.send(embed=embed)
 
     await bot.process_commands(message)

@@ -178,12 +178,11 @@ class Confession:
             colour=discord.Colour.gold(),
         )
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-        try:
-            embed.set_thumbnail(url=self.member.avatar.url)
-        except CommandInvokeError as e:
-            print(e)
-        except AttributeError as e:
-            print(e)
+        if self.member.avatar:
+            pfp = self.member.avatar
+        else:
+            pfp = self.member.default_avatar.url
+        embed.set_thumbnail(url=pfp)
         embed.set_footer(text="""BetterMe - Better everyday""")
         await server_info.manage_confession_channel.send(
             content=content, embed=embed, files=files

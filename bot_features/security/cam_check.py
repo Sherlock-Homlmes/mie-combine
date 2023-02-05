@@ -1,3 +1,7 @@
+# default
+from dataclasses import dataclass
+from typing import List
+
 # lib
 import discord
 import asyncio
@@ -6,318 +10,147 @@ import asyncio
 from base import bot, server_info
 
 
+@dataclass
+class CheckCamEmbedMessage:
+    # value input
+    member: discord.Member = None
+    check_type: List = None
+
+    # value after create
+    title: str = None
+    description: str = None
+    coulour: discord.Colour = None
+
+    embed: discord.Embed = None
+    message: discord.Message = None
+
+    async def send(self):
+        self.update_embed()
+        try:
+            self.message = await self.member.send(
+                content=self.member.mention, embed=self.embed
+            )
+        except Exception as e:
+            print(e)
+
+    async def update(self):
+        self.update_embed()
+        try:
+            await self.message.edit(embed=self.embed)
+        except Exception as e:
+            print(e)
+
+    def update_embed(self):
+        self.embed = discord.Embed(
+            title=f"**{self.title}**",
+            description=f"{self.member.name}, {self.description}",
+            colour=self.coulour,
+        )
+        if self.member.avatar:
+            pfp = self.member.avatar
+        else:
+            pfp = self.member.default_avatar.url
+        self.embed.set_thumbnail(url=pfp)
+        self.embed.set_footer(text="""BetterMe-Better everyday""")
+
+    def warn(self):
+        self.title = "Nhắc nhở"
+        self.coulour = discord.Colour.orange()
+        if self.check_type == ["cam"]:
+            self.description = "bạn đang ở trong phòng FULL CAM. Hãy bật camera, nếu không bạn sẽ bị kick sau 1 phút"
+        elif self.check_type == ["cam", "stream"]:
+            self.description = "bạn đang ở trong phòng CAM/STREAM. Hãy bật camera/stream, nếu không bạn sẽ bị kick sau 1 phút"
+
+    def punish(self):
+        self.title = "Nhắc nhở"
+        self.coulour = discord.Colour.red()
+        if self.check_type == ["cam"]:
+            self.description = "bạn đã bị kick ra khỏi phòng vì không bật cam"
+        elif self.check_type == ["cam", "stream"]:
+            self.description = "bạn đã bị kick ra khỏi phòng vì không bật cam/tream"
+
+    def thanks_for_accept(self):
+        self.title = "Cảm ơn"
+        self.coulour = discord.Colour.green()
+        if self.check_type == ["cam"]:
+            self.description = "cảm ơn bạn đã bật cam"
+        elif self.check_type == ["cam", "stream"]:
+            self.description = "cảm ơn bạn đã bật cam/stream"
+
+    def thanks_for_leave(self):
+        self.title = "Cảm ơn"
+        self.description = "cảm ơn bạn đã rời phòng"
+        self.coulour = discord.Colour.green()
+
+
 @bot.listen()
-async def on_voice_state_update(member: discord.Member, member_before, member_after):
+async def on_voice_state_update(
+    member: discord.Member,
+    member_before: discord.VoiceState,
+    member_after: discord.VoiceState,
+):
 
-    full_cam_channels = server_info.full_cam_category.voice_channels
-    cam_stream_channels = server_info.cam_stream_category.voice_channels
-    print(
-        server_info.full_cam_category,
-        server_info.full_cam_category.category,
-        server_info.full_cam_category.voice_channels,
-        server_info.full_cam_category.text_channels,
-        server_info.full_cam_category.channels,
-    )
+    full_cam_channels = server_info.full_cam_channels
+    cam_stream_channels = server_info.cam_stream_channels
+    sleep_time = [3, 5]
 
-    ###only cam
+    ### only cam
     if member_after.channel in full_cam_channels:
-        await asyncio.sleep(5)
-        if member.voice.self_video == False:
-            await asyncio.sleep(10)
-            # remind
+        await asyncio.sleep(sleep_time[0])
+        # remind
+        if member.voice != None:
             if (
                 member.voice.self_video == False
                 and member.voice.channel in full_cam_channels
             ):
 
-                embed = discord.Embed(
-                    title="**Nhắc nhở**",
-                    description=member.name
-                    + ", bạn đang ở trong phòng FULL CAM. Hãy bật camera, nếu không bạn sẽ bị kick sau 1 phút",
-                    colour=discord.Colour.red(),
-                )
-                embed.set_footer(text="""BetterMe-Better everyday""")
-
-                try:
-                    msg = await member.send(content=member.mention, embed=embed)
-                except Exception as e:
-                    print(e)
+                embed = CheckCamEmbedMessage(member=member, check_type=["cam"])
+                embed.warn()
+                await embed.send()
 
                 # kick
-                await asyncio.sleep(60)
+                await asyncio.sleep(sleep_time[1])
                 if member.voice != None:
                     if (
                         member.voice.self_video == False
                         and member.voice.channel in full_cam_channels
                     ):
                         await member.move_to(None)
-                        title = "Nhắc nhở"
-                        message = ("bạn đã bị kick ra khỏi phòng vì không bật cam",)
-                        colour = discord.Colour.red()
+                        embed.punish()
                     else:
-                        title = "Cảm ơn"
-                        message = ("cảm ơn bạn đã bật cam",)
-                        colour = discord.Colour.green()
+                        embed.thanks_for_accept()
                 else:
-                    title = ("Cảm ơn",)
-                    message = (member.name + ", cảm ơn bạn đã rời phòng",)
-                    colour = discord.Colour.green()
+                    embed.thanks_for_leave()
 
-                if msg:
-                    embed = discord.Embed(
-                        title=f"**{title}**",
-                        description=f"{member.name}, {message}",
-                        colour=colour,
-                    )
-                    embed.set_footer(text="""BetterMe-Better everyday""")
-                    await msg.edit(embed=embed)
+                await embed.update()
 
-        # ###############cam | stream
-        # ####check cam on
-        # if member_after.channel.id in cam_stream_ids:
-        #     await asyncio.sleep(5)
-        #     member.voice = member.voice
-        #     if member.voice.self_video == False and member.voice.self_stream == False:
-        #         print("kick stream start")
-        #         await asyncio.sleep(10)
+    ### cam | stream
+    if member_after.channel in cam_stream_channels:
+        await asyncio.sleep(sleep_time[0])
+        # remind
+        if member.voice != None:
+            if (
+                not any([member.voice.self_video, member.voice.self_stream])
+                and member.voice.channel in cam_stream_channels
+            ):
+                embed = CheckCamEmbedMessage(
+                    member=member, check_type=["cam", "stream"]
+                )
+                embed.warn()
+                await embed.send()
 
-        #         # nhắc nhở
-        #         member.voice = member.voice
-        #         if member.voice != None:
-        #             if (
-        #                 member.voice.self_video == False
-        #                 and member.voice.self_stream == False
-        #                 and member.voice.channel.id in cam_stream_ids
-        #             ):
+                # kick
+                await asyncio.sleep(sleep_time[1])
+                if member.voice != None:
+                    if (
+                        not any([member.voice.self_video, member.voice.self_stream])
+                        and member.voice.channel in cam_stream_channels
+                    ):
+                        await member.move_to(None)
+                        embed.punish()
+                    else:
+                        embed.thanks_for_accept()
+                else:
+                    embed.thanks_for_leave()
 
-        #                 embed = discord.Embed(
-        #                     title="**Nhắc nhở**",
-        #                     description=member.name
-        #                     + ", bạn đang ở trong phòng CAM/STREAM. Hãy bật camera hoặc stream, nếu không bạn sẽ bị kick sau 1 phút",
-        #                     colour=discord.Colour.red(),
-        #                 )
-        #                 # pfp = member.avatar_url
-        #                 # embed.set_thumbnail(url=pfp)
-        #                 embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                 try:
-        #                     msg = await member.send(content=member.mention, embed=embed)
-        #                 except Exception as e:
-        #                     print(e)
-
-        #                 # kick
-        #                 await asyncio.sleep(45)
-        #                 member.voice = member.voice
-        #                 if member.voice != None:
-        #                     if (
-        #                         member.voice.self_video == False
-        #                         and member.voice.self_stream == False
-        #                         and member.voice.channel.id in cam_stream_ids
-        #                     ):
-        #                         await member.move_to(None)
-
-        #                         embed = discord.Embed(
-        #                             title="**Nhắc nhở**",
-        #                             description=member.name
-        #                             + ", bạn đã bị kick ra khỏi phòng vì không bật cam hoặc stream",
-        #                             colour=discord.Colour.red(),
-        #                         )
-        #                         # pfp = member.avatar_url
-        #                         # embed.set_thumbnail(url=pfp)
-        #                         embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                         await msg.edit(embed=embed)
-        #                     else:
-
-        #                         embed = discord.Embed(
-        #                             title="**Cảm ơn**",
-        #                             description=member.name
-        #                             + ", cảm ơn bạn đã bật cam/stream",
-        #                             colour=discord.Colour.green(),
-        #                         )
-        #                         # pfp = member.avatar_url
-        #                         # embed.set_thumbnail(url=pfp)
-        #                         embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                         await msg.edit(embed=embed)
-
-        #                 else:
-        #                     embed = discord.Embed(
-        #                         title="**Cảm ơn**",
-        #                         description=member.name + ", cảm ơn bạn đã rời phòng",
-        #                         colour=discord.Colour.green(),
-        #                     )
-        #                     # pfp = member.avatar_url
-        #                     # embed.set_thumbnail(url=pfp)
-        #                     embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                     await msg.edit(embed=embed)
-        #         print("kick stream end")
-
-        # #################custom check cam bot################################
-        # ###############custom only cam
-        # ####check cam on
-        # if member_after.channel.name.lower().startswith("full cam"):
-        #     await asyncio.sleep(5)
-        #     member.voice = member.voice
-        #     if member.voice.self_video == False:
-        #         print("kick cam start")
-        #         await asyncio.sleep(15)
-
-        #         # nhắc nhở
-        #         member.voice = member.voice
-        #         if member.voice != None:
-        #             if (
-        #                 member.voice.self_video == False
-        #                 and member_after.channel.name.lower().startswith("full cam")
-        #             ):
-
-        #                 embed = discord.Embed(
-        #                     title="**Nhắc nhở**",
-        #                     description=member.name
-        #                     + ", bạn đang ở trong phòng FULL CAM. Hãy bật camera, nếu không bạn sẽ bị kick sau 1 phút",
-        #                     colour=discord.Colour.red(),
-        #                 )
-        #                 # pfp = member.avatar_url
-        #                 # embed.set_thumbnail(url=pfp)
-        #                 embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                 try:
-        #                     msg = await member.send(content=member.mention, embed=embed)
-        #                 except Exception as e:
-        #                     print(e)
-
-        #                 # kick
-        #                 await asyncio.sleep(45)
-        #                 member.voice = member.voice
-        #                 if member.voice != None:
-        #                     if (
-        #                         member.voice.self_video == False
-        #                         and member_after.channel.name.lower().startswith(
-        #                             "full cam"
-        #                         )
-        #                     ):
-        #                         await member.move_to(None)
-
-        #                         embed = discord.Embed(
-        #                             title="**Nhắc nhở**",
-        #                             description=member.name
-        #                             + ", bạn đã bị kick ra khỏi phòng vì không bật cam",
-        #                             colour=discord.Colour.red(),
-        #                         )
-        #                         # pfp = member.avatar_url
-        #                         # embed.set_thumbnail(url=pfp)
-        #                         embed.set_footer(text="""BetterMe-Better everyday""")
-        #                         await msg.edit(embed=embed)
-        #                     else:
-
-        #                         embed = discord.Embed(
-        #                             title="**Cảm ơn**",
-        #                             description=member.name + ", cảm ơn bạn đã bật cam",
-        #                             colour=discord.Colour.green(),
-        #                         )
-        #                         # pfp = member.avatar_url
-        #                         # embed.set_thumbnail(url=pfp)
-        #                         embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                         await msg.edit(embed=embed)
-
-        #                 else:
-        #                     embed = discord.Embed(
-        #                         title="**Cảm ơn**",
-        #                         description=member.name + ", cảm ơn bạn đã rời phòng",
-        #                         colour=discord.Colour.green(),
-        #                     )
-        #                     # pfp = member.avatar_url
-        #                     # embed.set_thumbnail(url=pfp)
-        #                     embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                     await msg.edit(embed=embed)
-        #         print("kick cam end")
-
-        # ###############custom cam | stream
-        # ####check cam on
-        # if member_after.channel.name.lower().startswith("cam stream"):
-        #     await asyncio.sleep(5)
-        #     member.voice = member.voice
-        #     if (
-        #         member.voice.self_video == False
-        #         and member_after.channel.name.lower().startswith("cam stream")
-        #     ):
-        #         print("kick stream start")
-        #         await asyncio.sleep(15)
-
-        #         # nhắc nhở
-        #         member.voice = member.voice
-        #         if member.voice != None:
-        #             if (
-        #                 member.voice.self_video == False
-        #                 and member.voice.self_stream == False
-        #                 and member_after.channel.name.lower().startswith("cam stream")
-        #             ):
-
-        #                 embed = discord.Embed(
-        #                     title="**Nhắc nhở**",
-        #                     description=member.name
-        #                     + ", bạn đang ở trong phòng CAM/STREAM. Hãy bật camera hoặc stream, nếu không bạn sẽ bị kick sau 1 phút",
-        #                     colour=discord.Colour.red(),
-        #                 )
-        #                 # pfp = member.avatar_url
-        #                 # embed.set_thumbnail(url=pfp)
-        #                 embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                 try:
-        #                     msg = await member.send(content=member.mention, embed=embed)
-        #                 except Exception as e:
-        #                     print(e)
-
-        #                 # kick
-        #                 await asyncio.sleep(45)
-        #                 member.voice = member.voice
-        #                 if member.voice != None:
-        #                     if (
-        #                         member.voice.self_video == False
-        #                         and member.voice.self_stream == False
-        #                         and member_after.channel.name.lower().startswith(
-        #                             "cam stream"
-        #                         )
-        #                     ):
-        #                         await member.move_to(None)
-
-        #                         embed = discord.Embed(
-        #                             title="**Nhắc nhở**",
-        #                             description=member.name
-        #                             + ", bạn đã bị kick ra khỏi phòng vì không bật cam hoặc stream",
-        #                             colour=discord.Colour.red(),
-        #                         )
-        #                         # pfp = member.avatar_url
-        #                         # embed.set_thumbnail(url=pfp)
-        #                         embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                         await msg.edit(embed=embed)
-        #                     else:
-
-        #                         embed = discord.Embed(
-        #                             title="**Cảm ơn**",
-        #                             description=member.name
-        #                             + ", cảm ơn bạn đã bật cam/stream",
-        #                             colour=discord.Colour.green(),
-        #                         )
-        #                         # pfp = member.avatar_url
-        #                         # embed.set_thumbnail(url=pfp)
-        #                         embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                         await msg.edit(embed=embed)
-
-        #                 else:
-        #                     embed = discord.Embed(
-        #                         title="**Cảm ơn**",
-        #                         description=member.name + ", cảm ơn bạn đã rời phòng",
-        #                         colour=discord.Colour.green(),
-        #                     )
-        #                     # pfp = member.avatar_url
-        #                     # embed.set_thumbnail(url=pfp)
-        #                     embed.set_footer(text="""BetterMe-Better everyday""")
-
-        #                     await msg.edit(embed=embed)
-        #         print("kick stream end")
+                await embed.update()

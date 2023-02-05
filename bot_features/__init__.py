@@ -1,5 +1,3 @@
-### bot features
-
 ## Event and schedule
 # from .schedule import *
 from .guild_event import *
@@ -13,6 +11,3 @@ from .confession import *
 # from .create_vc import *
 
 # from .manage import *
-
-### api for bot
-# from api import *

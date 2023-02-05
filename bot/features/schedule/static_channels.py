@@ -8,16 +8,17 @@ from math import trunc
 from discord.ext import tasks
 
 # local
-from bot import server_info
+from bot import bot, guild_id, server_info
 from other_modules.time_modules import vn_now
 
 total_member = 10000
 online_member = 1000
+total_voice_member = 50
 
 
 @tasks.loop(minutes=6)
 async def static_channels():
-    global online_member, total_member
+    global online_member, total_member, total_voice_member
     # count down
 
     now = vn_now()
@@ -30,20 +31,8 @@ async def static_channels():
     cap3_left = cap3day - now - timedelta(hours=1)
     thpt_left = thptday - now - timedelta(hours=1)
 
-    thpt = (
-        "THPT: "
-        + str(thpt_left.days)
-        + " ngày "
-        + str(trunc(thpt_left.seconds / 3600))
-        + " giờ "
-    )
-    cap3 = (
-        "Cấp 3: "
-        + str(cap3_left.days)
-        + " ngày "
-        + str(trunc(cap3_left.seconds / 3600))
-        + " giờ "
-    )
+    thpt = f"THPT: {thpt_left.days} ngày {trunc(thpt_left.seconds / 3600)} giờ "
+    cap3 = f"Cấp 3: {cap3_left.days} ngày {trunc(cap3_left.seconds / 3600)} giờ "
 
     await server_info.cap3_channel.edit(name=cap3)
     await server_info.thpt_channel.edit(name=thpt)
@@ -55,11 +44,12 @@ async def static_channels():
         )
         resp = await res.json()
 
-    total_member = server_info.guild.member_count
-    online_member = resp["presence_count"]
+    guild = bot.get_guild(guild_id)
+    voice_channel_list = guild.voice_channels
+    total_voice_member = sum(len(channel.members) for channel in voice_channel_list)
 
-    voice_channel_list = server_info.guild.voice_channels
-    total_voice_member = sum([len(channel.members) for channel in voice_channel_list])
+    total_member = guild.member_count
+    online_member = resp["presence_count"]
 
     await server_info.total_mem_channel.edit(name=f"Thành viên: {total_member} người")
     await server_info.online_mem_channel.edit(name=f"Online: {online_member} người")
@@ -73,5 +63,6 @@ def discord_server_info():
     return {
         "total_member": total_member,
         "online_member": online_member,
+        "total_voice_member": total_voice_member,
         "study_hour": 5,
     }

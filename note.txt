@@ -1,11 +1,16 @@
+host problems
+
 guild event:
     user update
+
 cfs:
     fix before start
     count problems
 
+errands:
+    welcome: delete message after up host
+
 create vc:
-    rewrite
     when host up -> auto create vc
 
 

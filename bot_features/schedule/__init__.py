@@ -1,9 +1,14 @@
-from .static_channels import static_channels
-from .bad_words import unmute_badword
+# default
+import asyncio
 
+# local
 from base import bot
+
+from .static_channels import static_channels
+
+
 @bot.listen()
 async def on_ready():
-	unmute_badword.start()
-	static_channels.start()
-	print('1.Schedule ready')
+    await asyncio.sleep(10)
+    static_channels.start()
+    print("1.Schedule ready")

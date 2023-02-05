@@ -1,0 +1,12 @@
+guild event:
+    user update
+cfs:
+    fix before start
+    count problems
+
+create vc:
+    rewrite
+    when host up -> auto create vc
+
+
+confession image_handler save image to async

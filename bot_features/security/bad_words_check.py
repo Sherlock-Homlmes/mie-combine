@@ -1,36 +1,95 @@
-from base import (
-  # necess
-  discord, bot,
-  get, has_role, Interaction, app_commands,
-  # var
-  diary_channel_id, admin_role_id
-)
-
+# default
 from datetime import timedelta
 from typing import Optional
 
-from feature_func.mongodb import open_database, write_database
+#  lib
+import discord
+from discord import Interaction, app_commands
+from discord.ext.commands import has_role
+
+# local
+from base import bot, server_info
+from models import Users, BadUsers
+from other_modules.time_modules import vn_now
 
 exact_bad_words = [
-'lồn', 'conmemay', 'đĩ', 'đụ', 'cuming', 'cock', 'đù', 'vl', 'lìn', 'cmn'
+    "lồn",
+    "conmemay",
+    "đĩ",
+    "đụ",
+    "cuming",
+    "cock",
+    "đù",
+    "vl",
+    "lìn",
+    "cmn",
 ]
 
 included_bad_words = [
-'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'loz', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đm', 'vcl', 'đéo', 'đ!t', 'd!t', 'clm', 'cđm', 'vkl', 'vklm', 'vcc', 'vcđ', 'vcd',  'đcm', 'dcm',
-'wtf', 'fuk',
+    "dkm",
+    "cặc",
+    "cặk",
+    "cẹc",
+    "bitch",
+    "địt",
+    "loz",
+    "đjt",
+    "djt",
+    "buồi",
+    "buoi`",
+    "buoi'",
+    "đm",
+    "vcl",
+    "đéo",
+    "đ!t",
+    "d!t",
+    "clm",
+    "cđm",
+    "vkl",
+    "vklm",
+    "vcc",
+    "vcđ",
+    "vcd",
+    "đcm",
+    "dcm",
+    "wtf",
+    "fuk",
 ]
 
 space_bad_words = [
-'dkm', 'cặc', 'cặk', 'cẹc', 'bitch', 'địt', 'đjt', 'djt', 'buồi', 'buoi`', "buoi'", 'đéo', 'đ!t', 'd!t', 'vkl', 'vklm', 'dcmm', 'đcmm', 'vclm',
-'pussy', 'blowjob', 'titjob', 'wtf', 'fuck',
+    "dkm",
+    "cặc",
+    "cặk",
+    "cẹc",
+    "bitch",
+    "địt",
+    "đjt",
+    "djt",
+    "buồi",
+    "buoi`",
+    "buoi'",
+    "đéo",
+    "đ!t",
+    "d!t",
+    "vkl",
+    "vklm",
+    "dcmm",
+    "đcmm",
+    "vclm",
+    "pussy",
+    "blowjob",
+    "titjob",
+    "wtf",
+    "fuck",
 ]
 
 seperate = [
-    '-', ' ',
+    "-",
+    " ",
 ]
 
+
 def check_bad_words(content: str) -> bool:
-    global exact_bad_words, included_bad_words
 
     content = content.lower()
     content_words = content.split(" ")
@@ -51,7 +110,6 @@ def check_bad_words(content: str) -> bool:
                 if bad_word in word:
                     return False
 
-    
     # check space bad word
     for tempo in tempo_content:
         content_words.remove(tempo)
@@ -59,34 +117,38 @@ def check_bad_words(content: str) -> bool:
     content = "".join(content_words)
 
     for seper in seperate:
-        content = content.replace(seper,"")
+        content = content.replace(seper, "")
 
     for word in space_bad_words:
         if word in content:
             return False
 
-    
-    
     return True
 
-def punish(mem_id: int, message_content: str):
-    value = open_database("bad_words")
-    
+
+async def remove_exprired_bad_user(user_id: str):
+    delete_bad_users = await BadUsers.find(
+        BadUsers.user.discord_id == user_id
+    ).to_list()
+
+    for bad_user in delete_bad_users:
+        if (vn_now() - bad_user.created_at).days >= 30:
+            await bad_user.delete()
+
+
+async def punish(mem_id: int, message_content: str):
     mem_id = str(mem_id)
-    if mem_id not in value:
-        value[mem_id] = {
-            'bad_word_list': [
-                (discord.utils.utcnow(), message_content)
-            ],
-        }
-    else:
-        value[mem_id]['bad_word_list'].append((discord.utils.utcnow(), message_content))
+    await remove_exprired_bad_user(mem_id)
 
-    counter = len(value[mem_id]['bad_word_list'])
-    write_database(value, "bad_words")
+    bad_user = BadUsers(
+        user=await Users.find_one(Users.discord_id == mem_id),
+        bad_content=message_content,
+    )
+    await bad_user.insert()
 
+    counter = await BadUsers.find(BadUsers.user.discord_id == mem_id).count()
     if counter < 3:
-        form = 'WARN'
+        form = "WARN"
         hours = 0
         penalize = "Cảnh báo"
         colour = discord.Colour.orange()
@@ -106,15 +168,16 @@ def punish(mem_id: int, message_content: str):
             elif counter == 8:
                 hours = 360
 
-            form = 'MUTE'
+            form = "MUTE"
             penalize = f"Thời gian chờ {hours} tiếng"
 
         elif counter >= 9:
-            form = 'BAN'
+            form = "BAN"
             hours = 0
             penalize = f"BAN !!!"
 
     return (form, hours, penalize, colour)
+
 
 ### Các mức phạt:
 # 1-2 lần: warn
@@ -125,26 +188,11 @@ def punish(mem_id: int, message_content: str):
 # 7 lần: tempmute 360h
 # 8 lần: ban
 
-# Sau 30 ngày thì những tội 30 ngày trước đó sẽ được xóa bỏ
-
-
-diary_channel = None
-muted_role = None
-
-@bot.listen()
-async def on_ready():
-    global diary_channel
-
-    diary_channel = get(bot.get_all_channels(), id = diary_channel_id)
-    # diary_channel = get(bot.get_all_channels(), id = 884447828330549349)
-
 
 @bot.listen()
 async def on_message(message: discord.Message):
-    global diary_channel
 
     if check_bad_words(message.content) == False:
-        print(message.content)
 
         try:
             await message.delete()
@@ -152,45 +200,53 @@ async def on_message(message: discord.Message):
             print("Not found message")
 
         # xu ly
-        form, hours, penalize, colour = punish(message.author.id, message.content)
+        form, hours, penalize, colour = await punish(message.author.id, message.content)
         reason = "Ngôn từ không phù hợp"
-        if form == 'WARN':
+        if form == "WARN":
             pass
-        elif form == 'MUTE':
-            unmuted_time = discord.utils.utcnow() + timedelta(hours= hours)
-            await message.author.timeout(unmuted_time, reason= reason)
-        elif form == 'BAN':
-            await message.author.ban(reason= reason)
-        
+        elif form == "MUTE":
+            unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
+            await message.author.timeout(unmuted_time, reason=reason)
+        elif form == "BAN":
+            await message.author.ban(reason=reason)
+
         # send to channel
         embed = discord.Embed(
-            title= None,
-            description=f"**Lý do:** {reason}",
-            colour= colour
+            title=None, description=f"**Lý do:** {reason}", colour=colour
         )
-        embed.set_author(name =  f"[{form}] {message.author.name}#{message.author.discriminator}", icon_url = message.author.avatar.url)
-        await message.channel.send(content= message.author.mention, embed= embed)
+        embed.set_author(
+            name=f"[{form}] {message.author.name}#{message.author.discriminator}",
+            icon_url=message.author.avatar.url,
+        )
+        await message.channel.send(content=message.author.mention, embed=embed)
 
         # send to diary
-        embed = discord.Embed(colour = colour)
-        embed.set_author(name =  f"[{form}] {message.author.name}#{message.author.discriminator}", icon_url = message.author.avatar.url)
-        embed.add_field(name= "User", value= message.author.mention, inline= True)
-        embed.add_field(name= "Moderator", value= bot.user.mention, inline= True)
-        embed.add_field(name= "Reason", value= reason, inline= True)
-        embed.add_field(name= "Channel", value= f"<#{message.channel.id}>", inline= False)
-        embed.add_field(name= "Message", value= message.content, inline= False)
-        embed.add_field(name= "Penalize", value= penalize, inline= False)
+        embed = discord.Embed(colour=colour)
+        embed.set_author(
+            name=f"[{form}] {message.author.name}#{message.author.discriminator}",
+            icon_url=message.author.avatar.url,
+        )
+        embed.add_field(name="User", value=message.author.mention, inline=True)
+        embed.add_field(name="Moderator", value=bot.user.mention, inline=True)
+        embed.add_field(name="Reason", value=reason, inline=True)
+        embed.add_field(name="Channel", value=f"<#{message.channel.id}>", inline=False)
+        embed.add_field(name="Message", value=message.content, inline=False)
+        embed.add_field(name="Penalize", value=penalize, inline=False)
 
-        await diary_channel.send(embed= embed)
+        await server_info.diary_channel.send(embed=embed)
 
 
-@bot.tree.command(name= "timeout", description= "Xử phạt người dùng")
-@has_role(admin_role_id)
-@app_commands.describe(member="Người bị xử phạt")
-@app_commands.describe(hours="Thời gian xử phạt(giờ)")
-@app_commands.describe(reason="Lý do")
-async def timeout(interaction: Interaction, member: discord.Member, hours: int, reason: Optional[str]):
+# @bot.tree.command(name="timeout", description="Xử phạt người dùng")
+# @has_role(server_info.admin_role_id)
+# @app_commands.describe(member="Người bị xử phạt")
+# @app_commands.describe(hours="Thời gian xử phạt(giờ)")
+# @app_commands.describe(reason="Lý do")
+# async def timeout(
+#     interaction: Interaction, member: discord.Member, hours: int, reason: Optional[str]
+# ):
 
-    unmuted_time = discord.utils.utcnow() + timedelta(hours= hours)
-    await member.timeout(unmuted_time, reason= reason)
-    await interaction.response.send_message(f"Đã cài thời gian chờ cho {member.mention} trong {hours} giờ tiếp theo.\n**Lý do:**{reason}")
+#     unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
+#     await member.timeout(unmuted_time, reason=reason)
+#     await interaction.response.send_message(
+#         f"Đã cài thời gian chờ cho {member.mention} trong {hours} giờ tiếp theo.\n**Lý do:**{reason}"
+#     )

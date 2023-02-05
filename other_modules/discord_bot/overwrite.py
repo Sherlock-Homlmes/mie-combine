@@ -5,7 +5,7 @@ from typing import Union
 import discord
 
 # local
-from base import discord
+from bot import discord
 
 
 class Overwrite(discord.PermissionOverwrite):

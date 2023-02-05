@@ -1,19 +1,11 @@
-from base import bot
+# lib
+import uvicorn
+
+# local
 from .app import app
 
-import uvicorn
-from threading import Thread
+# routers
+from .members import *
+from .server_stats import *
 
-
-def run_web():
-    uvicorn.run(app, host="0.0.0.0", port=8080)
-
-
-def keep_alive():
-    t = Thread(target=run_web)
-    t.start()
-
-@bot.listen()
-async def on_ready():
-    keep_alive()
-    print('8.API ready')
+uvicorn.run(app, host="0.0.0.0", port=8080)

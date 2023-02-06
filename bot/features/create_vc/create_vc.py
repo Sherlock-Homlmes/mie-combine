@@ -10,7 +10,7 @@ from discord.errors import NotFound
 
 
 # local
-from bot import bot, server_info
+from bot import bot, server_info, guild_id
 from models import VoiceChannels, Users
 
 from other_modules.discord_bot.channel_name import (
@@ -76,11 +76,11 @@ async def on_ready():
 async def fix_room():
     global all_created_vc_id
 
+    guild = bot.get_guild(guild_id)
+
     for vc_id in all_created_vc_id:
-        try:
-            vc_channel = await server_info.guild.fetch_channel(vc_id)
-        except:
-            vc_channel = None
+
+        vc_channel = guild.get_channel(vc_id)
 
         if vc_channel:
             if vc_channel.members == []:
@@ -129,7 +129,7 @@ async def on_voice_state_update(
                     VoiceChannels.vc_id == voice_channel_before.id
                 )
 
-                if voice_channel_before.members == []:
+                if len(voice_channel_before.members) == 0:
                     channel_del = server_info.guild.get_channel(vc.vc_id)
                     if channel_del:
                         await channel_del.delete()

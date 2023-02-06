@@ -1,7 +1,9 @@
-# lib
+### default
+
+### lib
 import uvicorn
 
-# local
+### local
 from api import *
 from all_env import my_secret
 
@@ -14,4 +16,5 @@ def run_bot_only():
     bot.run(my_secret)
 
 
+# run_bot_only()
 run_api_and_bot()

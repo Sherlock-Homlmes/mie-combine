@@ -2,25 +2,16 @@
 import asyncio
 
 # lib
-import beanie
 
 # local
 from .settings import bot, guild_id, server_info
-from models import *
-from database.mongodb_async import client
+from models import ErrandData
 from other_modules.discord_bot.get_object import get_channel
 
 
 @bot.listen()
 async def on_ready():
-
-    ### Connect to database
-    await beanie.init_beanie(
-        database=client.discord_betterme,
-        document_models=[Users, BadUsers, Confessions, ErrandData, VoiceChannels],
-    )
     await get_server_info()
-
     print("Bot ready")
 
 

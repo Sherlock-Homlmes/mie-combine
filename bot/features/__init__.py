@@ -9,4 +9,4 @@ from .errands import *
 from .confession import *
 from .create_vc import *
 
-from .manage import *
+# from .manage import *

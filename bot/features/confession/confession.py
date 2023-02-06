@@ -133,7 +133,6 @@ class Confession:
                 if len(self.content) < 50 and self.files == []:
                     message = "Nội dung confession của bạn rất ngắn nên sẽ không được gửi đi. Lưu ý: nếu gửi confession khó hiểu, không có chủ đích sẽ bị mute ít nhất 3 ngày"
                 else:
-                    server_info.confession_count += 1
 
                     if self.cfs_type == "private":
                         await self.send_private_confession()
@@ -144,6 +143,9 @@ class Confession:
                         ErrandData.name == "server_info"
                     )
                     server_info_data.value["confession_count"] += 1
+                    server_info.confession_count = server_info_data.value[
+                        "confession_count"
+                    ]
                     await server_info_data.save()
 
                     message = "Cảm ơn bạn đã chia sẻ cùng chúng mình"

@@ -8,15 +8,14 @@ Part 1: Schedule
 Part 2: Security
 - Check introduce content
 - Check language in language channels | X
-- Check the user camera on or off
+- Force user turn on camera in full cam room
 - Check bad words
 
 Part 3: Errands
-- Say hello to user join server
+- Welcome message to user join server
 - Change user color, remove color
 - Dropdown FAQ
 - Game center: Add role to user
-- Study club
 - Save message for AI chatbot resource
 - Feedback using modal
 
@@ -24,7 +23,7 @@ Part 5: Confession
 
 Part 6: Create voice channel
 
-Part 7: Count Study Time | ready for combine
+Part 7: Count Study Time | in process
 
 Part 8: API
 - FASTAPI included

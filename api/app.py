@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # local
 from bot import bot
 from all_env import my_secret
+from database.mongodb_async import connect_to_database
 
 app = FastAPI(docs_url="/all-api", redoc_url=None)
 
@@ -26,6 +27,7 @@ async def home():
 
     if not is_bot_start:
         is_bot_start = True
+        await connect_to_database()
         await bot.start(my_secret)
 
     return "Hello I'm alive"

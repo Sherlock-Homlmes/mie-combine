@@ -14,4 +14,4 @@ def run_bot_only():
     bot.run(my_secret)
 
 
-run_bot_only()
+run_api_and_bot()

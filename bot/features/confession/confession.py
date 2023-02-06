@@ -133,6 +133,8 @@ class Confession:
                 if len(self.content) < 50 and self.files == []:
                     message = "Nội dung confession của bạn rất ngắn nên sẽ không được gửi đi. Lưu ý: nếu gửi confession khó hiểu, không có chủ đích sẽ bị mute ít nhất 3 ngày"
                 else:
+                    server_info.confession_count += 1
+
                     if self.cfs_type == "private":
                         await self.send_private_confession()
                     elif self.cfs_type == "public":

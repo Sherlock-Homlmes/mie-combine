@@ -11,12 +11,11 @@ from bot import bot, server_info
 
 @bot.listen()
 async def on_interaction(interaction: Interaction):
-    global khu_vui_choi, game_center_interaction_id
 
     ####game
     if interaction.message:
         if (
-            interaction.message.id == game_center_interaction_id
+            interaction.message.id == server_info.game_center_interaction_id
             and interaction.type == discord.InteractionType.component
         ):
             game_roles = server_info.game_roles

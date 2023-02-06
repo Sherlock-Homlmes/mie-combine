@@ -169,11 +169,11 @@ class Confession:
             colour=discord.Colour.gold(),
         )
         embed.set_footer(text="""BetterMe - Better everyday""")
-        await server_info.manage_confession_channel.send(
+        await server_info.confession_channel.send(
             content=content, embed=embed, files=files
         )
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-        await server_info.confession_channel.send(
+        await server_info.manage_confession_channel.send(
             content=content, embed=embed, files=files
         )
 
@@ -194,10 +194,10 @@ class Confession:
             pfp = self.member.default_avatar.url
         embed.set_thumbnail(url=pfp)
         embed.set_footer(text="""BetterMe - Better everyday""")
-        await server_info.manage_confession_channel.send(
+        await server_info.confession_channel.send(
             content=content, embed=embed, files=files
         )
-        await server_info.confession_channel.send(
+        await server_info.manage_confession_channel.send(
             content=content, embed=embed, files=files
         )
 

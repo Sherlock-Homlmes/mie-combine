@@ -10,7 +10,7 @@ from discord.ui import View
 
 # local
 from bot import bot, server_info, guild_id
-from models import Confessions
+from models import Confessions, ErrandData
 
 from other_modules.image_handle import save_image, delete_image
 from other_modules.discord_bot.overwrite import Overwrite
@@ -137,6 +137,13 @@ class Confession:
                         await self.send_private_confession()
                     elif self.cfs_type == "public":
                         await self.send_public_confession()
+
+                    server_info_data = await ErrandData.find_one(
+                        ErrandData.name == "server_info"
+                    )
+                    server_info_data.value["confession_count"] += 1
+                    await server_info_data.save()
+
                     message = "Cảm ơn bạn đã chia sẻ cùng chúng mình"
 
                 await confession.delete()

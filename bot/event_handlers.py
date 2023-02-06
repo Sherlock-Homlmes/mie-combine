@@ -70,6 +70,7 @@ async def get_server_info():
     server_info.confession_channel = confession_channel
     server_info.manage_confession_channel = manage_confession_channel
     server_info.confession_dropdown_id = server_info_data["confession_dropdown_id"]
+    server_info.confession_count = server_info_data["confession_count"]
     # schedule
     server_info.cap3_channel = cap3_channel
     server_info.thpt_channel = thpt_channel

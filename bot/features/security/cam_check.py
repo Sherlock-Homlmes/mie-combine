@@ -92,7 +92,7 @@ async def on_voice_state_update(
 
     full_cam_channels = server_info.full_cam_channels
     cam_stream_channels = server_info.cam_stream_channels
-    sleep_time = [3, 5]
+    sleep_time = [30, 50]
 
     ### only cam
     if member_after.channel in full_cam_channels:

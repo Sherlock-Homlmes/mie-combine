@@ -6,7 +6,6 @@ from typing import Optional, Union
 import discord
 from discord import Interaction, app_commands
 from discord.ext.commands import has_role
-from discord.errors import NotFound
 
 
 # local
@@ -30,9 +29,9 @@ command_mess = """
 
 /show: hiện phòng với mọi người
 
-/mute: tắt âm phòng
+/mute: tắt mic phòng
 
-/unmute: bỏ tắt âm phòng
+/unmute: bỏ mic phòng
 
 /allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
 
@@ -57,15 +56,17 @@ command_mess = """
 
 # ----------START-----------
 all_created_vc_id = []
+guild: discord.Guild = None
 
 
 @bot.listen()
 async def on_ready():
-    global all_created_vc_id
+    global all_created_vc_id, guild
 
     print("6.Create voice channel ready")
     await asyncio.sleep(10)
     # get all created voice channel
+    guild = bot.get_guild(guild_id)
     voice_channels = await VoiceChannels.find({}).to_list()
     all_created_vc_id = [int(voice_channel.vc_id) for voice_channel in voice_channels]
 
@@ -74,9 +75,7 @@ async def on_ready():
 
 
 async def fix_room():
-    global all_created_vc_id
-
-    guild = bot.get_guild(guild_id)
+    global all_created_vc_id, guild
 
     for vc_id in all_created_vc_id:
 
@@ -112,7 +111,7 @@ async def on_voice_state_update(
     member_before: discord.VoiceState,
     member_after: discord.VoiceState,
 ):
-    global all_created_vc_id
+    global all_created_vc_id, guild
 
     ##################### create-voice-channel #####################
     voice_channel_before = member_before.channel
@@ -129,11 +128,11 @@ async def on_voice_state_update(
                     VoiceChannels.vc_id == voice_channel_before.id
                 )
 
-                if len(voice_channel_before.members) == 0:
-                    channel_del = server_info.guild.get_channel(vc.vc_id)
+                if voice_channel_before.members == []:
+                    channel_del = guild.get_channel(vc.vc_id)
                     if channel_del:
                         await channel_del.delete()
-                    channel_del = server_info.guild.get_channel(vc.cc_id)
+                    channel_del = guild.get_channel(vc.cc_id)
                     if channel_del != None:
                         await channel_del.delete()
 
@@ -141,7 +140,7 @@ async def on_voice_state_update(
                     all_created_vc_id.remove(voice_channel_before.id)
 
                 elif not member.bot:
-                    cc_channel = server_info.guild.get_channel(vc.cc_id)
+                    cc_channel = guild.get_channel(vc.cc_id)
                     await cc_channel.set_permissions(member, overwrite=None)
 
         ###member in
@@ -152,7 +151,7 @@ async def on_voice_state_update(
                 vc = await VoiceChannels.find_one(
                     VoiceChannels.vc_id == voice_channel_after.id
                 )
-                cc_channel = server_info.guild.get_channel(vc.cc_id)
+                cc_channel = guild.get_channel(vc.cc_id)
                 overwrite = discord.PermissionOverwrite()
                 overwrite.view_channel = True
                 await cc_channel.set_permissions(member, overwrite=overwrite)
@@ -221,7 +220,6 @@ async def room_permission(
 
     if current_channel:
         if current_channel.id in all_created_vc_id:
-            vc_channel = server_info.guild.get_channel(current_channel.id)
 
             if status in ["public", "private", "show", "hide", "mute", "unmute"]:
                 overwrite = discord.PermissionOverwrite()
@@ -246,7 +244,9 @@ async def room_permission(
                     message = "Đã bỏ tắt âm phòng"
 
                 everyone_role = server_info.guild.get_role(server_info.guild.id)
-                await vc_channel.set_permissions(everyone_role, overwrite=overwrite)
+                await current_channel.set_permissions(
+                    everyone_role, overwrite=overwrite
+                )
                 await send(message)
 
             if name:
@@ -255,7 +255,7 @@ async def room_permission(
                     if len(new_name) > 50:
                         await send("Tên quá dài")
                     else:
-                        await vc_channel.edit(name=new_name)
+                        await current_channel.edit(name=new_name)
                         await send("Tên kênh đã được đổi thành " + new_name)
                 else:
                     await send(
@@ -271,7 +271,7 @@ async def room_permission(
                                 "Bạn không thể đặt limit cho phòng " + value["locate"]
                             )
                         elif limit >= value["limit"][0] and limit <= value["limit"][1]:
-                            await vc_channel.edit(user_limit=limit)
+                            await current_channel.edit(user_limit=limit)
                             await send(f"**Đã đặt limit cho phòng:** {limit}")
                         elif limit < value["limit"][0]:
                             await send(
@@ -287,8 +287,8 @@ async def room_permission(
                 if status == "invite":
                     overwrite.view_channel = True
                     overwrite.connect = True
-                    await vc_channel.set_permissions(member, overwrite=overwrite)
-                    invite_link = await vc_channel.create_invite(
+                    await current_channel.set_permissions(member, overwrite=overwrite)
+                    invite_link = await current_channel.create_invite(
                         max_uses=1, unique=True
                     )
                     await member.send(
@@ -301,14 +301,14 @@ async def room_permission(
                 elif status == "allow":
                     overwrite.view_channel = True
                     overwrite.connect = True
-                    await vc_channel.set_permissions(member, overwrite=overwrite)
+                    await current_channel.set_permissions(member, overwrite=overwrite)
                     await send("Đã cấp quyền cho <@" + str(member.id) + "> vào phòng")
                 elif status == "kick":
                     overwrite.connect = False
-                    await vc_channel.set_permissions(member, overwrite=overwrite)
-                    await send("<@" + str(member.id) + "> đã mất quyền vào phòng")
-                    if member in vc_channel.members:
+                    await current_channel.set_permissions(member, overwrite=overwrite)
+                    if member in current_channel.members:
                         await member.move_to(None)
+                    await send("<@" + str(member.id) + "> đã mất quyền vào phòng")
 
         else:
             await send("Bạn không ở trong phòng được tạo bởi Mie")
@@ -373,12 +373,12 @@ async def allow(interaction: Interaction, member: Union[discord.User, discord.Me
         await interaction.response.send_message("Không tìm thấy người dùng")
 
 
-@bot.tree.command(name="mute", description="Tắt âm phòng")
+@bot.tree.command(name="mute", description="Tắt mic phòng")
 async def private(interaction: Interaction):
     await room_permission(interaction, status="mute")
 
 
-@bot.tree.command(name="unmute", description="Mở âm phòng")
+@bot.tree.command(name="unmute", description="Mở mic phòng")
 async def private(interaction: Interaction):
     await room_permission(interaction, status="unmute")
 

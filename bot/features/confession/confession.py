@@ -9,7 +9,7 @@ from discord.ext.commands import has_permissions, context
 from discord.ui import View
 
 # local
-from bot import bot, server_info
+from bot import bot, server_info, guild_id
 from models import Confessions
 
 from other_modules.image_handle import save_image, delete_image
@@ -99,7 +99,8 @@ class Confession:
         await asyncio.sleep(10)
 
     async def text_process(self):
-        channel = server_info.guild.get_channel(self.channel.id)
+        guild = bot.get_guild(guild_id)
+        channel = guild.get_channel(self.channel.id)
         messages = [message async for message in channel.history(limit=200)]
         messages.reverse()
         for message in messages:

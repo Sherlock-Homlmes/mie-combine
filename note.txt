@@ -15,3 +15,8 @@ create vc:
 
 
 confession image_handler save image to async
+
+//// Note:
+Async handle careful
+Run bot inside FastAPI won't show error
+Discord bot async Model can't use sync function and oposite

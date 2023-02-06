@@ -88,3 +88,6 @@ async def get_server_info():
     server_info.color_roles = server_info_data["color_roles"]
     server_info.game_roles = server_info_data["game_roles"]
     server_info.welcome_channel = welcome_channel
+    server_info.game_center_interaction_id = server_info_data[
+        "game_center_interaction_id"
+    ]

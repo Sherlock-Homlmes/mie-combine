@@ -52,6 +52,7 @@ class ServerInfo:
     color_roles: List[int] = None
     game_roles: Dict = None
     welcome_channel: discord.TextChannel = None
+    game_center_interaction_id: int = None
 
 
 ### START

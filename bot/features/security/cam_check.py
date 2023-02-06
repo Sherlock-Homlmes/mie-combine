@@ -83,19 +83,27 @@ class CheckCamEmbedMessage:
         self.coulour = discord.Colour.green()
 
 
+check_cam_member_ids = []
+
+
 @bot.listen()
 async def on_voice_state_update(
     member: discord.Member,
     member_before: discord.VoiceState,
     member_after: discord.VoiceState,
 ):
+    global check_cam_member_ids
 
     full_cam_channels = server_info.full_cam_channels
     cam_stream_channels = server_info.cam_stream_channels
     sleep_time = [30, 50]
 
     ### only cam
-    if member_after.channel in full_cam_channels:
+    if (
+        member_after.channel in full_cam_channels
+        and member.id not in check_cam_member_ids
+    ):
+        check_cam_member_ids.append(member.id)
         await asyncio.sleep(sleep_time[0])
         # remind
         if member.voice != None:
@@ -123,9 +131,14 @@ async def on_voice_state_update(
                     embed.thanks_for_leave()
 
                 await embed.update()
+        check_cam_member_ids.remove(member.id)
 
     ### cam | stream
-    if member_after.channel in cam_stream_channels:
+    if (
+        member_after.channel in cam_stream_channels
+        and member.id not in check_cam_member_ids
+    ):
+        check_cam_member_ids.append(member.id)
         await asyncio.sleep(sleep_time[0])
         # remind
         if member.voice != None:
@@ -154,3 +167,4 @@ async def on_voice_state_update(
                     embed.thanks_for_leave()
 
                 await embed.update()
+        check_cam_member_ids.remove(member.id)

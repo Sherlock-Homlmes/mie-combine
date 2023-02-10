@@ -66,8 +66,9 @@ async def on_ready():
     await asyncio.sleep(10)
     # get all created voice channel
     guild = bot.get_guild(guild_id)
-    voice_channels = await VoiceChannels.find({}).to_list()
-    all_created_vc_id = [int(voice_channel.vc_id) for voice_channel in voice_channels]
+    all_created_vc_id = [
+        voice_channel.vc_id for voice_channel in await VoiceChannels.find({}).to_list()
+    ]
 
     # delete empty voice channel
     await fix_room()
@@ -75,10 +76,14 @@ async def on_ready():
 
 async def fix_room():
     global all_created_vc_id, guild
-    print(all_created_vc_id)
-    print([x.vc_id for x in await VoiceChannels.find({}).to_list()])
 
-    for vc_id in all_created_vc_id:
+    all_vc = [x.vc_id for x in await VoiceChannels.find({}).to_list()]
+    print(all_created_vc_id)
+    print(all_vc)
+    all_vc.extend(all_created_vc_id)
+    all_vc = set(all_vc)
+
+    for vc_id in all_vc:
 
         vc_channel = guild.get_channel(vc_id)
 
@@ -204,8 +209,8 @@ async def on_voice_state_update(
                         # bot
                         feature_bot_overwrite = discord.PermissionOverwrite()
                         feature_bot_overwrite.view_channel = True
-                        feature_bot_overwrite.connect = True        
-                        
+                        feature_bot_overwrite.connect = True
+
                         await asyncio.gather(
                             *[
                                 vc_channel.set_permissions(x[0], overwrite=x[1])

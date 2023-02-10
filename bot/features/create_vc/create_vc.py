@@ -197,14 +197,15 @@ async def on_voice_state_update(
                         # everyone
                         everyone_overwrite = discord.PermissionOverwrite()
                         everyone_overwrite.connect = False
-                        everyone_overwrite.view_channel = False
                         # user
                         user_overwrite = discord.PermissionOverwrite()
                         user_overwrite.view_channel = True
                         user_overwrite.connect = True
                         # bot
                         feature_bot_overwrite = discord.PermissionOverwrite()
-                        feature_bot_overwrite.send_messages = True
+                        feature_bot_overwrite.view_channel = True
+                        feature_bot_overwrite.connect = True        
+                        
                         await asyncio.gather(
                             *[
                                 vc_channel.set_permissions(x[0], overwrite=x[1])
@@ -215,6 +216,7 @@ async def on_voice_state_update(
                                 ]
                             ]
                         )
+                        everyone_overwrite.view_channel = False
                         await asyncio.gather(
                             *[
                                 cc_channel.set_permissions(x[0], overwrite=x[1])

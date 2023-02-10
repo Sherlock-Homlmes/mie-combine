@@ -88,7 +88,7 @@ class Confession:
         await self.channel.send(content=self.member.mention, embed=embed)
 
         # wait 30 minutes
-        await asyncio.sleep(120)
+        await asyncio.sleep(1800)
 
         if await Confessions.find_one(Confessions.channel_id == str(self.channel.id)):
             await self.channel.send(

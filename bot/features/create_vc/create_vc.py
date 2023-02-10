@@ -207,10 +207,17 @@ async def on_voice_state_update(
                         feature_bot_overwrite.send_messages = True
                         await asyncio.gather(
                             *[
-                                (
-                                    vc_channel.set_permissions(x[0], overwrite=x[1])
-                                    and cc_channel.set_permissions(x[0], overwrite=x[1])
-                                )
+                                vc_channel.set_permissions(x[0], overwrite=x[1])
+                                for x in [
+                                    (everyone_role, everyone_overwrite),
+                                    (member, user_overwrite),
+                                    (feature_bot_role, feature_bot_overwrite),
+                                ]
+                            ]
+                        )
+                        await asyncio.gather(
+                            *[
+                                cc_channel.set_permissions(x[0], overwrite=x[1])
                                 for x in [
                                     (everyone_role, everyone_overwrite),
                                     (member, user_overwrite),

@@ -46,7 +46,6 @@ command_mess = """
 ```
 
 ***Chú ý:**
--Bạn chỉ có thể tạo 1 phòng cùng lúc
 -Phòng chat này chỉ những người đang trong phòng của bạn mới thấy
 -Phòng sẽ mất khi không còn ai trong phòng
 -Bạn có thể gọi bot trong kênh này
@@ -76,6 +75,8 @@ async def on_ready():
 
 async def fix_room():
     global all_created_vc_id, guild
+    print(all_created_vc_id)
+    print([x.vc_id for x in await VoiceChannels.find({}).to_list()])
 
     for vc_id in all_created_vc_id:
 
@@ -129,25 +130,21 @@ async def on_voice_state_update(
                 )
 
                 if voice_channel_before.members == []:
-                    channel_del = guild.get_channel(vc.vc_id)
-                    if channel_del:
-                        await channel_del.delete()
-                    channel_del = guild.get_channel(vc.cc_id)
-                    if channel_del != None:
-                        await channel_del.delete()
-
-                    await vc.delete()
+                    vc_channel_del = guild.get_channel(vc.vc_id)
+                    cc_channel_del = guild.get_channel(vc.cc_id)
+                    await asyncio.gather(
+                        *[x.delete() for x in [vc_channel_del, cc_channel_del, vc] if x]
+                    )
                     all_created_vc_id.remove(voice_channel_before.id)
 
                 elif not member.bot:
                     cc_channel = guild.get_channel(vc.cc_id)
                     await cc_channel.set_permissions(member, overwrite=None)
 
-        ###member in
+        ### member in
         if voice_channel_after != None:
             # set member's permission to text channel
             if voice_channel_after.id in all_created_vc_id:
-                await asyncio.sleep(3)
                 vc = await VoiceChannels.find_one(
                     VoiceChannels.vc_id == voice_channel_after.id
                 )
@@ -169,42 +166,71 @@ async def on_voice_state_update(
                     lim = channel_info["limit"]
                     category = await server_info.guild.fetch_channel(category_id)
 
-                    ##### create
+                    # create
                     cc_name = rewrite_create_voice_channel_name(member.name)
                     vc_name = f"#{cc_name}'s room"
-                    vc_channel = await category.create_voice_channel(vc_name)
-                    all_created_vc_id.append(vc_channel.id)
-                    await member.move_to(vc_channel)
-                    cc_channel = await category.create_text_channel(cc_name)
 
-                    await VoiceChannels(
+                    vc_channel, cc_channel = await asyncio.gather(
+                        *[
+                            category.create_voice_channel(vc_name),
+                            category.create_text_channel(cc_name),
+                        ]
+                    )
+                    all_created_vc_id.append(vc_channel.id)
+
+                    data_voice_channel = VoiceChannels(
                         owner=await Users.find_one(Users.discord_id == str(member.id)),
                         cc_id=cc_channel.id,
                         vc_id=vc_channel.id,
-                    ).insert()
-                    #####set permission
-                    overwrite = discord.PermissionOverwrite()
-
-                    # everyone
-                    overwrite.connect = False
-                    everyone_role = server_info.guild.get_role(server_info.guild.id)
-                    await vc_channel.set_permissions(everyone_role, overwrite=overwrite)
-                    overwrite.view_channel = False
-                    await cc_channel.set_permissions(everyone_role, overwrite=overwrite)
-                    # user
-                    overwrite.view_channel = True
-                    overwrite.connect = True
-                    await cc_channel.set_permissions(member, overwrite=overwrite)
-                    await vc_channel.set_permissions(member, overwrite=overwrite)
-                    # bot
-                    bot_role = server_info.guild.get_role(
-                        server_info.feature_bot_role_id
                     )
-                    overwrite.send_messages = True
-                    await cc_channel.set_permissions(bot_role, overwrite=overwrite)
-                    await vc_channel.set_permissions(bot_role, overwrite=overwrite)
-                    await vc_channel.edit(user_limit=lim[1])
-                    await cc_channel.send(f"<@{member.id}>" + command_mess)
+                    await data_voice_channel.insert()
+
+                    try:
+                        # move member
+                        await member.move_to(vc_channel)
+                        ### set permission
+                        # get roles
+                        everyone_role = server_info.guild.get_role(server_info.guild.id)
+                        feature_bot_role = server_info.guild.get_role(
+                            server_info.feature_bot_role_id
+                        )
+                        # everyone
+                        everyone_overwrite = discord.PermissionOverwrite()
+                        everyone_overwrite.connect = False
+                        everyone_overwrite.view_channel = False
+                        # user
+                        user_overwrite = discord.PermissionOverwrite()
+                        user_overwrite.view_channel = True
+                        user_overwrite.connect = True
+                        # bot
+                        feature_bot_overwrite = discord.PermissionOverwrite()
+                        feature_bot_overwrite.send_messages = True
+                        await asyncio.gather(
+                            *[
+                                (
+                                    vc_channel.set_permissions(x[0], overwrite=x[1])
+                                    and cc_channel.set_permissions(x[0], overwrite=x[1])
+                                )
+                                for x in [
+                                    (everyone_role, everyone_overwrite),
+                                    (member, user_overwrite),
+                                    (feature_bot_role, feature_bot_overwrite),
+                                ]
+                            ]
+                        )
+
+                        await vc_channel.edit(user_limit=lim[1])
+                        await cc_channel.send(f"<@{member.id}>" + command_mess)
+
+                    except discord.errors.HTTPException as e:
+                        print(e)
+                        await asyncio.gather(
+                            *[
+                                x.delete()
+                                for x in [vc_channel, cc_channel, data_voice_channel]
+                            ]
+                        )
+                        all_created_vc_id.remove(vc_channel.id)
 
 
 ### slash command

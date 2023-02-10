@@ -1,20 +1,23 @@
 host problems
 
 guild event:
-    user update
+    feat/user update
 
 cfs:
-    fix before start
-    count problems
+    feat/fix before start
+
+game center:
+    bug/game all
 
 errands:
-    welcome: delete message after up host
+    welcome: 
+        feat/delete message after up host
 
 create vc:
-    when host up -> auto create vc
+    feat/when host up -> auto create vc
 
 
-confession image_handler save image to async
+feat/image_handler save image to async
 
 //// Note:
 Async handle careful

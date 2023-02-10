@@ -9,7 +9,7 @@ from database.mongodb_async import connect_to_database
 
 app = FastAPI(docs_url="/all-api", redoc_url=None)
 
-origins = ["*"]
+origins = ["betterme.study", "*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

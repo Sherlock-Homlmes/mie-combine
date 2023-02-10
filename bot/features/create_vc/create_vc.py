@@ -175,6 +175,8 @@ async def on_voice_state_update(
                     cc_name = rewrite_create_voice_channel_name(member.name)
                     vc_name = f"#{cc_name}'s room"
 
+                    vc_channel: discord.VoiceChannel
+                    cc_channel: discord.TextChannel
                     vc_channel, cc_channel = await asyncio.gather(
                         *[
                             category.create_voice_channel(vc_name),
@@ -211,27 +213,48 @@ async def on_voice_state_update(
                         feature_bot_overwrite.view_channel = True
                         feature_bot_overwrite.connect = True
 
-                        await asyncio.gather(
-                            *[
-                                vc_channel.set_permissions(x[0], overwrite=x[1])
-                                for x in [
-                                    (everyone_role, everyone_overwrite),
-                                    (member, user_overwrite),
-                                    (feature_bot_role, feature_bot_overwrite),
-                                ]
-                            ]
+                        await vc_channel.set_permissions(
+                            everyone_role, overwrite=everyone_overwrite
                         )
+                        await vc_channel.set_permissions(
+                            member, overwrite=user_overwrite
+                        )
+                        await vc_channel.set_permissions(
+                            feature_bot_role, overwrite=feature_bot_overwrite
+                        )
+
                         everyone_overwrite.view_channel = False
-                        await asyncio.gather(
-                            *[
-                                cc_channel.set_permissions(x[0], overwrite=x[1])
-                                for x in [
-                                    (everyone_role, everyone_overwrite),
-                                    (member, user_overwrite),
-                                    (feature_bot_role, feature_bot_overwrite),
-                                ]
-                            ]
+                        await cc_channel.set_permissions(
+                            everyone_role, overwrite=everyone_overwrite
                         )
+                        await cc_channel.set_permissions(
+                            member, overwrite=user_overwrite
+                        )
+                        await cc_channel.set_permissions(
+                            feature_bot_role, overwrite=feature_bot_overwrite
+                        )
+
+                        # await asyncio.gather(
+                        #     *[
+                        #         vc_channel.set_permissions(x[0], overwrite=x[1])
+                        #         for x in [
+                        #             (everyone_role, everyone_overwrite),
+                        #             (member, user_overwrite),
+                        #             (feature_bot_role, feature_bot_overwrite),
+                        #         ]
+                        #     ]
+                        # )
+                        # everyone_overwrite.view_channel = False
+                        # await asyncio.gather(
+                        #     *[
+                        #         cc_channel.set_permissions(x[0], overwrite=x[1])
+                        #         for x in [
+                        #             (everyone_role, everyone_overwrite),
+                        #             (member, user_overwrite),
+                        #             (feature_bot_role, feature_bot_overwrite),
+                        #         ]
+                        #     ]
+                        # )
 
                         await vc_channel.edit(user_limit=lim[1])
                         await cc_channel.send(f"<@{member.id}>" + command_mess)

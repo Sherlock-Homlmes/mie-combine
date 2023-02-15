@@ -9,6 +9,7 @@ from .errands import *
 
 from .confession import *
 from .create_vc import *
-from .study_time import *
+
+# from .study_time import *
 
 # from .manage import *

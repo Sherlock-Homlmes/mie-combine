@@ -6,7 +6,7 @@ from beanie import Document, Link, before_event, Delete
 
 # local
 from .users import Users
-from other_modules.time_modules import vn_now, Now
+from other_modules.time_modules import Now
 from .user_daily_study_time import UserDailyStudyTime
 
 # from .user_study_time import UserStudyTime
@@ -15,10 +15,10 @@ from .user_daily_study_time import UserDailyStudyTime
 class UserStudySection(Document):
 
     user: Link[Users]
-    start_study_time: datetime.datetime = vn_now()
+    start_study_time: datetime.datetime = Now().now
 
     async def update_user_study_time(self):
-        now = vn_now()
+        now = Now().now
         print(now.date(), self.start_study_time.date())
 
         if now.date() == self.start_study_time.date():

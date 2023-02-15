@@ -172,14 +172,16 @@ async def on_voice_state_update(
                     category = await server_info.guild.fetch_channel(category_id)
 
                     # create
-                    vc_name = f"#{rewrite_create_voice_channel_name(member.name)}'s room"
+                    vc_name = (
+                        f"#{rewrite_create_voice_channel_name(member.name)}'s room"
+                    )
 
                     vc_channel: discord.VoiceChannel
                     cc_channel: discord.TextChannel
                     vc_channel, cc_channel = await asyncio.gather(
                         *[
                             category.create_voice_channel(vc_name),
-                            category.create_text_channel('phòng-chat-nè'),
+                            category.create_text_channel("phòng-chat-nè"),
                         ]
                     )
                     all_created_vc_id.append(vc_channel.id)

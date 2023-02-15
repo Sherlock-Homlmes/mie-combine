@@ -21,6 +21,7 @@ async def on_voice_state_update(
 ):
     while member.id in updating_members:
         await asyncio.sleep(1)
+
     if not member_before.channel and member_after.channel:
         updating_members.append(member.id)
         print(member.name, member.id, "in")
@@ -49,8 +50,12 @@ async def on_voice_state_update(
         user_study_section = await UserStudySection.find_one(
             UserStudySection.user.discord_id == str(member.id), fetch_links=True
         )
-        await user_study_section.delete()
-        updating_members.remove(member.id)
+        try:
+            await user_study_section.delete()
+        except AttributeError as e:
+            print(e)
+        if member.id in updating_members:
+            updating_members.remove(member.id)
 
 
 @bot.tree.command(name="study_time", description="Xem tổng thời gian học")

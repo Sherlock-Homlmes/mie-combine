@@ -1,7 +1,7 @@
 # lib
 import discord
 from pydantic.error_wrappers import ValidationError
-from beanie.odm.operators.update.general import Set
+import asyncio
 
 # local
 from bot import bot
@@ -19,7 +19,10 @@ async def on_voice_state_update(
     member_before: discord.VoiceState,
     member_after: discord.VoiceState,
 ):
+    while member.id in updating_members:
+        await asyncio.sleep(1)
     if not member_before.channel and member_after.channel:
+        updating_members.append(member.id)
         print(member.name, member.id, "in")
         try:
             user_study_section = await UserStudySection.find_one(
@@ -47,6 +50,7 @@ async def on_voice_state_update(
             UserStudySection.user.discord_id == str(member.id), fetch_links=True
         )
         await user_study_section.delete()
+        updating_members.remove(member.id)
 
 
 @bot.tree.command(name="study_time", description="Xem tổng thời gian học")

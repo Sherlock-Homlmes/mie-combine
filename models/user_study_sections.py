@@ -17,7 +17,6 @@ class UserStudySection(Document):
     user: Link[Users]
     start_study_time: datetime.datetime = vn_now()
 
-    @before_event(Delete)
     async def update_user_study_time(self):
         now = vn_now()
         print(now.date(), self.start_study_time.date())
@@ -68,6 +67,10 @@ class UserStudySection(Document):
                 await UserDailyStudyTime(
                     user=self.user, study_time=today_study_time
                 ).insert()
+
+    @before_event(Delete)
+    async def update_before_delete(self):
+        await self.update_user_study_time()
 
 
 def timedelta_to_daily_list(time1: datetime.datetime, time2: datetime.datetime):

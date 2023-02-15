@@ -15,8 +15,9 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print(f"We have logged in as {self.user} combine bot")
 
+    # auto sync command on ready
     async def setup_hook(self):
-        # auto sync command on ready
+
         await self.tree.sync()
         print(f"Synced slash commands for {self.user}.")
 

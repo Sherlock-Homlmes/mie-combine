@@ -6,7 +6,7 @@ import asyncio
 # local
 from all_env import bot_only
 from .settings import bot, guild_id, server_info
-from models import ErrandData
+from models import ErrandData, BadUsers
 from other_modules.discord_bot.get_object import get_channel
 
 if bot_only:

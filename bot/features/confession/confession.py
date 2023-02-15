@@ -202,7 +202,7 @@ class Confession:
         )
 
 
-# thực hiện lệnh
+# end confession
 @bot.tree.command(name="end_confession", description="Kết thúc confession")
 async def end(interaction: discord.Interaction):
     await interaction.response.defer()

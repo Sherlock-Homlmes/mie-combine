@@ -128,7 +128,7 @@ def check_bad_words(content: str) -> bool:
 
 async def remove_exprired_bad_user(user_id: str):
     delete_bad_users = await BadUsers.find(
-        BadUsers.user.discord_id == user_id
+        BadUsers.user.discord_id == user_id, fetch_links=True
     ).to_list()
 
     for bad_user in delete_bad_users:
@@ -146,7 +146,11 @@ async def punish(mem_id: int, message_content: str):
     )
     await bad_user.insert()
 
-    counter = await BadUsers.find(BadUsers.user.discord_id == mem_id).count()
+    counter = len(
+        await BadUsers.find(
+            BadUsers.user.discord_id == "512134582108160002", fetch_links=True
+        ).to_list()
+    )
     if counter < 3:
         form = "WARN"
         hours = 0
@@ -234,19 +238,3 @@ async def on_message(message: discord.Message):
         embed.add_field(name="Penalize", value=penalize, inline=False)
 
         await server_info.diary_channel.send(embed=embed)
-
-
-# @bot.tree.command(name="timeout", description="Xử phạt người dùng")
-# @has_role(server_info.admin_role_id)
-# @app_commands.describe(member="Người bị xử phạt")
-# @app_commands.describe(hours="Thời gian xử phạt(giờ)")
-# @app_commands.describe(reason="Lý do")
-# async def timeout(
-#     interaction: Interaction, member: discord.Member, hours: int, reason: Optional[str]
-# ):
-
-#     unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
-#     await member.timeout(unmuted_time, reason=reason)
-#     await interaction.response.send_message(
-#         f"Đã cài thời gian chờ cho {member.mention} trong {hours} giờ tiếp theo.\n**Lý do:**{reason}"
-#     )

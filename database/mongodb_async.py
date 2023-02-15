@@ -12,6 +12,14 @@ client = motor.motor_asyncio.AsyncIOMotorClient(database_url)
 async def connect_to_database():
     await beanie.init_beanie(
         database=client.discord_betterme,
-        document_models=[Users, BadUsers, Confessions, ErrandData, VoiceChannels],
+        document_models=[
+            Users,
+            BadUsers,
+            Confessions,
+            ErrandData,
+            VoiceChannels,
+            UserDailyStudyTime,
+            UserStudySection,
+        ],
     )
     print("Beanie-Mongodb connected successfully")

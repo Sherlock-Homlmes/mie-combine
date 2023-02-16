@@ -19,7 +19,6 @@ class UserStudySection(Document):
 
     async def update_user_study_time(self):
         now = Now().now
-        print(now.date(), self.start_study_time.date())
 
         if now.date() == self.start_study_time.date():
             study_time = timedelta_to_daily_list(self.start_study_time, now)

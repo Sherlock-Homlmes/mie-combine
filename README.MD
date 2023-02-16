@@ -14,10 +14,7 @@ Part 2: Security
 Part 3: Errands
 - Welcome message to user join server
 - Change user color, remove color
-- Dropdown FAQ
 - Game center: Add role to user
-- Save message for AI chatbot resource
-- Feedback using modal
 
 Part 5: Confession
 
@@ -30,6 +27,6 @@ Part 8: API
 - API check member information
 - API check server information
 
-Part 9: AI Chatbot | X
+Part 9: AI Chatbot |(include ChatGPT) X
 
 Part 10: Manage staff | X

@@ -79,8 +79,6 @@ async def fix_room():
     global all_created_vc_id, guild
 
     all_vc = [x.vc_id for x in await VoiceChannels.find({}).to_list()]
-    print(all_created_vc_id)
-    print(all_vc)
     all_vc.extend(all_created_vc_id)
     all_vc = set(all_vc)
 
@@ -109,7 +107,7 @@ async def fix_room():
                 await cc_channel.delete()
             await vc.delete()
 
-    print("fix done")
+    print("fix voice channel done")
 
 
 @bot.listen()

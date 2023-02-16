@@ -19,7 +19,6 @@ async def on_voice_state_update(
     member_before: discord.VoiceState,
     member_after: discord.VoiceState,
 ):
-    print("start study count")
     if member.id == 880359404036317215:
         if not member_before.channel and member_after.channel:
             while member.id in updating_members:

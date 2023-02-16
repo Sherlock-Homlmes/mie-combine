@@ -15,7 +15,7 @@ from .user_daily_study_time import UserDailyStudyTime
 class UserStudySection(Document):
 
     user: Link[Users]
-    start_study_time: datetime.datetime = Now().now
+    start_study_time: datetime.datetime
 
     async def update_user_study_time(self):
         now = Now().now

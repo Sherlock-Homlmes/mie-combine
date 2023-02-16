@@ -36,14 +36,17 @@ async def on_voice_state_update(
                     await user_study_section.save()
                 else:
                     await UserStudySection(
-                        user=await Users.find_one(Users.discord_id == str(member.id))
+                        user=await Users.find_one(Users.discord_id == str(member.id)),
+                        start_study_time=Now().now,
                     ).insert()
 
+            # if user not in users database
             except ValidationError as e:
                 print(e)
                 await on_member_join(member=member)
                 await UserStudySection(
-                    user=await Users.find_one(Users.discord_id == str(member.id))
+                    user=await Users.find_one(Users.discord_id == str(member.id)),
+                    start_study_time=Now().now,
                 ).insert()
 
         elif member_before.channel and not member_after.channel:

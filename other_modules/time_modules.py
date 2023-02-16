@@ -20,10 +20,9 @@ def str_to_time(s: str) -> datetime.datetime:
 
 class Now:
     def __new__(self):
-        self.now: datetime.datetime = vn_now()
-        self.today: datetime.datetime = datetime.datetime(
-            self.now.year, self.now.month, self.now.day
-        )
+        now: datetime.datetime = vn_now()
+        self.now: datetime.datetime = now
+        self.today: datetime.datetime = datetime.datetime(now.year, now.month, now.day)
         return self
 
     def some_day_before(self, days: int) -> datetime.datetime:

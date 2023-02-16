@@ -5,7 +5,7 @@ from beanie.odm.operators.update.general import Set
 # local
 from bot import bot
 from models import Users
-from other_modules.time_modules import vn_now
+from other_modules.time_modules import Now
 
 
 @bot.listen()
@@ -20,7 +20,7 @@ async def on_member_remove(member: discord.Member):
                 Users.name: member.name,
                 Users.avatar: avatar,
                 Users.is_in_server: False,
-                Users.leaved_at: vn_now(),
+                Users.leaved_at: Now().now,
             }
         ),
         on_insert=Users(

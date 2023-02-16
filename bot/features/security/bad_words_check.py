@@ -1,16 +1,13 @@
 # default
 from datetime import timedelta
-from typing import Optional
 
 #  lib
 import discord
-from discord import Interaction, app_commands
-from discord.ext.commands import has_role
 
 # local
 from bot import bot, server_info
 from models import Users, BadUsers
-from other_modules.time_modules import vn_now
+from other_modules.time_modules import Now
 
 exact_bad_words = [
     "lồn",
@@ -132,7 +129,7 @@ async def remove_exprired_bad_user(user_id: str):
     ).to_list()
 
     for bad_user in delete_bad_users:
-        if (vn_now() - bad_user.created_at).days >= 30:
+        if (Now().now - bad_user.created_at).days >= 30:
             await bad_user.delete()
 
 
@@ -143,6 +140,7 @@ async def punish(mem_id: int, message_content: str):
     bad_user = BadUsers(
         user=await Users.find_one(Users.discord_id == mem_id),
         bad_content=message_content,
+        created_at=Now().now,
     )
     await bad_user.insert()
 

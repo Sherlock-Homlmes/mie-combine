@@ -9,7 +9,7 @@ from discord.ext import tasks
 
 # local
 from bot import bot, guild_id, server_info
-from other_modules.time_modules import vn_now
+from other_modules.time_modules import Now
 
 total_member = 10000
 online_member = 1000
@@ -21,7 +21,7 @@ async def static_channels():
     global online_member, total_member, total_voice_member
     # count down
 
-    now = vn_now()
+    now = Now().now
     cap3day = datetime.datetime(now.year, 6, 6)
     thptday = datetime.datetime(now.year, 7, 7)
     if (cap3day - now).days < 0:

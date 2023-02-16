@@ -6,7 +6,6 @@ from beanie import Document, Link
 
 # local
 from .users import Users
-from other_modules.time_modules import vn_now
 
 
 class VoiceChannels(Document):
@@ -15,4 +14,4 @@ class VoiceChannels(Document):
     vc_id: int
     cc_id: int
 
-    created_at: datetime.datetime = vn_now()
+    created_at: datetime.datetime

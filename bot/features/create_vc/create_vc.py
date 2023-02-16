@@ -16,6 +16,7 @@ from other_modules.discord_bot.channel_name import (
     check_avaiable_name,
     rewrite_create_voice_channel_name,
 )
+from other_modules.time_modules import Now
 
 
 command_mess = """
@@ -190,6 +191,7 @@ async def on_voice_state_update(
                         owner=await Users.find_one(Users.discord_id == str(member.id)),
                         cc_id=cc_channel.id,
                         vc_id=vc_channel.id,
+                        created_at=Now().now,
                     )
                     await data_voice_channel.insert()
 

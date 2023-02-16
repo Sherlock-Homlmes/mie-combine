@@ -6,7 +6,6 @@ from beanie import Document, Link
 
 # local
 from .users import Users
-from other_modules.time_modules import vn_now
 
 
 class BadUsers(Document):
@@ -14,4 +13,4 @@ class BadUsers(Document):
     user: Link[Users]
     bad_content: str
 
-    created_at: datetime.datetime = vn_now()
+    created_at: datetime.datetime

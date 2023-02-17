@@ -172,10 +172,9 @@ def rewrite_confession_channel_name(name, type):
 def rewrite_create_voice_channel_name(name):
     global name_check
 
-    kq = ""
-    for i in range(len(name)):
-        if name[i].lower() in name_check:
-            kq += name[i].lower()
-        elif name[i] == " " and name[i - 1] != " " and kq[len(kq) - 1] != "-":
-            kq += "-"
-    return kq
+    name = name.lower()
+    name = name.replace(" ", "-")
+    while "--" in name:
+        name = name.replace("--", "-")
+
+    return name

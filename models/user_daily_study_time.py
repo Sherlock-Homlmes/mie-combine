@@ -4,18 +4,18 @@ from pydantic import validator
 import datetime
 
 # lib
-from beanie import Document, Link
+from beanie import Document, Link, Indexed
+import pymongo
 
 # local
 from .users import Users
-from other_modules.time_modules import Now
 
 
 class UserDailyStudyTime(Document):
 
     user: Link[Users]
     study_time: List[int]
-    date: datetime.datetime = Now().today
+    date: Indexed(datetime.datetime, index_type=pymongo.DESCENDING)
 
     @validator("study_time")
     def studytime_must_lt_60_and_gt_0(cls, value):

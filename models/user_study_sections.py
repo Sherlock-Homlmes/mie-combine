@@ -18,14 +18,15 @@ class UserStudySection(Document):
     start_study_time: datetime.datetime
 
     async def update_user_study_time(self):
-        now = Now().now
+        now = Now()
 
-        if now.date() == self.start_study_time.date():
-            study_time = timedelta_to_daily_list(self.start_study_time, now)
+        if now.now.date() == self.start_study_time.date():
+            study_time = timedelta_to_daily_list(self.start_study_time, now.now)
 
             if any(study_time):
                 user_daily_study_time = await UserDailyStudyTime.find_one(
                     UserDailyStudyTime.user.discord_id == self.user.discord_id,
+                    UserDailyStudyTime.date == now.today,
                     fetch_links=True,
                 )
                 if user_daily_study_time:
@@ -36,7 +37,7 @@ class UserStudySection(Document):
                     await user_daily_study_time.save()
                 else:
                     await UserDailyStudyTime(
-                        user=self.user, study_time=study_time
+                        user=self.user, study_time=study_time, date=now.today
                     ).insert()
 
         else:
@@ -44,7 +45,7 @@ class UserStudySection(Document):
             yesterday_study_time = timedelta_to_daily_list(
                 self.start_study_time, yesterday_midnight
             )
-            today_study_time = timedelta_to_daily_list(yesterday_midnight, now)
+            today_study_time = timedelta_to_daily_list(yesterday_midnight, now.now)
 
             if any(yesterday_study_time):
                 user_daily_study_time = await UserDailyStudyTime.find_one(
@@ -61,10 +62,10 @@ class UserStudySection(Document):
                     await UserDailyStudyTime(
                         user=self.user,
                         study_time=yesterday_study_time,
-                        date=Now().some_day_before(1),
+                        date=now.some_day_before(1),
                     ).insert()
                 await UserDailyStudyTime(
-                    user=self.user, study_time=today_study_time
+                    user=self.user, study_time=today_study_time, date=now.today
                 ).insert()
 
     @before_event(Delete)

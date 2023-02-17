@@ -146,9 +146,10 @@ async def punish(mem_id: int, message_content: str):
 
     counter = len(
         await BadUsers.find(
-            BadUsers.user.discord_id == "512134582108160002", fetch_links=True
+            BadUsers.user.discord_id == mem_id, fetch_links=True
         ).to_list()
     )
+    print(mem_id, counter)
     if counter < 3:
         form = "WARN"
         hours = 0

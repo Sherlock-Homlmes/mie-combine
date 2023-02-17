@@ -23,7 +23,6 @@ async def on_voice_state_update(
         while member.id in updating_members:
             await asyncio.sleep(1)
         updating_members.append(member.id)
-        print(member.name, member.id, "in")
         try:
             user_study_section = await UserStudySection.find_one(
                 UserStudySection.user.discord_id == str(member.id),
@@ -48,7 +47,6 @@ async def on_voice_state_update(
             ).insert()
 
     elif member_before.channel and not member_after.channel:
-        print(member.name, member.id, "out")
         user_study_section = await UserStudySection.find_one(
             UserStudySection.user.discord_id == str(member.id), fetch_links=True
         )
@@ -58,7 +56,6 @@ async def on_voice_state_update(
             print(e)
         if member.id in updating_members:
             updating_members.remove(member.id)
-            print("not in updating member anymore")
 
 
 @bot.tree.command(name="study_time", description="Xem tổng thời gian học")

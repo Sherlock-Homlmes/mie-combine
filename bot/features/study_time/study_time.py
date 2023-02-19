@@ -58,13 +58,40 @@ async def on_voice_state_update(
             updating_members.remove(member.id)
 
 
-@bot.tree.command(name="study_time", description="Xem tổng thời gian học")
+@bot.tree.command(name="member_study_time")
 @app_commands.describe(member="Member")
 @app_commands.default_permissions(administrator=True)
-async def end(interaction: discord.Interaction, member: discord.Member):
+async def member_study_time(interaction: discord.Interaction, member: discord.Member):
     total_time = await UserDailyStudyTime.get_user_total_study_time(user_id=member.id)
     if total_time:
         content = f"Tổng thời gian học: {total_time}"
     else:
         content = "Bạn chưa học trong BetterMe"
+    await interaction.response.send_message(content)
+
+
+@bot.tree.command(name="study_time", description="Xem tổng thời gian học")
+async def study_time(interaction: discord.Interaction):
+    total_time = await UserDailyStudyTime.get_user_total_study_time(
+        user_id=interaction.user.id
+    )
+    if total_time:
+        content = f"Tổng thời gian học: {total_time}'"
+    else:
+        content = "Bạn chưa học trong BetterMe"
+    await interaction.response.send_message(content)
+
+
+@bot.tree.command(name="daily", description="Xem thời gian học hôm nay")
+async def daily(interaction: discord.Interaction):
+    total_time = await UserDailyStudyTime.find_one(
+        UserDailyStudyTime.user.discord_id == str(interaction.user.id),
+        UserDailyStudyTime.date == Now().today,
+        fetch_links=True,
+    )
+    if total_time:
+        total_time = [0] * 24
+        content = "Bạn chưa học hôm nay"
+    else:
+        content = f"Thời gian học hôm nay: {total_time.study_time}"
     await interaction.response.send_message(content)

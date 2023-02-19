@@ -18,7 +18,7 @@ if [[ ${args[0]} == "install" ]]; then
     output="Install success. Activate env to use"
     color="$green"
 elif [[ ${args[0]} == "zip" ]]; then
-    echo $(eval "zip -r bot.zip .")
+    echo $(eval "zip -r bot.zip . -x '/*.git/*' 'env/*'")
     output="Compress bot done"
     color="$green"
 # elif [[ ${args[0]} == "discloud" ]]; then

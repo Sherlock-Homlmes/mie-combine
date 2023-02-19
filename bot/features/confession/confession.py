@@ -117,6 +117,8 @@ class Confession:
         files_to_read: list[str] = self.files
         files_to_send: list[discord.File] = []
 
+        print(files_to_read)
+
         for filename in files_to_read:
             with open(filename, "rb") as f:
                 files_to_send.append(discord.File(f))

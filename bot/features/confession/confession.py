@@ -1,6 +1,6 @@
 # default
 import asyncio
-from typing import Optional, Union
+from typing import Optional, Union, List
 from dataclasses import dataclass
 
 # library
@@ -56,8 +56,8 @@ class Confession:
     cfs_type: str
 
     # value create when processing
+    files: list
     content: str = ""
-    files = []
 
     async def set_confession(self):
         # set channel permission
@@ -216,6 +216,7 @@ async def end(interaction: discord.Interaction):
             channel=interaction.channel,
             member=await interaction.guild.fetch_member(confession.member_id),
             cfs_type=confession.type,
+            files=[],
         )
         await confession.end_confession()
     else:
@@ -253,9 +254,7 @@ async def on_interaction(interaction: discord.Interaction):
                     cfs_type = "public"
 
                 confession = Confession(
-                    channel=channel,
-                    member=member,
-                    cfs_type=cfs_type,
+                    channel=channel, member=member, cfs_type=cfs_type, files=[]
                 )
                 await confession.set_confession()
                 await confession.end_confession()

@@ -40,6 +40,6 @@ async def color(interaction: Interaction):
     if "COLOR" in role_names:
         pos = role_names.index("COLOR")
         role_ids = [role.id for role in user.roles]
-        color_old = server_info.guild.get_role(user.guild.roles, id=role_ids[pos])
+        color_old = server_info.guild.get_role(role_ids[pos])
         await user.remove_roles(color_old)
     await interaction.response.send_message("Bạn đã bỏ role màu")

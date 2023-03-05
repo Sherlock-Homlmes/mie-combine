@@ -89,9 +89,11 @@ async def daily(interaction: discord.Interaction):
         UserDailyStudyTime.date == Now().today,
         fetch_links=True,
     )
+    print(total_time)
     if total_time:
+        content = f"Thời gian học hôm nay: {total_time.study_time}"
+    else:
         total_time = [0] * 24
         content = "Bạn chưa học hôm nay"
-    else:
-        content = f"Thời gian học hôm nay: {total_time.study_time}"
+
     await interaction.response.send_message(content)

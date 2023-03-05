@@ -21,10 +21,10 @@ class UserDailyStudyTime(Document):
     def studytime_must_lt_60_and_gt_0(cls, value):
         for index, val in enumerate(value):
             if val < 0:
-                print(cls.study_time)
+                print(value, val)
                 raise ValueError("Study time must greater than 0")
             elif val > 60:
-                print(cls.study_time)
+                print(value, val)
                 raise ValueError("Study time must greater than 0")
         return value
 

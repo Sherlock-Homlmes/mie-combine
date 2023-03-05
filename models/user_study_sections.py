@@ -74,8 +74,6 @@ class UserStudySection(Document):
 
 
 def timedelta_to_daily_list(time1: datetime.datetime, time2: datetime.datetime):
-    print(time1)
-    print(time2)
     time2_hour = time2.hour
     if time2.hour != time1.hour or time1.day != time2.day:
         if time2.hour == 0:
@@ -91,6 +89,4 @@ def timedelta_to_daily_list(time1: datetime.datetime, time2: datetime.datetime):
     elif time1.hour == time2.hour:
         study_time = [0] * 24
         study_time[time2_hour] = time2.minute - time1.minute
-
-    print(study_time)
     return study_time

@@ -4,7 +4,15 @@ import motor.motor_asyncio
 
 # local
 from all_env import database_url
-from models import *
+from models import (
+    Users,
+    BadUsers,
+    Confessions,
+    ErrandData,
+    VoiceChannels,
+    UserDailyStudyTime,
+    UserStudySection,
+)
 
 client = motor.motor_asyncio.AsyncIOMotorClient(database_url)
 

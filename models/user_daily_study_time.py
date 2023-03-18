@@ -15,21 +15,29 @@ class UserDailyStudyTime(Document):
 
     user: Link[Users]
     study_time: List[int]
+    """
+        Study time type = List[time: int] (24 elements)
+    """
     date: Indexed(datetime.datetime, index_type=pymongo.DESCENDING)
+
+    class Settings:
+        validate_on_save = True
 
     @validator("study_time")
     def studytime_must_lt_60_and_gt_0(cls, value):
         for index, val in enumerate(value):
             if val < 0:
                 print(value, val)
-                raise ValueError("Study time must greater than 0")
+                value[index] = 0
+                # raise ValueError("Study time must greater than 0")
             elif val > 60:
                 print(value, val)
-                raise ValueError("Study time must greater than 0")
+                value[index] = 60
+                # raise ValueError("Study time must greater than 0")
         return value
 
     @validator("study_time")
-    def studytime_length_must_equal_24(cls, value):
+    def studytime_must_have_24_elements(cls, value):
         if len(value) != 24:
             raise ValueError("Study time length must equal 24")
         return value

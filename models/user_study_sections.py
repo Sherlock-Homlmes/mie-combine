@@ -9,8 +9,6 @@ from .users import Users
 from other_modules.time_modules import Now
 from .user_daily_study_time import UserDailyStudyTime
 
-# from .user_study_time import UserStudyTime
-
 
 class UserStudySection(Document):
 
@@ -19,10 +17,14 @@ class UserStudySection(Document):
 
     async def update_user_study_time(self):
         now = Now()
+        print("start study time", self.start_study_time)
+        print("end study time", now)
 
+        # calculate if start study date = end study date
         if now.now.date() == self.start_study_time.date():
             study_time = timedelta_to_daily_list(self.start_study_time, now.now)
 
+            # if study time != 0
             if any(study_time):
                 user_daily_study_time = await UserDailyStudyTime.find_one(
                     UserDailyStudyTime.user.discord_id == self.user.discord_id,
@@ -40,7 +42,12 @@ class UserStudySection(Document):
                         user=self.user, study_time=study_time, date=now.today
                     ).insert()
 
+        # calculate if start study date != end study date
         else:
+            """
+            Start day study time = midnight - start time
+            End day study time = end time - midnight
+            """
             yesterday_midnight = Now().some_day_before(0)
             yesterday_study_time = timedelta_to_daily_list(
                 self.start_study_time, yesterday_midnight

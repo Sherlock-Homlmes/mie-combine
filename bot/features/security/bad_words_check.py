@@ -55,9 +55,7 @@ included_bad_words = [
 
 space_bad_words = [
     "dkm",
-    "cặc",
     "cặk",
-    "cẹc",
     "bitch",
     "địt",
     "đjt",
@@ -149,7 +147,7 @@ async def punish(mem_id: int, message_content: str):
             BadUsers.user.discord_id == mem_id, fetch_links=True
         ).to_list()
     )
-    print(mem_id, counter)
+
     if counter < 3:
         form = "WARN"
         hours = 0

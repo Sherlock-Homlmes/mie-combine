@@ -29,8 +29,8 @@ async def static_channels():
     if (thptday - now).days < 0:
         thptday = datetime.datetime(now.year+1, 6, 28)
 
-    cap3_left = cap3day - now - timedelta(hours=1)
-    thpt_left = thptday - now - timedelta(hours=1)
+    cap3_left = cap3day - now
+    thpt_left = thptday - now
 
     thpt = f"THPT: {thpt_left.days} ngày {trunc(thpt_left.seconds / 3600)} giờ"
     cap3 = f"Cấp 3: {cap3_left.days} ngày {trunc(cap3_left.seconds / 3600)} giờ"

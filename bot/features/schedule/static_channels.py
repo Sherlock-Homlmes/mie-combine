@@ -25,14 +25,15 @@ async def static_channels():
     cap3day = datetime.datetime(now.year, 6, 6)
     thptday = datetime.datetime(now.year, 7, 7)
     if (cap3day - now).days < 0:
-        cap3day.year += 1
-        thptday.year += 1
+        cap3day = datetime.datetime(now.year+1, 6, 6)
+    if (thptday - now).days < 0:
+        thptday = datetime.datetime(now.year+1, 6, 28)
 
     cap3_left = cap3day - now - timedelta(hours=1)
     thpt_left = thptday - now - timedelta(hours=1)
 
-    thpt = f"THPT: {thpt_left.days} ngày {trunc(thpt_left.seconds / 3600)} giờ "
-    cap3 = f"Cấp 3: {cap3_left.days} ngày {trunc(cap3_left.seconds / 3600)} giờ "
+    thpt = f"THPT: {thpt_left.days} ngày {trunc(thpt_left.seconds / 3600)} giờ"
+    cap3 = f"Cấp 3: {cap3_left.days} ngày {trunc(cap3_left.seconds / 3600)} giờ"
 
     await server_info.cap3_channel.edit(name=cap3)
     await server_info.thpt_channel.edit(name=thpt)

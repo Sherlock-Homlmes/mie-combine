@@ -17,8 +17,8 @@ class UserStudySection(Document):
 
     async def update_user_study_time(self):
         now = Now()
-        print("start study time", self.start_study_time)
-        print("end study time", now)
+        # print("start study time", self.start_study_time)
+        # print("end study time", now)
 
         # calculate if start study date = end study date
         if now.now.date() == self.start_study_time.date():

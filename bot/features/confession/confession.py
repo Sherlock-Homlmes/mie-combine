@@ -63,7 +63,6 @@ class Confession:
         # set channel permission
         await Overwrite().create_confession(
             member=self.member,
-            role=server_info.guild.get_role(server_info.guild.id),
             channel=self.channel,
         )
 

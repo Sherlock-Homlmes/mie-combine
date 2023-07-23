@@ -30,6 +30,7 @@ async def get_server_info():
 
     # get guild
     server_info.guild = await bot.fetch_guild(guild_id)
+    server_info.every_one_role = server_info.guild.get_role(server_info.guild.id)
 
     channels = [
         # get confession channels

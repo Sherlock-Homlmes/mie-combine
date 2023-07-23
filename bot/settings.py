@@ -30,6 +30,8 @@ class ServerInfo:
     # guild
     guild: discord.Guild = None
     # role
+    every_one_role: discord.Role = None
+    # role_id
     admin_role_id: int = None
     feature_bot_role_id: int = None
     # confession

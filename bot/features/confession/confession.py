@@ -1,6 +1,6 @@
 # default
 import asyncio
-from typing import Optional, Union, List
+from typing import Optional, Union
 from dataclasses import dataclass
 
 # library
@@ -13,7 +13,7 @@ from bot import bot, server_info, guild_id
 from models import Confessions, ErrandData
 
 from other_modules.image_handle import save_image, delete_image
-from other_modules.discord_bot.overwrite import Overwrite
+from other_modules.discord_bot.overwrite import create_confession
 from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
 
 
@@ -61,7 +61,7 @@ class Confession:
 
     async def set_confession(self):
         # set channel permission
-        await Overwrite().create_confession(
+        await create_confession(
             member=self.member,
             channel=self.channel,
         )

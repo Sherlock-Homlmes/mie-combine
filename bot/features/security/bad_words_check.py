@@ -9,29 +9,36 @@ from bot import bot, server_info
 from models import Users, BadUsers
 from other_modules.time_modules import Now
 
+# level 1
+# check if word is exact as bad word 
 exact_bad_words = [
+    # vn
     "lồn",
     "conmemay",
     "đĩ",
     "đụ",
-    "cuming",
     "cock",
     "đù",
     "vl",
     "lìn",
     "cmn",
+    # eng
+    "fuk",
+    "cuming",
 ]
 
+
+# level 2
+# check if word include 
 included_bad_words = [
+    # vn
     "dkm",
     "cặc",
     "cặk",
     "cẹc",
-    "bitch",
     "địt",
     "loz",
     "đjt",
-    "djt",
     "buồi",
     "buoi`",
     "buoi'",
@@ -49,17 +56,19 @@ included_bad_words = [
     "vcd",
     "đcm",
     "dcm",
+    "djt",
+    # en
     "wtf",
-    "fuk",
 ]
 
+# level 3
+# exclude any seperate and check include
 space_bad_words = [
+    # vn
     "dkm",
     "cặk",
-    "bitch",
     "địt",
     "đjt",
-    "djt",
     "buồi",
     "buoi`",
     "buoi'",
@@ -72,10 +81,11 @@ space_bad_words = [
     "đcmm",
     "vclm",
     "pussy",
+    # en
     "blowjob",
     "titjob",
-    "wtf",
     "fuck",
+    "bitch",
 ]
 
 seperate = [

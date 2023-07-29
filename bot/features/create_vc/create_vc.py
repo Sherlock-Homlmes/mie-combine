@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 # lib
 import discord
-from discord import Interaction, app_commands
+from discord import Interaction, PermissionOverwrite, app_commands
 from discord.ext.commands import has_role
 from discord.ui import View
 
@@ -176,8 +176,23 @@ async def on_voice_state_update(
                     cc_channel: discord.TextChannel
                     vc_channel, cc_channel = await asyncio.gather(
                         *[
-                            category.create_voice_channel(vc_name),
-                            category.create_text_channel("phòng-chat-nè"),
+                            category.create_voice_channel(
+                                name=vc_name,
+                                overwrites={
+                                    server_info.guild.get_role(server_info.guild.id): PermissionOverwrite(view_channel=True, connect=False),
+                                    member: PermissionOverwrite(view_channel=True, connect=True),
+                                    server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, connect=True)
+                                },
+                                user_limit=lim[1]
+                            ),
+                            category.create_text_channel(
+                                name="phòng-chat-nè",
+                                overwrites={
+                                    server_info.guild.get_role(server_info.guild.id): PermissionOverwrite(view_channel=False),
+                                    member: PermissionOverwrite(view_channel=True),
+                                    server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, send_messages=True)
+                                },
+                            ),
                         ]
                     )
                     all_created_vc_id.append(vc_channel.id)
@@ -194,56 +209,55 @@ async def on_voice_state_update(
                         # move member
                         await member.move_to(vc_channel)
 
-                        # set permission
+                        # # everyone
+                        # everyone_overwrite = discord.PermissionOverwrite()
+                        # everyone_overwrite.view_channel = True
+                        # everyone_overwrite.connect = False
+                        # everyone_role = server_info.guild.get_role(server_info.guild.id)
+                        
 
-                        # everyone
-                        everyone_overwrite = discord.PermissionOverwrite()
-                        everyone_overwrite.view_channel = True
-                        everyone_overwrite.connect = False
-                        everyone_role = server_info.guild.get_role(server_info.guild.id)
+                        # # user
+                        # user_overwrite = discord.PermissionOverwrite()
+                        # user_overwrite.view_channel = True
+                        # user_overwrite.connect = True
 
-                        # user
-                        user_overwrite = discord.PermissionOverwrite()
-                        user_overwrite.view_channel = True
-                        user_overwrite.connect = True
+                        # # bot
+                        # feature_bot_role = server_info.guild.get_role(
+                        #     server_info.feature_bot_role_id
+                        # )
+                        # feature_bot_overwrite = discord.PermissionOverwrite()
+                        # feature_bot_overwrite.view_channel = True
+                        # feature_bot_overwrite.connect = True
 
-                        # bot
-                        feature_bot_role = server_info.guild.get_role(
-                            server_info.feature_bot_role_id
-                        )
-                        feature_bot_overwrite = discord.PermissionOverwrite()
-                        feature_bot_overwrite.view_channel = True
-                        feature_bot_overwrite.connect = True
+                        # await asyncio.gather(
+                        #     *[
+                        #         # everyone
+                        #         vc_channel.set_permissions(
+                        #             everyone_role, overwrite=everyone_overwrite
+                        #         ),
 
-                        await asyncio.gather(
-                            *[
-                                # everyone
-                                vc_channel.set_permissions(
-                                    everyone_role, overwrite=everyone_overwrite
-                                ),
+                        #         # user
+                        #         vc_channel.set_permissions(
+                        #             member, overwrite=user_overwrite
+                        #         ),
+                        #         cc_channel.set_permissions(
+                        #             member, overwrite=user_overwrite
+                        #         ),
 
-                                # user
-                                vc_channel.set_permissions(
-                                    member, overwrite=user_overwrite
-                                ),
-                                cc_channel.set_permissions(
-                                    member, overwrite=user_overwrite
-                                ),
+                        #         # feature bot
+                        #         vc_channel.set_permissions(
+                        #             feature_bot_role,
+                        #             overwrite=feature_bot_overwrite
+                        #         ),
+                        #         cc_channel.set_permissions(
+                        #             feature_bot_role,
+                        #             overwrite=feature_bot_overwrite
+                        #         ),
 
-                                # feature bot
-                                vc_channel.set_permissions(
-                                    feature_bot_role,
-                                    overwrite=feature_bot_overwrite
-                                ),
-                                cc_channel.set_permissions(
-                                    feature_bot_role,
-                                    overwrite=feature_bot_overwrite
-                                ),
-
-                                # channel limit
-                                vc_channel.edit(user_limit=lim[1])
-                            ]
-                        )
+                        #         # channel limit
+                        #         vc_channel.edit(user_limit=lim[1])
+                        #     ]
+                        # )
 
                         await cc_channel.send(f"<@{member.id}>" + command_mess)
 

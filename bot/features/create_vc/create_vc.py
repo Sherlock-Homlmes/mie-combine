@@ -6,6 +6,7 @@ from typing import Optional, Union
 import discord
 from discord import Interaction, app_commands
 from discord.ext.commands import has_role
+from discord.ui import View
 
 # local
 from bot import bot, guild_id, server_info
@@ -359,26 +360,24 @@ async def room_permission(
 
             if member:
                 overwrite = discord.PermissionOverwrite()
-                if status == "invite":
-                    overwrite.view_channel = True
-                    overwrite.connect = True
-                    await current_channel.set_permissions(member, overwrite=overwrite)
-                    invite_link = await current_channel.create_invite(
-                        max_uses=1, unique=True
-                    )
-                    await member.send(
-                        "**"
-                        + str(interaction.user.name)
-                        + "** đã mời bạn vào học: "
-                        + str(invite_link)
-                    )
-                    await send("Đã mời <@" + str(member.id) + "> vào phòng")
-                elif status == "allow":
-                    overwrite.view_channel = True
-                    overwrite.connect = True
-                    await current_channel.set_permissions(member, overwrite=overwrite)
-                    await send("Đã cấp quyền cho <@" + str(member.id) + "> vào phòng")
-                elif status == "kick":
+                # if status == "invite":
+                #     overwrite.view_channel = True
+                #     overwrite.connect = True
+                #     await current_channel.set_permissions(member, overwrite=overwrite)
+                #     invite_link = await current_channel.create_invite(
+                #         max_uses=1, unique=True
+                #     )
+                #     await member.send(
+                #         "**"
+                #         + str(interaction.user.name)
+                #         + "** đã mời bạn vào học: "
+                #         + str(invite_link)
+                #     )
+                # elif status == "allow":
+                #     overwrite.view_channel = True
+                #     overwrite.connect = True
+                #     await current_channel.set_permissions(member, overwrite=overwrite)
+                if status == "kick":
                     overwrite.connect = False
                     await current_channel.set_permissions(member, overwrite=overwrite)
                     if member in current_channel.members:
@@ -431,21 +430,112 @@ async def limit(interaction: Interaction, limit: int):
 
 
 @bot.tree.command(name="invite", description="Mời bạn vào phòng")
-@app_commands.describe(member="Some one")
-async def invite(interaction: Interaction, member: Union[discord.User, discord.Member]):
-    if member:
-        await room_permission(interaction, status="invite", member=member)
-    else:
-        await interaction.response.send_message("Không tìm thấy người dùng")
+@app_commands.describe()
+async def invite(interaction: Interaction):
+    user_select = discord.ui.UserSelect(
+        placeholder="Select",
+        max_values=10
+    )
+
+    async def user_select_callback(callback_interaction: Interaction):
+
+        # Get member from call back interaction
+        members = await asyncio.gather(
+            *[
+                callback_interaction.guild.fetch_member(member_id)
+                for member_id in callback_interaction.data["values"]]
+        )
+
+        # Set permission for members
+        overwrite = discord.PermissionOverwrite()
+        current_channel = interaction.user.voice.channel
+        overwrite.view_channel = True
+        overwrite.connect = True
+        await asyncio.gather(
+            *[
+                current_channel.set_permissions(member, overwrite=overwrite)
+                for member in members
+            ]
+        )
+        invite_link = await current_channel.create_invite(
+            max_uses=1, unique=True
+        )
+
+        # send message to members
+        try:
+            await asyncio.gather(
+                *[
+                    member.send(
+                        "**"
+                        + str(interaction.user.name)
+                        + "** đã mời bạn vào học: "
+                        + str(invite_link)
+                    )
+                    for member in members
+                ]
+            )
+        except discord.errors.HTTPException as e:
+            print("Create vc invite Error: ", e)
+
+        # send message to channel
+        await callback_interaction.response.send_message(
+            "Đã mời " + ",".join([
+                f"<@{member.id}>"
+                for member in members
+            ])
+            + " vào phòng"
+        )
+
+    user_select.callback = user_select_callback
+    view = View(timeout=180)
+    view.add_item(user_select)
+
+    await interaction.response.send_message(view=view, delete_after=180)
 
 
 @bot.tree.command(name="allow", description="Cho phép bạn vào phòng")
-@app_commands.describe(member="Some one")
-async def allow(interaction: Interaction, member: Union[discord.User, discord.Member]):
-    if member:
-        await room_permission(interaction, status="allow", member=member)
-    else:
-        await interaction.response.send_message("Không tìm thấy người dùng")
+@app_commands.describe()
+async def allow(interaction: Interaction):
+    user_select = discord.ui.UserSelect(
+        placeholder="Select",
+        max_values=10
+    )
+
+    async def user_select_callback(callback_interaction: Interaction):
+
+        # Get member from call back interaction
+        members = await asyncio.gather(
+            *[
+                callback_interaction.guild.fetch_member(member_id)
+                for member_id in callback_interaction.data["values"]]
+        )
+
+        # Set permission for members
+        overwrite = discord.PermissionOverwrite()
+        current_channel = interaction.user.voice.channel
+        overwrite.view_channel = True
+        overwrite.connect = True
+        await asyncio.gather(
+            *[
+                current_channel.set_permissions(member, overwrite=overwrite)
+                for member in members
+            ]
+        )
+
+        # send message to channel
+        await callback_interaction.response.send_message(
+            "Đã cấp quyền cho " + ",".join([
+                f"<@{member.id}>"
+                for member in members
+            ])
+            + " vào phòng"
+        )
+
+    user_select.callback = user_select_callback
+    view = View(timeout=180)
+    view.add_item(user_select)
+
+    await interaction.response.send_message(view=view, delete_after=180)
 
 
 @bot.tree.command(name="mute", description="Tắt mic phòng")

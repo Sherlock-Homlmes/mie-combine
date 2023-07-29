@@ -1,7 +1,6 @@
-from .confession import *
-
-
 from bot import bot
+
+from .confession import *
 
 
 @bot.listen()

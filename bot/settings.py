@@ -7,7 +7,6 @@ import discord
 from discord.ext import commands
 
 
-####### BOT #######
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,7 +16,6 @@ class Bot(commands.Bot):
 
     # auto sync command on ready
     async def setup_hook(self):
-
         await self.tree.sync()
         print(f"Synced slash commands for {self.user}.")
 
@@ -58,7 +56,7 @@ class ServerInfo:
     game_center_interaction_id: int = None
 
 
-### START
+# START
 guild_id = 880360143768924210
 prefix = "dump,"
 bot = Bot(command_prefix=prefix, intents=discord.Intents.all())

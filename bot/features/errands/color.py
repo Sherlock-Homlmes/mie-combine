@@ -1,10 +1,11 @@
 # default
-from discord import app_commands, Interaction
+from discord import Interaction, app_commands
 
 # local
 from bot import bot, server_info
 
 
+# REFACTOR: CHANGE TO DISCORD.UI.ROLESELECT
 @bot.tree.command(name="color", description="Đổi màu cho tên")
 @app_commands.describe(number="Số thứ tự của màu")
 async def limit(interaction: Interaction, number: int):

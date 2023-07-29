@@ -12,7 +12,6 @@ from discord.ui import View
 from bot import bot, guild_id, server_info
 from models import Confessions, ErrandData
 from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
-from other_modules.discord_bot.overwrite import create_confession
 from other_modules.image_handle import delete_image, save_image
 
 
@@ -58,11 +57,6 @@ class Confession:
     content: str = ""
 
     async def set_confession(self):
-        # set channel permission
-        await create_confession(
-            member=self.member,
-            channel=self.channel,
-        )
 
         # insert confession to database
         confession = Confessions(
@@ -228,10 +222,15 @@ async def on_interaction(interaction: discord.Interaction):
                 await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
             elif "private-confession" in values or "public-confession" in values:
                 chanel_name = rewrite_confession_channel_name(member.name, "confession")
-                category = await interaction.guild.fetch_channel(
-                    server_info.confession_channel.category_id
+
+                channel = await interaction.channel.category.create_text_channel(
+                    chanel_name,
+                    overwrites={
+                        interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                        member: discord.PermissionOverwrite(view_channel=True)
+                    },
+                    reason=None
                 )
-                channel = await category.create_text_channel(chanel_name, reason=None)
 
                 # confession
                 if "private-confession" in values:

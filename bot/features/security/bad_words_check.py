@@ -6,7 +6,7 @@ import discord
 
 # local
 from bot import bot, server_info
-from models import Users, BadUsers
+from models import BadUsers, Users
 from other_modules.time_modules import Now
 
 # level 1
@@ -185,7 +185,7 @@ async def punish(mem_id: int, message_content: str):
         elif counter >= 9:
             form = "BAN"
             hours = 0
-            penalize = f"BAN !!!"
+            penalize = "BAN !!!"
 
     return (form, hours, penalize, colour)
 
@@ -203,12 +203,12 @@ async def punish(mem_id: int, message_content: str):
 @bot.listen()
 async def on_message(message: discord.Message):
 
-    if check_bad_words(message.content) == False:
+    if check_bad_words(message.content) is False:
 
         try:
             await message.delete()
         except discord.errors.NotFound:
-            print("Not found message")
+            print("Bad word error: Not found message")
 
         # xu ly
         form, hours, penalize, colour = await punish(message.author.id, message.content)

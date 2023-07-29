@@ -1,11 +1,12 @@
 # default
-from typing import List
-from pydantic import validator
 import datetime
+from typing import List
+
+import pymongo
 
 # lib
-from beanie import Document, Link, Indexed
-import pymongo
+from beanie import Document, Indexed, Link
+from pydantic import validator
 
 # local
 from .users import Users
@@ -27,11 +28,11 @@ class UserDailyStudyTime(Document):
     def studytime_must_lt_60_and_gt_0(cls, value):
         for index, val in enumerate(value):
             if val < 0:
-                print(value, val)
+                # print(value, val)
                 value[index] = 0
                 # raise ValueError("Study time must greater than 0")
             elif val > 60:
-                print(value, val)
+                # print(value, val)
                 value[index] = 60
                 # raise ValueError("Study time must greater than 0")
         return value

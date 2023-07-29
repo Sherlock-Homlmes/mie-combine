@@ -1,6 +1,6 @@
 # default
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import Dict, List
 
 # library
 import discord

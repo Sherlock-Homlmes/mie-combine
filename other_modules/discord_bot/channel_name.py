@@ -147,7 +147,7 @@ def check_avaiable_name(content):
     msg = content.lower()
     msg = msg.replace(" ", "")
     check = any(ele in msg for ele in ban_word)
-    if check == False:
+    if not check:
         return True
     else:
         return False

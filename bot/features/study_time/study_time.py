@@ -1,13 +1,14 @@
 # lib
-import discord
-from pydantic.error_wrappers import ValidationError
 import asyncio
+
+import discord
+from discord import app_commands
+from pydantic.error_wrappers import ValidationError
 
 # local
 from bot import bot
-from discord import app_commands
 from bot.features.guild_event.on_member_join import on_member_join
-from models import Users, UserStudySection, UserDailyStudyTime
+from models import UserDailyStudyTime, Users, UserStudySection
 from other_modules.time_modules import Now
 
 updating_members = []
@@ -38,8 +39,7 @@ async def on_voice_state_update(
                 ).insert()
 
         # if user not in users database
-        except ValidationError as e:
-            print(e)
+        except ValidationError:
             await on_member_join(member=member)
             await UserStudySection(
                 user=await Users.find_one(Users.discord_id == str(member.id)),
@@ -53,7 +53,7 @@ async def on_voice_state_update(
         try:
             await user_study_section.delete()
         except AttributeError as e:
-            print(e)
+            print("Study time Error:", e)
         if member.id in updating_members:
             updating_members.remove(member.id)
 

@@ -7,17 +7,14 @@ import discord
 from discord import Interaction, app_commands
 from discord.ext.commands import has_role
 
-
 # local
-from bot import bot, server_info, guild_id
-from models import VoiceChannels, Users
-
+from bot import bot, guild_id, server_info
+from models import Users, VoiceChannels
 from other_modules.discord_bot.channel_name import (
     check_avaiable_name,
     rewrite_create_voice_channel_name,
 )
 from other_modules.time_modules import Now
-
 
 command_mess = """
 **Các lệnh:**
@@ -92,7 +89,7 @@ async def fix_room():
                 vc = await VoiceChannels.find_one(VoiceChannels.vc_id == vc_id)
                 try:
                     cc_channel = await server_info.guild.fetch_channel(vc.cc_id)
-                except:
+                except Exception:
                     cc_channel = None
                 if cc_channel:
                     await cc_channel.delete()
@@ -101,7 +98,7 @@ async def fix_room():
             vc = await VoiceChannels.find_one(VoiceChannels.vc_id == vc_id)
             try:
                 cc_channel = await server_info.guild.fetch_channel(vc.cc_id)
-            except:
+            except Exception:
                 cc_channel = None
             if cc_channel:
                 await cc_channel.delete()
@@ -118,15 +115,14 @@ async def on_voice_state_update(
 ):
     global all_created_vc_id, guild
 
-    ##################### create-voice-channel #####################
     voice_channel_before = member_before.channel
     voice_channel_after = member_after.channel
 
     # thứ tự: mem out -> mem in -> cre
     if voice_channel_after != voice_channel_before:
 
-        ##member out
-        if voice_channel_before != None:
+        # member out
+        if voice_channel_before is not None:
             if voice_channel_before.id in all_created_vc_id:
                 await asyncio.sleep(5)
                 vc = await VoiceChannels.find_one(
@@ -141,12 +137,12 @@ async def on_voice_state_update(
                     )
                     all_created_vc_id.remove(voice_channel_before.id)
 
-                elif not member.bot:
+                elif not member.bot and voice_channel_before is not None:
                     cc_channel = guild.get_channel(vc.cc_id)
                     await cc_channel.set_permissions(member, overwrite=None)
 
-        ### member in
-        if voice_channel_after != None:
+        # member in
+        if voice_channel_after is not None:
             # set member's permission to text channel
             if voice_channel_after.id in all_created_vc_id:
                 vc = await VoiceChannels.find_one(
@@ -157,9 +153,9 @@ async def on_voice_state_update(
                 overwrite.view_channel = True
                 await cc_channel.set_permissions(member, overwrite=overwrite)
 
-            ## create channel + set role
+            # create channel + set role
             elif str(voice_channel_after.id) in server_info.channel_cre.keys():
-                if check_avaiable_name(member.name) == False:
+                if check_avaiable_name(member.name) is False:
                     await member.move_to(None)
                     await member.send(
                         "**Bạn hãy kiểm tra và đảm bảo trong tên của bạn không có từ cấm, tục tĩu**"
@@ -196,82 +192,108 @@ async def on_voice_state_update(
                     try:
                         # move member
                         await member.move_to(vc_channel)
-                        ### set permission
-                        # get roles
-                        everyone_role = server_info.guild.get_role(server_info.guild.id)
-                        feature_bot_role = server_info.guild.get_role(
-                            server_info.feature_bot_role_id
-                        )
+
+                        # set permission
+
                         # everyone
                         everyone_overwrite = discord.PermissionOverwrite()
+                        everyone_overwrite.view_channel = True
                         everyone_overwrite.connect = False
+                        everyone_role = server_info.guild.get_role(server_info.guild.id)
+
                         # user
                         user_overwrite = discord.PermissionOverwrite()
                         user_overwrite.view_channel = True
                         user_overwrite.connect = True
+
                         # bot
+                        feature_bot_role = server_info.guild.get_role(
+                            server_info.feature_bot_role_id
+                        )
                         feature_bot_overwrite = discord.PermissionOverwrite()
                         feature_bot_overwrite.view_channel = True
                         feature_bot_overwrite.connect = True
 
-                        await vc_channel.set_permissions(
-                            everyone_role, overwrite=everyone_overwrite
-                        )
-                        await vc_channel.set_permissions(
-                            member, overwrite=user_overwrite
-                        )
-                        await vc_channel.set_permissions(
-                            feature_bot_role, overwrite=feature_bot_overwrite
+                        await asyncio.gather(
+                            *[
+                                # everyone
+                                vc_channel.set_permissions(
+                                    everyone_role, overwrite=everyone_overwrite
+                                ),
+
+                                # user
+                                vc_channel.set_permissions(
+                                    member, overwrite=user_overwrite
+                                ),
+                                cc_channel.set_permissions(
+                                    member, overwrite=user_overwrite
+                                ),
+
+                                # feature bot
+                                vc_channel.set_permissions(
+                                    feature_bot_role,
+                                    overwrite=feature_bot_overwrite
+                                ),
+                                cc_channel.set_permissions(
+                                    feature_bot_role,
+                                    overwrite=feature_bot_overwrite
+                                ),
+
+                                # channel limit
+                                vc_channel.edit(user_limit=lim[1])
+                            ]
                         )
 
-                        everyone_overwrite.view_channel = False
-                        await cc_channel.set_permissions(
-                            everyone_role, overwrite=everyone_overwrite
-                        )
-                        await cc_channel.set_permissions(
-                            member, overwrite=user_overwrite
-                        )
-                        await cc_channel.set_permissions(
-                            feature_bot_role, overwrite=feature_bot_overwrite
-                        )
-
-                        # await asyncio.gather(
-                        #     *[
-                        #         vc_channel.set_permissions(x[0], overwrite=x[1])
-                        #         for x in [
-                        #             (everyone_role, everyone_overwrite),
-                        #             (member, user_overwrite),
-                        #             (feature_bot_role, feature_bot_overwrite),
-                        #         ]
-                        #     ]
-                        # )
-                        # everyone_overwrite.view_channel = False
-                        # await asyncio.gather(
-                        #     *[
-                        #         cc_channel.set_permissions(x[0], overwrite=x[1])
-                        #         for x in [
-                        #             (everyone_role, everyone_overwrite),
-                        #             (member, user_overwrite),
-                        #             (feature_bot_role, feature_bot_overwrite),
-                        #         ]
-                        #     ]
-                        # )
-
-                        await vc_channel.edit(user_limit=lim[1])
                         await cc_channel.send(f"<@{member.id}>" + command_mess)
 
-                    except discord.errors.HTTPException as e:
-                        print(e)
+                    except discord.errors.HTTPException:
                         await asyncio.gather(
                             *[
                                 x.delete()
-                                for x in [vc_channel, cc_channel, data_voice_channel]
+                                for x in [
+                                    vc_channel,
+                                    cc_channel,
+                                    data_voice_channel
+                                ]
                             ]
                         )
                         all_created_vc_id.remove(vc_channel.id)
 
+room_permission_effect = {
+    "public": {
+        "overwrite": "connect",
+        "permission": True,
+        "message": "Phòng đã được mở cho mọi người vào",
+    },
+    "private": {
+        "overwrite": "connect",
+        "permission": False,
+        "message": "Phòng đã được đóng cho mọi người vào",
+    },
+    "show": {
+        "overwrite": "view_channel",
+        "permission": True,
+        "message": "Phòng đã được hiện cho mọi người thấy",
+    },
+    "hide": {
+        "overwrite": "view_channel",
+        "permission": False,
+        "message": "Phòng đã được ẩn không cho mọi người thấy",
+    },
+    "mute": {
+        "overwrite": "speak",
+        "permission": False,
+        "message": "Đã tắt âm phòng",
+    },
+    "unmute": {
+        "overwrite": "speak",
+        "permission": True,
+        "message": "Đã bỏ tắt âm phòng",
+    },
+}
 
-### slash command
+
+# slash command
 async def room_permission(
     interaction: Interaction,
     status: Optional[str] = None,
@@ -279,33 +301,22 @@ async def room_permission(
     limit: Optional[int] = None,
     member: Optional[Union[discord.User, discord.Member]] = None,
 ):
+    global room_permission_effect
     current_channel = interaction.user.voice.channel
     send = interaction.response.send_message
 
     if current_channel:
         if current_channel.id in all_created_vc_id:
 
-            if status in ["public", "private", "show", "hide", "mute", "unmute"]:
+            if status in room_permission_effect.keys():
                 overwrite = discord.PermissionOverwrite()
 
-                if status == "public":
-                    overwrite.connect = True
-                    message = "Phòng đã được mở cho mọi người vào"
-                elif status == "private":
-                    overwrite.connect = False
-                    message = "Phòng đã được đóng cho mọi người vào"
-                elif status == "show":
-                    overwrite.view_channel = True
-                    message = "Phòng đã được hiện cho mọi người thấy"
-                elif status == "hide":
-                    overwrite.view_channel = False
-                    message = "Phòng đã được ẩn không cho mọi người thấy"
-                elif status == "mute":
-                    overwrite.speak = False
-                    message = "Đã tắt âm phòng"
-                elif status == "unmute":
-                    overwrite.speak = True
-                    message = "Đã bỏ tắt âm phòng"
+                setattr(
+                    overwrite,
+                    room_permission_effect[status]["overwrite"],
+                    room_permission_effect[status]["permission"]
+                )
+                message = room_permission_effect[status]["message"]
 
                 everyone_role = server_info.guild.get_role(server_info.guild.id)
                 await current_channel.set_permissions(
@@ -328,7 +339,7 @@ async def room_permission(
 
             if limit:
                 category_id = interaction.channel.category.id
-                for key, value in server_info.channel_cre.items():
+                for _, value in server_info.channel_cre.items():
                     if value["category_id"] == category_id:
                         if value["limit"][0] == value["limit"][1]:
                             await send(
@@ -398,12 +409,12 @@ async def private(interaction: Interaction):
 
 
 @bot.tree.command(name="show", description="Hiện phòng cho mọi người thấy")
-async def private(interaction: Interaction):
+async def show(interaction: Interaction):
     await room_permission(interaction, status="show")
 
 
 @bot.tree.command(name="hide", description="Ẩn phòng không cho mọi người thấy")
-async def private(interaction: Interaction):
+async def hide(interaction: Interaction):
     await room_permission(interaction, status="hide")
 
 
@@ -438,12 +449,12 @@ async def allow(interaction: Interaction, member: Union[discord.User, discord.Me
 
 
 @bot.tree.command(name="mute", description="Tắt mic phòng")
-async def private(interaction: Interaction):
+async def mute(interaction: Interaction):
     await room_permission(interaction, status="mute")
 
 
 @bot.tree.command(name="unmute", description="Mở mic phòng")
-async def private(interaction: Interaction):
+async def unmute(interaction: Interaction):
     await room_permission(interaction, status="unmute")
 
 

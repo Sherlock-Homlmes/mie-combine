@@ -1,23 +1,22 @@
 # default
 import asyncio
-from typing import Optional, Union
 from dataclasses import dataclass
+from typing import Optional, Union
 
 # library
 import discord
-from discord.ext.commands import has_permissions, context
+from discord.ext.commands import context, has_permissions
 from discord.ui import View
 
 # local
-from bot import bot, server_info, guild_id
+from bot import bot, guild_id, server_info
 from models import Confessions, ErrandData
-
-from other_modules.image_handle import save_image, delete_image
-from other_modules.discord_bot.overwrite import create_confession
 from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
+from other_modules.discord_bot.overwrite import create_confession
+from other_modules.image_handle import delete_image, save_image
 
 
-##### Create choose confession message
+# Create choose confession message
 class ConfessionOption(View):
     @discord.ui.select(
         placeholder="Lựa chọn",
@@ -40,16 +39,15 @@ class ConfessionOption(View):
 
 @bot.command(name="confession")
 @has_permissions(administrator=True)
-async def kick(ctx: context.Context):
+async def confession_choose(ctx: context.Context):
     view = ConfessionOption()
     await ctx.message.delete()
     await ctx.send(view=view)
 
 
-##### confession process
+# confession process
 @dataclass
 class Confession:
-
     # default value
     channel: discord.TextChannel
     member: Optional[Union[discord.Member, discord.User]]
@@ -112,11 +110,8 @@ class Confession:
                         self.files.append(image)
 
     async def send_files(self):
-
         files_to_read: list[str] = self.files
         files_to_send: list[discord.File] = []
-
-        print(files_to_read)
 
         for filename in files_to_read:
             with open(filename, "rb") as f:
@@ -134,7 +129,6 @@ class Confession:
                 if len(self.content) < 50 and self.files == []:
                     message = "Nội dung confession của bạn rất ngắn nên sẽ không được gửi đi. Lưu ý: nếu gửi confession khó hiểu, không có chủ đích sẽ bị mute ít nhất 3 ngày"
                 else:
-
                     if self.cfs_type == "private":
                         await self.send_private_confession()
                     elif self.cfs_type == "public":
@@ -160,7 +154,6 @@ class Confession:
                 )
 
     async def send_private_confession(self):
-
         files = await self.send_files()
 
         content = f"``` Confession {server_info.confession_count}-ẩn danh```"
@@ -179,7 +172,6 @@ class Confession:
         )
 
     async def send_public_confession(self):
-
         files = await self.send_files()
 
         content = f"``` Confession {server_info.confession_count}-công khai```"
@@ -189,11 +181,7 @@ class Confession:
             colour=discord.Colour.gold(),
         )
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-        if self.member.avatar:
-            pfp = self.member.avatar
-        else:
-            pfp = self.member.default_avatar.url
-        embed.set_thumbnail(url=pfp)
+        embed.set_thumbnail(url=self.member.avatar | self.member.default_avatar.url)
         embed.set_footer(text="""BetterMe - Better everyday""")
         await server_info.confession_channel.send(
             content=content, embed=embed, files=files
@@ -239,7 +227,6 @@ async def on_interaction(interaction: discord.Interaction):
             if exist:
                 await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
             elif "private-confession" in values or "public-confession" in values:
-
                 chanel_name = rewrite_confession_channel_name(member.name, "confession")
                 category = await interaction.guild.fetch_channel(
                     server_info.confession_channel.category_id

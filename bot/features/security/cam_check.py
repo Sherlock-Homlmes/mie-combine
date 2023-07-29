@@ -1,10 +1,10 @@
 # default
+import asyncio
 from dataclasses import dataclass
 from typing import List
 
 # lib
 import discord
-import asyncio
 
 # local
 from bot import bot, server_info
@@ -31,14 +31,14 @@ class CheckCamEmbedMessage:
                 content=self.member.mention, embed=self.embed
             )
         except Exception as e:
-            print(e)
+            print("Cam check Error:", e)
 
     async def update(self):
         self.update_embed()
         try:
             await self.message.edit(embed=self.embed)
         except Exception as e:
-            print(e)
+            print("Cam check Error:", e)
 
     def update_embed(self):
         self.embed = discord.Embed(
@@ -106,9 +106,9 @@ async def on_voice_state_update(
         check_cam_member_ids.append(member.id)
         await asyncio.sleep(sleep_time[0])
         # remind
-        if member.voice != None:
+        if member.voice is not None:
             if (
-                member.voice.self_video == False
+                member.voice.self_video is False
                 and member.voice.channel in full_cam_channels
             ):
 
@@ -118,9 +118,9 @@ async def on_voice_state_update(
 
                 # kick
                 await asyncio.sleep(sleep_time[1])
-                if member.voice != None:
+                if member.voice is not None:
                     if (
-                        member.voice.self_video == False
+                        member.voice.self_video is False
                         and member.voice.channel in full_cam_channels
                     ):
                         await member.move_to(None)
@@ -141,7 +141,7 @@ async def on_voice_state_update(
         check_cam_member_ids.append(member.id)
         await asyncio.sleep(sleep_time[0])
         # remind
-        if member.voice != None:
+        if member.voice is not None:
             if (
                 not any([member.voice.self_video, member.voice.self_stream])
                 and member.voice.channel in cam_stream_channels
@@ -154,7 +154,7 @@ async def on_voice_state_update(
 
                 # kick
                 await asyncio.sleep(sleep_time[1])
-                if member.voice != None:
+                if member.voice is not None:
                     if (
                         not any([member.voice.self_video, member.voice.self_stream])
                         and member.voice.channel in cam_stream_channels

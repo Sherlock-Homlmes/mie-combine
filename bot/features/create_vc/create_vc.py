@@ -179,7 +179,7 @@ async def on_voice_state_update(
                             category.create_voice_channel(
                                 name=vc_name,
                                 overwrites={
-                                    server_info.guild.get_role(server_info.guild.id): PermissionOverwrite(view_channel=True, connect=False),
+                                    server_info.guild.default_role: PermissionOverwrite(view_channel=True, connect=False),
                                     member: PermissionOverwrite(view_channel=True, connect=True),
                                     server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, connect=True)
                                 },
@@ -188,7 +188,7 @@ async def on_voice_state_update(
                             category.create_text_channel(
                                 name="phòng-chat-nè",
                                 overwrites={
-                                    server_info.guild.get_role(server_info.guild.id): PermissionOverwrite(view_channel=False),
+                                    server_info.guild.default_role: PermissionOverwrite(view_channel=False),
                                     member: PermissionOverwrite(view_channel=True),
                                     server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, send_messages=True)
                                 },
@@ -208,57 +208,6 @@ async def on_voice_state_update(
                     try:
                         # move member
                         await member.move_to(vc_channel)
-
-                        # # everyone
-                        # everyone_overwrite = discord.PermissionOverwrite()
-                        # everyone_overwrite.view_channel = True
-                        # everyone_overwrite.connect = False
-                        # everyone_role = server_info.guild.get_role(server_info.guild.id)
-                        
-
-                        # # user
-                        # user_overwrite = discord.PermissionOverwrite()
-                        # user_overwrite.view_channel = True
-                        # user_overwrite.connect = True
-
-                        # # bot
-                        # feature_bot_role = server_info.guild.get_role(
-                        #     server_info.feature_bot_role_id
-                        # )
-                        # feature_bot_overwrite = discord.PermissionOverwrite()
-                        # feature_bot_overwrite.view_channel = True
-                        # feature_bot_overwrite.connect = True
-
-                        # await asyncio.gather(
-                        #     *[
-                        #         # everyone
-                        #         vc_channel.set_permissions(
-                        #             everyone_role, overwrite=everyone_overwrite
-                        #         ),
-
-                        #         # user
-                        #         vc_channel.set_permissions(
-                        #             member, overwrite=user_overwrite
-                        #         ),
-                        #         cc_channel.set_permissions(
-                        #             member, overwrite=user_overwrite
-                        #         ),
-
-                        #         # feature bot
-                        #         vc_channel.set_permissions(
-                        #             feature_bot_role,
-                        #             overwrite=feature_bot_overwrite
-                        #         ),
-                        #         cc_channel.set_permissions(
-                        #             feature_bot_role,
-                        #             overwrite=feature_bot_overwrite
-                        #         ),
-
-                        #         # channel limit
-                        #         vc_channel.edit(user_limit=lim[1])
-                        #     ]
-                        # )
-
                         await cc_channel.send(f"<@{member.id}>" + command_mess)
 
                     except discord.errors.HTTPException:
@@ -333,9 +282,8 @@ async def room_permission(
                 )
                 message = room_permission_effect[status]["message"]
 
-                everyone_role = server_info.guild.get_role(server_info.guild.id)
                 await current_channel.set_permissions(
-                    everyone_role, overwrite=overwrite
+                    server_info.guild.default_role, overwrite=overwrite
                 )
                 await send(message)
 

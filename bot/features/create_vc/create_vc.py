@@ -177,7 +177,7 @@ async def on_voice_state_update(
                                 overwrites={
                                     server_info.guild.default_role: PermissionOverwrite(view_channel=True, connect=False),
                                     member: PermissionOverwrite(view_channel=True, connect=True),
-                                    server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, connect=True)
+                                    # server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, connect=True)
                                 },
                                 user_limit=channel_info["limit"][1]
                             ),
@@ -186,7 +186,7 @@ async def on_voice_state_update(
                                 overwrites={
                                     server_info.guild.default_role: PermissionOverwrite(view_channel=False),
                                     member: PermissionOverwrite(view_channel=True),
-                                    server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, send_messages=True)
+                                    # server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, send_messages=True)
                                 },
                             ),
                         ]
@@ -205,6 +205,17 @@ async def on_voice_state_update(
                         # move member
                         await member.move_to(vc_channel)
                         await cc_channel.send(f"<@{member.id}>" + command_mess)
+
+                        # set permission for feature bot here to increase performance
+                        feature_bot_role = server_info.guild.get_role(server_info.feature_bot_role_id)
+                        feature_bot_cc_overwrite = PermissionOverwrite(view_channel=True, connect=True)
+                        feature_bot_vc_overwrite = PermissionOverwrite(view_channel=True, send_messages=True)
+                        await asyncio.gather(
+                            *[
+                                vc_channel.set_permissions(feature_bot_role, feature_bot_vc_overwrite),
+                                cc_channel.set_permissions(feature_bot_role, feature_bot_cc_overwrite),
+                            ]
+                        )
 
                     except discord.errors.HTTPException:
                         await asyncio.gather(

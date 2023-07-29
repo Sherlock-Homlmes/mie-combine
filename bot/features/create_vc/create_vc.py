@@ -163,10 +163,6 @@ async def on_voice_state_update(
                     )
                 else:
                     channel_info = server_info.channel_cre[str(voice_channel_after.id)]
-                    category_id = channel_info["category_id"]
-                    lim = channel_info["limit"]
-                    category = await server_info.guild.fetch_channel(category_id)
-
                     # create
                     vc_name = (
                         f"#{rewrite_create_voice_channel_name(member.name)}'s room"
@@ -176,16 +172,16 @@ async def on_voice_state_update(
                     cc_channel: discord.TextChannel
                     vc_channel, cc_channel = await asyncio.gather(
                         *[
-                            category.create_voice_channel(
+                            voice_channel_after.category.create_voice_channel(
                                 name=vc_name,
                                 overwrites={
                                     server_info.guild.default_role: PermissionOverwrite(view_channel=True, connect=False),
                                     member: PermissionOverwrite(view_channel=True, connect=True),
                                     server_info.guild.get_role(server_info.feature_bot_role_id): PermissionOverwrite(view_channel=True, connect=True)
                                 },
-                                user_limit=lim[1]
+                                user_limit=channel_info["limit"][1]
                             ),
-                            category.create_text_channel(
+                            voice_channel_after.category.create_text_channel(
                                 name="phòng-chat-nè",
                                 overwrites={
                                     server_info.guild.default_role: PermissionOverwrite(view_channel=False),

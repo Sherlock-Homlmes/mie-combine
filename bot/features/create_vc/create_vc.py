@@ -208,12 +208,24 @@ async def on_voice_state_update(
 
                         # set permission for feature bot here to increase performance
                         feature_bot_role = server_info.guild.get_role(server_info.feature_bot_role_id)
-                        feature_bot_cc_overwrite = PermissionOverwrite(view_channel=True, connect=True)
-                        feature_bot_vc_overwrite = PermissionOverwrite(view_channel=True, send_messages=True)
+                        feature_bot_cc_overwrite = PermissionOverwrite(
+                            view_channel=True,
+                            connect=True
+                        )
+                        feature_bot_vc_overwrite = PermissionOverwrite(
+                            view_channel=True,
+                            send_messages=True
+                        )
                         await asyncio.gather(
                             *[
-                                vc_channel.set_permissions(feature_bot_role, feature_bot_vc_overwrite),
-                                cc_channel.set_permissions(feature_bot_role, feature_bot_cc_overwrite),
+                                vc_channel.set_permissions(
+                                    target=feature_bot_role,
+                                    overwrite=feature_bot_vc_overwrite
+                                ),
+                                cc_channel.set_permissions(
+                                    target=feature_bot_role,
+                                    overwrite=feature_bot_cc_overwrite
+                                ),
                             ]
                         )
 

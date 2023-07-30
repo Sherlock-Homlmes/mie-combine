@@ -1,5 +1,6 @@
 # default
 import asyncio
+import datetime
 from dataclasses import dataclass
 from typing import Optional, Union
 
@@ -34,6 +35,13 @@ class ConfessionOption(View):
     )
     async def select_callback(self, select, interaction):
         pass
+
+
+@bot.listen()
+async def on_ready():
+    print("5.Confession ready")
+    await asyncio.sleep(10)
+    await fix_confession()
 
 
 @bot.command(name="confession")
@@ -246,4 +254,21 @@ async def on_interaction(interaction: discord.Interaction):
 
 
 async def fix_confession():
-    pass
+    now = datetime.datetime.now(datetime.timezone.utc)
+    async for confession_data in Confessions.find():
+        channel: discord.TextChannel
+        channel: discord.Member | discord.User
+        channel, member = await asyncio.gather(
+            *[
+                server_info.guild.fetch_channel(int(confession_data.channel_id)),
+                server_info.guild.fetch_member(int(confession_data.member_id))
+            ]
+        )
+        if (now - channel.created_at).seconds >= 2400:
+            await Confession(
+                channel=channel,
+                member=member,
+                cfs_type=confession_data.type,
+                files=[],
+            ).end_confession()
+    print("fix confession done")

@@ -128,7 +128,9 @@ class Confession:
         if confession:
             await self.text_process()
             try:
-                if len(self.content) < 50 and self.files == []:
+                if len(self.content) == 0 and self.files == []:
+                    message = None
+                elif len(self.content) < 50 and self.files == []:
                     message = "Nội dung confession của bạn rất ngắn nên sẽ không được gửi đi. Lưu ý: nếu gửi confession khó hiểu, không có chủ đích sẽ bị mute ít nhất 3 ngày"
                 else:
                     if self.cfs_type == "private":
@@ -149,7 +151,8 @@ class Confession:
 
                 await confession.delete()
                 await self.channel.delete()
-                await self.member.send(message)
+                if message:
+                    await self.member.send(message)
             except discord.errors.HTTPException:
                 await self.channel.send(
                     "Confession quá dài. Hãy đảm bảo confession của bạn không quá 4000 kí tự."

@@ -267,6 +267,7 @@ async def fix_confession():
                 server_info.guild.fetch_member(int(confession_data.member_id))
             ]
         )
+        # delete if confession channel last longer than 40 minutes
         if (now - channel.created_at).seconds >= 2400:
             await Confession(
                 channel=channel,

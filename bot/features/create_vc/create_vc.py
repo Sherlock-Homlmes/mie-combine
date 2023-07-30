@@ -32,9 +32,9 @@ command_mess = """
 
 /unmute: bỏ mic phòng
 
-/allow + [tên_người_muốn_mời hoặc id]: cho phép người bạn muốn vào phòng
+/allow: cho phép người bạn muốn vào phòng
 
-/invite + [tên_người_muốn_mời hoặc id]: mời người vào phòng
+/invite: mời người vào phòng
 
 /kick + [tên_người_muốn_kick hoặc id]: kick ra khỏi phòng
 

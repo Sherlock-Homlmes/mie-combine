@@ -168,7 +168,7 @@ async def on_voice_state_update(
                         f"#{rewrite_create_voice_channel_name(member.name)}'s room"
                     )
 
-                    # feature_bot_role = server_info.guild.get_role(server_info.feature_bot_role_id)
+                    feature_bot_role = server_info.guild.get_role(server_info.feature_bot_role_id)
                     vc_channel: discord.VoiceChannel
                     cc_channel: discord.TextChannel
                     vc_channel, cc_channel = await asyncio.gather(
@@ -178,7 +178,7 @@ async def on_voice_state_update(
                                 overwrites={
                                     server_info.guild.default_role: PermissionOverwrite(view_channel=True, connect=False),
                                     member: PermissionOverwrite(view_channel=True, connect=True),
-                                    # feature_bot_role: PermissionOverwrite(view_channel=True, connect=True)
+                                    feature_bot_role: PermissionOverwrite(view_channel=True, connect=True)
                                 },
                                 user_limit=channel_info["limit"][1]
                             ),
@@ -187,7 +187,7 @@ async def on_voice_state_update(
                                 overwrites={
                                     server_info.guild.default_role: PermissionOverwrite(view_channel=False),
                                     member: PermissionOverwrite(view_channel=True),
-                                    # feature_bot_role: PermissionOverwrite(view_channel=True, send_messages=True)
+                                    feature_bot_role: PermissionOverwrite(view_channel=True, send_messages=True)
                                 },
                             ),
                         ]
@@ -203,32 +203,8 @@ async def on_voice_state_update(
                     await data_voice_channel.insert()
 
                     try:
-                        # move member
                         await member.move_to(vc_channel)
                         await cc_channel.send(f"<@{member.id}>" + command_mess)
-
-                        # set permission for feature bot here to increase performance
-                        feature_bot_role = server_info.guild.get_role(server_info.feature_bot_role_id)
-                        feature_bot_cc_overwrite = PermissionOverwrite(
-                            view_channel=True,
-                            connect=True
-                        )
-                        feature_bot_vc_overwrite = PermissionOverwrite(
-                            view_channel=True,
-                            send_messages=True
-                        )
-                        await asyncio.gather(
-                            *[
-                                vc_channel.set_permissions(
-                                    target=feature_bot_role,
-                                    overwrite=feature_bot_vc_overwrite
-                                ),
-                                cc_channel.set_permissions(
-                                    target=feature_bot_role,
-                                    overwrite=feature_bot_cc_overwrite
-                                ),
-                            ]
-                        )
 
                     except discord.errors.HTTPException:
                         await asyncio.gather(
@@ -342,23 +318,6 @@ async def room_permission(
 
             if member:
                 overwrite = discord.PermissionOverwrite()
-                # if status == "invite":
-                #     overwrite.view_channel = True
-                #     overwrite.connect = True
-                #     await current_channel.set_permissions(member, overwrite=overwrite)
-                #     invite_link = await current_channel.create_invite(
-                #         max_uses=1, unique=True
-                #     )
-                #     await member.send(
-                #         "**"
-                #         + str(interaction.user.name)
-                #         + "** đã mời bạn vào học: "
-                #         + str(invite_link)
-                #     )
-                # elif status == "allow":
-                #     overwrite.view_channel = True
-                #     overwrite.connect = True
-                #     await current_channel.set_permissions(member, overwrite=overwrite)
                 if status == "kick":
                     overwrite.connect = False
                     await current_channel.set_permissions(member, overwrite=overwrite)

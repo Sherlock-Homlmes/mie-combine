@@ -186,7 +186,7 @@ class Confession:
             colour=discord.Colour.gold(),
         )
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-        embed.set_thumbnail(url=self.member.avatar | self.member.default_avatar.url)
+        embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
         embed.set_footer(text="""BetterMe - Better everyday""")
         await server_info.confession_channel.send(
             content=content, embed=embed, files=files
@@ -260,7 +260,7 @@ async def fix_confession():
     now = datetime.datetime.now(datetime.timezone.utc)
     async for confession_data in Confessions.find():
         channel: discord.TextChannel
-        channel: discord.Member | discord.User
+        member: discord.Member | discord.User
         channel, member = await asyncio.gather(
             *[
                 server_info.guild.fetch_channel(int(confession_data.channel_id)),

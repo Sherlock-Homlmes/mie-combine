@@ -53,6 +53,7 @@ pre-commit==3.5.0
 ptyprocess==0.7.0
 pycparser==2.21
 pydantic==2.4.2
+pydantic-settings==2.0.3
 pydantic_core==2.10.1
 pymongo==4.6.0
 pyproject_hooks==1.0.0

@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "mie-combie"
+version = "0.1.0"
+description = ""
+authors = ["Khoi"]
+readme = "README.md"
+
+
+[tool.poetry.dependencies]
+python = "^3.10.6"
+discord = "^2.3.2"
+beanie = "^1.23.1"
+pytz = "^2023.3.post1"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0.post1"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.9.1"
+ruff = "^0.0.292"
+pre-commit = "^3.5.0"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401", "F403", "F405"]
+"main.py" = ["F403"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -11,8 +11,6 @@ from bot import bot, server_info, guild_id
 
 @bot.listen()
 async def on_interaction(interaction: Interaction):
-
-    ####game
     if interaction.message:
         if (
             interaction.message.id == server_info.game_center_interaction_id
@@ -48,17 +46,15 @@ async def on_interaction(interaction: Interaction):
             else:
                 await interaction.user.remove_roles(kvc_role)
 
-                game = ""
                 for key in values:
                     role = discord.utils.get(
                         interaction.guild.roles, id=game_roles[key]
                     )
                     await interaction.user.add_roles(role)
-                    game += key + ","
+                game = ",".join(values)
 
-                game = game.rstrip(game[-1])
                 msg = await interaction.message.channel.send(
-                    f"**{interaction.user.mention} đã chọn chơi: " + game + "**"
+                    f"**{interaction.user.mention} đã chọn chơi: {game}**"
                 )
 
             await interaction.response.defer()

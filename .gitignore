@@ -19,6 +19,7 @@ venv.bak/
 # Ignore cache file
 __pycache__/
 data/
+.ruff_cache/
 
 tests.py
 store/

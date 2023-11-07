@@ -1,7 +1,6 @@
 # default
 import aiohttp
 import datetime
-from datetime import timedelta
 from math import trunc
 
 # lib
@@ -25,9 +24,9 @@ async def static_channels():
     cap3day = datetime.datetime(now.year, 6, 6)
     thptday = datetime.datetime(now.year, 6, 28)
     if (cap3day - now).days < 0:
-        cap3day = datetime.datetime(now.year+1, 6, 6)
+        cap3day = datetime.datetime(now.year + 1, 6, 6)
     if (thptday - now).days < 0:
-        thptday = datetime.datetime(now.year+1, 6, 28)
+        thptday = datetime.datetime(now.year + 1, 6, 28)
 
     cap3_left = cap3day - now
     thpt_left = thptday - now

@@ -1,27 +1,29 @@
-# default
-from discord import Interaction, app_commands
+# libs
+from discord import app_commands, Interaction, User, Role
 
 # local
 from bot import bot, server_info
+
+
+async def remove_color_role_from_user(role_names: list[Role], user: User) -> None:
+    if "COLOR" in role_names:
+        pos = role_names.index("COLOR")
+        role_ids = [role.id for role in user.roles]
+        color_old = server_info.guild.get_role(role_ids[pos])
+        await user.remove_roles(color_old)
 
 
 # REFACTOR: CHANGE TO DISCORD.UI.ROLESELECT
 @bot.tree.command(name="color", description="Đổi màu cho tên")
 @app_commands.describe(number="Số thứ tự của màu")
 async def limit(interaction: Interaction, number: int):
-
     if number > len(server_info.color_roles):
         await interaction.response.send_message("Chọn sai số màu")
     else:
         user = interaction.user
         role_names = [role.name for role in user.roles]
         if "HOMIE" in role_names or "HỌC SINH TÍCH CỰC" in role_names:
-            if "COLOR" in role_names:
-                pos = role_names.index("COLOR")
-                role_ids = [role.id for role in user.roles]
-                color_old = server_info.guild.get_role(role_ids[pos])
-                await user.remove_roles(color_old)
-
+            remove_color_role_from_user(role_names=role_names, user=user)
             color_new = server_info.guild.get_role(server_info.color_roles[number - 1])
             await user.add_roles(color_new)
             await interaction.response.send_message(
@@ -38,9 +40,5 @@ async def limit(interaction: Interaction, number: int):
 async def color(interaction: Interaction):
     user = interaction.user
     role_names = [role.name for role in user.roles]
-    if "COLOR" in role_names:
-        pos = role_names.index("COLOR")
-        role_ids = [role.id for role in user.roles]
-        color_old = server_info.guild.get_role(role_ids[pos])
-        await user.remove_roles(color_old)
+    remove_color_role_from_user(role_names=role_names, user=user)
     await interaction.response.send_message("Bạn đã bỏ role màu")

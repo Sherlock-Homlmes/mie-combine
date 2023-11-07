@@ -3,7 +3,6 @@ import asyncio
 
 import discord
 from discord import app_commands
-from pydantic.error_wrappers import ValidationError
 
 # local
 from bot import bot
@@ -15,23 +14,34 @@ updating_members = []
 
 
 @bot.listen()
+async def on_ready():
+    print("7.Study time ready")
+
+
+@bot.listen()
 async def on_voice_state_update(
     member: discord.Member,
     member_before: discord.VoiceState,
     member_after: discord.VoiceState,
 ):
+    # member join channel
     if not member_before.channel and member_after.channel:
+        # block transaction async
         while member.id in updating_members:
             await asyncio.sleep(1)
         updating_members.append(member.id)
+        # if user in users database
         try:
+            # add study section
             user_study_section = await UserStudySection.find_one(
                 UserStudySection.user.discord_id == str(member.id),
                 fetch_links=True,
             )
+            # check if exist study section
             if user_study_section:
                 user_study_section.start_study_time = Now().now
                 await user_study_section.save()
+            # if not exist study section
             else:
                 await UserStudySection(
                     user=await Users.find_one(Users.discord_id == str(member.id)),
@@ -39,13 +49,14 @@ async def on_voice_state_update(
                 ).insert()
 
         # if user not in users database
-        except ValidationError:
+        except Exception:
             await on_member_join(member=member)
             await UserStudySection(
                 user=await Users.find_one(Users.discord_id == str(member.id)),
                 start_study_time=Now().now,
             ).insert()
 
+    # member leave channel
     elif member_before.channel and not member_after.channel:
         user_study_section = await UserStudySection.find_one(
             UserStudySection.user.discord_id == str(member.id), fetch_links=True

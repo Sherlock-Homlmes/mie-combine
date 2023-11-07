@@ -10,7 +10,7 @@ from bot import bot
 async def on_message(message: discord.Message):
     if (
         str(message.channel) == "giới-thiệu-bản-thân"
-        and message.author.bot == False
+        and message.author.bot is False
         and len(message.content) < 120
     ):
         await message.delete()

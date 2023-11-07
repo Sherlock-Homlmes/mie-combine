@@ -1,0 +1,47 @@
+# This pre-commit file use for check code style before commit and also use for check code style in CI
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: debug-statements
+        language_version: python3
+
+  # js
+  # - repo: https://github.com/pre-commit/mirrors-prettier
+  #   rev: "" # Use the sha / tag you want to point at
+  #   hooks:
+  #     - id: prettier
+  #       types_or: [css, javascript]
+  #       additional_dependencies:
+  #         - prettier@3.0.3
+
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: "" # Use the sha / tag you want to point at
+  #   hooks:
+  #     - id: eslint
+  #       files: \.[jt]sx?$ # *.js, *.jsx, *.ts and *.tsx
+  #       types: [file]
+
+  # python
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      # formater
+      - id: black
+        name: black-server
+        args: [--safe]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.292
+    hooks:
+      # linter
+      - id: ruff
+        name: ruff-server
+        args: [--fix, --exit-non-zero-on-fix]
+      # # formatter(beta)
+      # - id: ruff-format
+      #   args: [--check]

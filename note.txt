@@ -1,16 +1,11 @@
-host problems
-
 guild event:
     feat/user update
-
-cfs:
-    feat/fix before start
 
 game center:
     bug/game all
 
 errands:
-    welcome: 
+    welcome:
         feat/delete message after up host
 
 create vc:
@@ -24,9 +19,11 @@ Async lock transaction
 Run bot inside FastAPI won't show error
 Discord bot async Model can't use sync function and oposite
 
-
-/// Error
-AttributeError: type object 'ClientEncryption' has no attribute 'rewrap_many_data_key': not activate environment :)))
-
 /// Add to requirements.txt
 requests
+
+/// Refactor:
+- Transfer to pydantic
+- Use pydantic env
+- All Embed model to 1 file
+- Add poetry

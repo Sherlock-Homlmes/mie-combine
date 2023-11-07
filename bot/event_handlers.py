@@ -4,7 +4,7 @@ import asyncio
 # lib
 
 # local
-from .settings import bot, guild_id
+from .settings import bot, guild_id, server_info  # noqa: F401
 from models import ErrandData
 from other_modules.discord_bot.get_object import get_channel
 

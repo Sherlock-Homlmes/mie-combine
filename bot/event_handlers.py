@@ -4,19 +4,16 @@ import asyncio
 # lib
 
 # local
-from all_env import bot_only
-from .settings import bot, guild_id, server_info
+from .settings import bot, guild_id
 from models import ErrandData
 from other_modules.discord_bot.get_object import get_channel
 
-if bot_only:
-    from database.mongodb_async import connect_to_database
+from database.mongodb_async import connect_to_database
 
 
 @bot.listen()
 async def on_ready():
-    if bot_only:
-        await connect_to_database()
+    await connect_to_database()
     await get_server_info()
     print("Bot ready")
 

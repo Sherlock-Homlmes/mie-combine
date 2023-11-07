@@ -3,7 +3,7 @@ import beanie
 import motor.motor_asyncio
 
 # local
-from all_env import database_url
+from core.env import env
 from models import (
     Users,
     BadUsers,
@@ -14,7 +14,7 @@ from models import (
     UserStudySection,
 )
 
-client = motor.motor_asyncio.AsyncIOMotorClient(database_url)
+client = motor.motor_asyncio.AsyncIOMotorClient(env.DATABASE_URL)
 
 
 async def connect_to_database():

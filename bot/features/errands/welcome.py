@@ -32,7 +32,7 @@ async def on_member_join(member: discord.Member):
         field3 = "Hãy vào <#891909866355048548> để nhận role tương ứng nha"
 
         embed.set_footer(
-            text="""Chúc bạn có 1 khoảng thời gian vui vẻ. 
+            text="""Chúc bạn có 1 khoảng thời gian vui vẻ.
   BetterMe-Better everyday"""
         )
         embed.set_image(url="https://i.ibb.co/bNzBtyY/Betterme-banner.png")
@@ -48,36 +48,3 @@ async def on_member_join(member: discord.Member):
         await asyncio.sleep(600)
         await msg.delete()
         welcome_member.remove(member.id)
-
-
-@bot.listen()
-async def on_message(message: discord.Message):
-
-    if message.author == bot.user:
-        pass
-    elif message.channel == server_info.welcome_channel and len(message.content) < 120:
-        await message.delete()
-        embed = discord.Embed(
-            title="**Chào mừng "
-            + message.author.name
-            + " đến với Cộng Đồng học tập BetterMe**",
-            description="Bạn giới thiệu đầy đủ 1 xíu nha.",
-            colour=discord.Colour.gold(),
-        )
-        basic_info = """
-Tên tuổi
-Năm sinh
-Nơi ở
-Sở thích cá nhân
-Điểm mạnh, yếu
-Mục tiêu trong tương lai
-...
-||**Trên 120 từ nhé :3**||
-"""
-        embed.set_thumbnail(url=message.author.avatar.url)
-        embed.add_field(
-            name="**Một mẫu giới thiệu cơ bản**", value=basic_info, inline=False
-        )
-        await message.author.send(embed=embed)
-
-    await bot.process_commands(message)

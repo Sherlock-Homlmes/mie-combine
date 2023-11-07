@@ -14,6 +14,7 @@ pytz = "^2023.3.post1"
 fastapi = "^0.104.1"
 uvicorn = "^0.24.0.post1"
 python-dotenv = "^1.0.0"
+pydantic-settings = "^2.0.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.9.1"

@@ -1,16 +1,12 @@
 guild event:
     feat/user update
 
-game center:
-    bug/game all
-
 errands:
     welcome:
         feat/delete message after up host
 
 create vc:
     feat/when host up -> auto create vc
-
 
 feat/image_handler save image to async
 
@@ -23,7 +19,6 @@ Discord bot async Model can't use sync function and oposite
 requests
 
 /// Refactor:
-- Transfer to pydantic
-- Use pydantic env
+- Add all setting to core
+- Transfer all to pydantic
 - All Embed model to 1 file
-- Add poetry

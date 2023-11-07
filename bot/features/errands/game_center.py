@@ -33,11 +33,11 @@ async def on_interaction(interaction: Interaction):
                 )
 
             elif "game all" in values or set(list(game_roles.keys())) == set(values):
-                await interaction.user.add_roles(kvc_role)
-
                 for key in game_roles.keys():
                     role = server_info.guild.get_role(game_roles[key])
                     await interaction.user.remove_roles(role)
+
+                await interaction.user.add_roles(kvc_role)
 
                 msg = await interaction.message.channel.send(
                     f"**{interaction.user.mention} đã chọn chơi tất cả mọi game**"

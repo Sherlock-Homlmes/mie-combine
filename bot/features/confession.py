@@ -67,7 +67,9 @@ class Confession:
     async def set_confession(self):
         # insert confession to database
         confession = Confessions(
-            channel_id=self.channel.id, member_id=self.member.id, type=self.cfs_type
+            channel_id=str(self.channel.id),
+            member_id=str(self.member.id),
+            type=self.cfs_type,
         )
         await confession.insert()
 

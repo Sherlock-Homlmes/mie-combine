@@ -57,6 +57,5 @@ async def on_interaction(interaction: Interaction):
                     f"**{interaction.user.mention} đã chọn chơi: {game}**"
                 )
 
-            await interaction.response.defer()
             await asyncio.sleep(10)
             await msg.delete()

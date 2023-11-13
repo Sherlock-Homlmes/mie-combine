@@ -1,22 +1,8 @@
-guild event:
-    feat/user update
-
-errands:
-    welcome:
-        feat/delete message after up host
-
-create vc:
-    feat/when host up -> auto create vc
-
-feat/image_handler save image to async
-
-//// Note:
-Async lock transaction
-Run bot inside FastAPI won't show error
-Discord bot async Model can't use sync function and oposite
-
-/// Add to requirements.txt
-requests
+/// Feat:
+    - Image_handler save image to async
+    - Create vc: When host up -> auto create vc
+    - Errands:Welcome: delete message after up host
+    - Guild event: user update
 
 /// Refactor:
 - Add all setting to core

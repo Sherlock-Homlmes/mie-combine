@@ -10,5 +10,5 @@ from .static_channels import static_channels
 @bot.listen()
 async def on_ready():
     print("1.Schedule ready")
-    await asyncio.sleep(10)
+    await asyncio.sleep(20)
     static_channels.start()

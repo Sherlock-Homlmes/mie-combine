@@ -23,7 +23,7 @@ async def limit(interaction: Interaction, number: int):
         user = interaction.user
         role_names = [role.name for role in user.roles]
         if "HOMIE" in role_names or "HỌC SINH TÍCH CỰC" in role_names:
-            remove_color_role_from_user(role_names=role_names, user=user)
+            await remove_color_role_from_user(role_names=role_names, user=user)
             color_new = server_info.guild.get_role(server_info.color_roles[number - 1])
             await user.add_roles(color_new)
             await interaction.response.send_message(
@@ -40,5 +40,5 @@ async def limit(interaction: Interaction, number: int):
 async def color(interaction: Interaction):
     user = interaction.user
     role_names = [role.name for role in user.roles]
-    remove_color_role_from_user(role_names=role_names, user=user)
+    await remove_color_role_from_user(role_names=role_names, user=user)
     await interaction.response.send_message("Bạn đã bỏ role màu")

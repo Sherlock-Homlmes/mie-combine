@@ -13,7 +13,6 @@ from .users import Users
 
 
 class UserDailyStudyTime(Document):
-
     user: Link[Users]
     study_time: List[int]
     """

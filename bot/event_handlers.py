@@ -8,7 +8,7 @@ from .settings import bot, guild_id, server_info  # noqa: F401
 from models import ErrandData
 from other_modules.discord_bot.get_object import get_channel
 
-from database.mongodb_async import connect_to_database
+from core.database.mongodb_async import connect_to_database
 
 
 @bot.listen()

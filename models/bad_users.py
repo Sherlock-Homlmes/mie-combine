@@ -9,7 +9,6 @@ from .users import Users
 
 
 class BadUsers(Document):
-
     user: Link[Users]
     bad_content: str
 

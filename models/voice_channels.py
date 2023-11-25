@@ -9,7 +9,6 @@ from .users import Users
 
 
 class VoiceChannels(Document):
-
     owner: Link[Users]
     vc_id: int
     cc_id: int

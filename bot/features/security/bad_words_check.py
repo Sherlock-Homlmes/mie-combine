@@ -1,5 +1,6 @@
 # default
 from datetime import timedelta
+from enum import Enum
 
 #  lib
 import discord
@@ -9,8 +10,16 @@ from bot import bot, server_info
 from models import BadUsers, Users
 from other_modules.time_modules import Now
 
+
+# ban type
+class BanFormEnum(Enum):
+    WARN = "warn"
+    MUTE = "mute"
+    BAN = "ban"
+
+
 # level 1
-# check if word is exact as bad word 
+# check if word is exact as bad word
 exact_bad_words = [
     # vn
     "lồn",
@@ -29,7 +38,7 @@ exact_bad_words = [
 
 
 # level 2
-# check if word include 
+# check if word include
 included_bad_words = [
     # vn
     "dkm",
@@ -95,13 +104,11 @@ seperate = [
 
 
 def check_bad_words(content: str) -> bool:
-
     content = content.lower()
     content_words = content.split(" ")
     tempo_content = []
 
     for word in content_words:
-
         # check exact
         if word in exact_bad_words:
             return False
@@ -145,13 +152,13 @@ async def punish(mem_id: int, message_content: str):
     mem_id = str(mem_id)
     await remove_exprired_bad_user(mem_id)
 
-    bad_user = BadUsers(
+    await BadUsers(
         user=await Users.find_one(Users.discord_id == mem_id),
         bad_content=message_content,
         created_at=Now().now,
-    )
-    await bad_user.insert()
+    ).insert()
 
+    # number of mistake in recent 1 month
     counter = len(
         await BadUsers.find(
             BadUsers.user.discord_id == mem_id, fetch_links=True
@@ -159,31 +166,26 @@ async def punish(mem_id: int, message_content: str):
     )
 
     if counter < 3:
-        form = "WARN"
+        form = BanFormEnum.WARN
         hours = 0
         penalize = "Cảnh báo"
         colour = discord.Colour.orange()
     else:
         colour = discord.Colour.red()
         if counter <= 8:
-            if counter == 3:
-                hours = 3
-            elif counter == 4:
-                hours = 12
-            elif counter == 5:
-                hours = 24
-            elif counter == 6:
-                hours = 72
-            elif counter == 7:
-                hours = 180
-            elif counter == 8:
-                hours = 360
-
-            form = "MUTE"
-            penalize = f"Thời gian chờ {hours} tiếng"
+            mute_hour_count_map = {
+                3: 3,
+                4: 12,
+                5: 24,
+                6: 72,
+                7: 180,
+                8: 360,
+            }
+            form = BanFormEnum.MUTE
+            penalize = f"Thời gian chờ {mute_hour_count_map[counter]} tiếng"
 
         elif counter >= 9:
-            form = "BAN"
+            form = BanFormEnum.BAN
             hours = 0
             penalize = "BAN !!!"
 
@@ -202,24 +204,22 @@ async def punish(mem_id: int, message_content: str):
 
 @bot.listen()
 async def on_message(message: discord.Message):
-
     if check_bad_words(message.content) is False:
-
         try:
             await message.delete()
         except discord.errors.NotFound:
             print("Bad word error: Not found message")
 
-        # xu ly
+        # process mute time
         form, hours, penalize, colour = await punish(message.author.id, message.content)
         reason = "Ngôn từ không phù hợp"
-        if form == "WARN":
-            pass
-        elif form == "MUTE":
+        if form == BanFormEnum.BAN:
+            await message.author.ban(reason=reason)
+        elif form == BanFormEnum.MUTE:
             unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
             await message.author.timeout(unmuted_time, reason=reason)
-        elif form == "BAN":
-            await message.author.ban(reason=reason)
+        elif form == BanFormEnum.WARN:
+            pass
 
         # send to channel
         embed = discord.Embed(

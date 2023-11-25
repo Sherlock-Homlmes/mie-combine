@@ -5,6 +5,7 @@
     - Guild event: user update
 
 /// Refactor:
+- better env for dev && isolate from production
 - Add all setting to core
 - Transfer all to pydantic
 - All Embed model to 1 file

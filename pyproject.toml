@@ -22,7 +22,7 @@ ruff = "^0.0.292"
 pre-commit = "^3.5.0"
 
 [tool.ruff]
-line-length = 120
+line-length = 130
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401", "F403", "F405"]

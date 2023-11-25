@@ -1,3 +1,4 @@
+# REFACTOR: better code
 # default
 import asyncio
 from dataclasses import dataclass
@@ -111,7 +112,6 @@ async def on_voice_state_update(
                 member.voice.self_video is False
                 and member.voice.channel in full_cam_channels
             ):
-
                 embed = CheckCamEmbedMessage(member=member, check_type=["cam"])
                 embed.warn()
                 await embed.send()

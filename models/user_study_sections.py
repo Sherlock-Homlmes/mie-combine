@@ -11,7 +11,6 @@ from .user_daily_study_time import UserDailyStudyTime
 
 
 class UserStudySection(Document):
-
     user: Link[Users]
     start_study_time: datetime.datetime
 

@@ -182,7 +182,8 @@ async def punish(mem_id: int, message_content: str):
                 8: 360,
             }
             form = BanFormEnum.MUTE
-            penalize = f"Thời gian chờ {mute_hour_count_map[counter]} tiếng"
+            hours = mute_hour_count_map[counter]
+            penalize = f"Thời gian chờ {hours} tiếng"
 
         elif counter >= 9:
             form = BanFormEnum.BAN

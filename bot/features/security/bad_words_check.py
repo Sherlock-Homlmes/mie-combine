@@ -166,7 +166,7 @@ async def punish(mem_id: int, message_content: str):
     )
 
     if counter < 3:
-        form = BanFormEnum.WARN
+        form = BanFormEnum.WARN.value
         hours = 0
         penalize = "Cảnh báo"
         colour = discord.Colour.orange()
@@ -181,12 +181,12 @@ async def punish(mem_id: int, message_content: str):
                 7: 180,
                 8: 360,
             }
-            form = BanFormEnum.MUTE
+            form = BanFormEnum.MUTE.value
             hours = mute_hour_count_map[counter]
             penalize = f"Thời gian chờ {hours} tiếng"
 
         elif counter >= 9:
-            form = BanFormEnum.BAN
+            form = BanFormEnum.BAN.value
             hours = 0
             penalize = "BAN !!!"
 
@@ -214,12 +214,12 @@ async def on_message(message: discord.Message):
         # process mute time
         form, hours, penalize, colour = await punish(message.author.id, message.content)
         reason = "Ngôn từ không phù hợp"
-        if form == BanFormEnum.BAN:
+        if form == BanFormEnum.BAN.value:
             await message.author.ban(reason=reason)
-        elif form == BanFormEnum.MUTE:
+        elif form == BanFormEnum.MUTE.value:
             unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
             await message.author.timeout(unmuted_time, reason=reason)
-        elif form == BanFormEnum.WARN:
+        elif form == BanFormEnum.WARN.value:
             pass
 
         # send to channel

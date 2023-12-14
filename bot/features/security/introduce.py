@@ -12,7 +12,9 @@ async def on_message(message: discord.Message):
         if len(message.content) < 120:
             await message.delete()
             embed = discord.Embed(
-                title="**Chào mừng " + message.author.name + " đến với Cộng Đồng học tập BetterMe**",
+                title="**Chào mừng "
+                + message.author.name
+                + " đến với Cộng Đồng học tập BetterMe**",
                 description="Bạn giới thiệu đầy đủ 1 xíu nha.",
                 colour=discord.Colour.gold(),
             )
@@ -31,4 +33,6 @@ async def on_message(message: discord.Message):
             await message.author.send(embed=embed)
 
         else:
-            await message.create_thread(name="Mọi người vào chào bạn mới đi nào!", auto_archive_duration=10080)
+            await message.create_thread(
+                name="Mọi người vào chào bạn mới đi nào!", auto_archive_duration=10080
+            )

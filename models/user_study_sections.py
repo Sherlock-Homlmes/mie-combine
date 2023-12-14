@@ -30,11 +30,14 @@ class UserStudySection(Document):
                 )
                 if user_daily_study_time:
                     user_daily_study_time.study_time = [
-                        (user_daily_study_time.study_time[index] + value) for index, value in enumerate(study_time)
+                        (user_daily_study_time.study_time[index] + value)
+                        for index, value in enumerate(study_time)
                     ]
                     await user_daily_study_time.save()
                 else:
-                    await UserDailyStudyTime(user=self.user, study_time=study_time, date=now.today).insert()
+                    await UserDailyStudyTime(
+                        user=self.user, study_time=study_time, date=now.today
+                    ).insert()
 
         # calculate if start study date != end study date
         else:
@@ -43,7 +46,9 @@ class UserStudySection(Document):
             End day study time = end time - midnight
             """
             yesterday_midnight = Now().some_day_before(0)
-            yesterday_study_time = timedelta_to_daily_list(self.start_study_time, yesterday_midnight)
+            yesterday_study_time = timedelta_to_daily_list(
+                self.start_study_time, yesterday_midnight
+            )
             today_study_time = timedelta_to_daily_list(yesterday_midnight, now.now)
 
             if any(yesterday_study_time):
@@ -53,7 +58,8 @@ class UserStudySection(Document):
                 )
                 if user_daily_study_time:
                     user_daily_study_time.study_time = [
-                        (user_daily_study_time.study_time[index] + value) for index, value in enumerate(yesterday_study_time)
+                        (user_daily_study_time.study_time[index] + value)
+                        for index, value in enumerate(yesterday_study_time)
                     ]
                     await user_daily_study_time.save()
                 else:
@@ -62,7 +68,9 @@ class UserStudySection(Document):
                         study_time=yesterday_study_time,
                         date=now.some_day_before(1),
                     ).insert()
-                await UserDailyStudyTime(user=self.user, study_time=today_study_time, date=now.today).insert()
+                await UserDailyStudyTime(
+                    user=self.user, study_time=today_study_time, date=now.today
+                ).insert()
 
     @before_event(Delete)
     async def update_before_delete(self):
@@ -74,7 +82,9 @@ def timedelta_to_daily_list(time1: datetime.datetime, time2: datetime.datetime):
     if time2.hour != time1.hour or time1.day != time2.day:
         if time2.hour == 0:
             time2_hour = 24
-        study_time = [(lambda x: 60 if (x > time1.hour and x < time2_hour) else 0)(x) for x in range(0, 24)]
+        study_time = [
+            (lambda x: 60 if (x > time1.hour and x < time2_hour) else 0)(x) for x in range(0, 24)
+        ]
         if time2_hour != 24:
             study_time[time2.hour] = time2.minute
         if not study_time[time1.hour]:

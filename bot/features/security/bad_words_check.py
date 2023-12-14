@@ -139,7 +139,9 @@ def check_bad_words(content: str) -> bool:
 
 
 async def remove_exprired_bad_user(user_id: str):
-    delete_bad_users = await BadUsers.find(BadUsers.user.discord_id == user_id, fetch_links=True).to_list()
+    delete_bad_users = await BadUsers.find(
+        BadUsers.user.discord_id == user_id, fetch_links=True
+    ).to_list()
 
     for bad_user in delete_bad_users:
         if (Now().now - bad_user.created_at).days >= 30:
@@ -157,7 +159,9 @@ async def punish(mem_id: int, message_content: str):
     ).insert()
 
     # number of mistake in recent 1 month
-    counter = len(await BadUsers.find(BadUsers.user.discord_id == mem_id, fetch_links=True).to_list())
+    counter = len(
+        await BadUsers.find(BadUsers.user.discord_id == mem_id, fetch_links=True).to_list()
+    )
 
     if counter < 3:
         form = BanFormEnum.WARN.value

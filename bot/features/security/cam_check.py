@@ -108,7 +108,10 @@ async def on_voice_state_update(
                 "cam": member.voice.self_video,
                 "stream": member.voice.self_stream,
             }
-            if not any(check_type_map[check_type] for check_type in check_types) and member.voice.channel in check_channels:
+            if (
+                not any(check_type_map[check_type] for check_type in check_types)
+                and member.voice.channel in check_channels
+            ):
                 embed = CheckCamEmbedMessage(member=member, check_types=check_types)
                 embed.warn()
                 await embed.send()

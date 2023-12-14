@@ -58,7 +58,9 @@ async def on_voice_state_update(
 
     # member leave channel
     elif member_before.channel and not member_after.channel:
-        user_study_section = await UserStudySection.find_one(UserStudySection.user.discord_id == str(member.id), fetch_links=True)
+        user_study_section = await UserStudySection.find_one(
+            UserStudySection.user.discord_id == str(member.id), fetch_links=True
+        )
         try:
             await user_study_section.delete()
         except AttributeError as e:

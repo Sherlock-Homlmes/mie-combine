@@ -58,7 +58,9 @@ async def get_server_info():
         full_cam_channels,
         cam_stream_channels,
         welcome_channel,
-    ) = await asyncio.gather(*[get_channel(server_info.guild, server_info_data[channel]) for channel in channels])
+    ) = await asyncio.gather(
+        *[get_channel(server_info.guild, server_info_data[channel]) for channel in channels]
+    )
     # set value
 
     # role

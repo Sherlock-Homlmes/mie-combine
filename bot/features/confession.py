@@ -149,7 +149,9 @@ class Confession:
                 if message:
                     await self.member.send(message)
             except discord.errors.HTTPException:
-                await self.channel.send("Confession quá dài. Hãy đảm bảo confession của bạn không quá 4000 kí tự.")
+                await self.channel.send(
+                    "Confession quá dài. Hãy đảm bảo confession của bạn không quá 4000 kí tự."
+                )
 
     async def send_private_confession(self):
         files = await self.send_files()
@@ -204,7 +206,10 @@ async def end(interaction: discord.Interaction):
 @bot.listen()
 async def on_interaction(interaction: discord.Interaction):
     if interaction.message:
-        if interaction.message.id == server_info.confession_dropdown_id and interaction.type == discord.InteractionType.component:
+        if (
+            interaction.message.id == server_info.confession_dropdown_id
+            and interaction.type == discord.InteractionType.component
+        ):
             await interaction.response.defer()
             member = interaction.user
             values = interaction.data["values"]
@@ -218,7 +223,9 @@ async def on_interaction(interaction: discord.Interaction):
                 channel = await interaction.channel.category.create_text_channel(
                     chanel_name,
                     overwrites={
-                        interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                        interaction.guild.default_role: discord.PermissionOverwrite(
+                            view_channel=False
+                        ),
                         member: discord.PermissionOverwrite(view_channel=True),
                     },
                     reason=None,

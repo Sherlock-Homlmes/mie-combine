@@ -28,7 +28,9 @@ async def on_interaction(interaction: Interaction):
 
                 await interaction.user.remove_roles(kvc_role)
 
-                msg = await interaction.message.channel.send(f"**{interaction.user.mention} đã chọn không chơi game**")
+                msg = await interaction.message.channel.send(
+                    f"**{interaction.user.mention} đã chọn không chơi game**"
+                )
 
             elif "game all" in values or set(list(game_roles.keys())) == set(values):
                 for key in game_roles.keys():
@@ -37,7 +39,9 @@ async def on_interaction(interaction: Interaction):
 
                 await interaction.user.add_roles(kvc_role)
 
-                msg = await interaction.message.channel.send(f"**{interaction.user.mention} đã chọn chơi tất cả mọi game**")
+                msg = await interaction.message.channel.send(
+                    f"**{interaction.user.mention} đã chọn chơi tất cả mọi game**"
+                )
 
             else:
                 await interaction.user.remove_roles(kvc_role)
@@ -47,7 +51,9 @@ async def on_interaction(interaction: Interaction):
                     await interaction.user.add_roles(role)
                 game = ",".join(values)
 
-                msg = await interaction.message.channel.send(f"**{interaction.user.mention} đã chọn chơi: {game}**")
+                msg = await interaction.message.channel.send(
+                    f"**{interaction.user.mention} đã chọn chơi: {game}**"
+                )
 
             await asyncio.sleep(10)
             await msg.delete()

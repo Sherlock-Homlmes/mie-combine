@@ -39,9 +39,7 @@ async def static_channels():
 
     # server stats
     async with aiohttp.ClientSession() as session:
-        res = await session.get(
-            url="https://discord.com/api/guilds/880360143768924210/widget.json"
-        )
+        res = await session.get(url="https://discord.com/api/guilds/880360143768924210/widget.json")
         resp = await res.json()
 
     guild = bot.get_guild(guild_id)
@@ -53,9 +51,7 @@ async def static_channels():
 
     await server_info.total_mem_channel.edit(name=f"Thành viên: {total_member} người")
     await server_info.online_mem_channel.edit(name=f"Online: {online_member} người")
-    await server_info.study_count_channel.edit(
-        name=f"Đang học: {total_voice_member} người"
-    )
+    await server_info.study_count_channel.edit(name=f"Đang học: {total_voice_member} người")
 
 
 def discord_server_info():

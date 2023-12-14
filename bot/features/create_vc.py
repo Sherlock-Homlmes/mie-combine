@@ -65,9 +65,7 @@ async def on_ready():
     await asyncio.sleep(10)
     # get all created voice channel
     guild = bot.get_guild(guild_id)
-    all_created_vc_id = [
-        voice_channel.vc_id for voice_channel in await VoiceChannels.find({}).to_list()
-    ]
+    all_created_vc_id = [voice_channel.vc_id for voice_channel in await VoiceChannels.find({}).to_list()]
 
     # delete empty voice channel
     await fix_room()
@@ -124,16 +122,12 @@ async def on_voice_state_update(
         if voice_channel_before is not None:
             if voice_channel_before.id in all_created_vc_id:
                 await asyncio.sleep(5)
-                vc = await VoiceChannels.find_one(
-                    VoiceChannels.vc_id == voice_channel_before.id
-                )
+                vc = await VoiceChannels.find_one(VoiceChannels.vc_id == voice_channel_before.id)
 
                 if voice_channel_before.members == []:
                     vc_channel_del = guild.get_channel(vc.vc_id)
                     cc_channel_del = guild.get_channel(vc.cc_id)
-                    await asyncio.gather(
-                        *[x.delete() for x in [vc_channel_del, cc_channel_del, vc] if x]
-                    )
+                    await asyncio.gather(*[x.delete() for x in [vc_channel_del, cc_channel_del, vc] if x])
                     all_created_vc_id.remove(voice_channel_before.id)
 
                 elif not member.bot and voice_channel_before is not None:
@@ -144,9 +138,7 @@ async def on_voice_state_update(
         if voice_channel_after is not None:
             # set member's permission to text channel
             if voice_channel_after.id in all_created_vc_id:
-                vc = await VoiceChannels.find_one(
-                    VoiceChannels.vc_id == voice_channel_after.id
-                )
+                vc = await VoiceChannels.find_one(VoiceChannels.vc_id == voice_channel_after.id)
                 cc_channel = guild.get_channel(vc.cc_id)
                 overwrite = discord.PermissionOverwrite()
                 overwrite.view_channel = True
@@ -156,19 +148,13 @@ async def on_voice_state_update(
             elif str(voice_channel_after.id) in server_info.channel_cre.keys():
                 if check_avaiable_name(member.name) is False:
                     await member.move_to(None)
-                    await member.send(
-                        "**Bạn hãy kiểm tra và đảm bảo trong tên của bạn không có từ cấm, tục tĩu**"
-                    )
+                    await member.send("**Bạn hãy kiểm tra và đảm bảo trong tên của bạn không có từ cấm, tục tĩu**")
                 else:
                     channel_info = server_info.channel_cre[str(voice_channel_after.id)]
                     # create
-                    vc_name = (
-                        f"#{rewrite_create_voice_channel_name(member.name)}'s room"
-                    )
+                    vc_name = f"#{rewrite_create_voice_channel_name(member.name)}'s room"
 
-                    feature_bot_role = server_info.guild.get_role(
-                        server_info.feature_bot_role_id
-                    )
+                    feature_bot_role = server_info.guild.get_role(server_info.feature_bot_role_id)
                     vc_channel: discord.VoiceChannel
                     cc_channel: discord.TextChannel
                     vc_channel, cc_channel = await asyncio.gather(
@@ -176,28 +162,18 @@ async def on_voice_state_update(
                             voice_channel_after.category.create_voice_channel(
                                 name=vc_name,
                                 overwrites={
-                                    server_info.guild.default_role: PermissionOverwrite(
-                                        view_channel=True, connect=False
-                                    ),
-                                    member: PermissionOverwrite(
-                                        view_channel=True, connect=True
-                                    ),
-                                    feature_bot_role: PermissionOverwrite(
-                                        view_channel=True, connect=True
-                                    ),
+                                    server_info.guild.default_role: PermissionOverwrite(view_channel=True, connect=False),
+                                    member: PermissionOverwrite(view_channel=True, connect=True),
+                                    feature_bot_role: PermissionOverwrite(view_channel=True, connect=True),
                                 },
                                 user_limit=channel_info["limit"][1],
                             ),
                             voice_channel_after.category.create_text_channel(
                                 name="phòng-chat-nè",
                                 overwrites={
-                                    server_info.guild.default_role: PermissionOverwrite(
-                                        view_channel=False
-                                    ),
+                                    server_info.guild.default_role: PermissionOverwrite(view_channel=False),
                                     member: PermissionOverwrite(view_channel=True),
-                                    feature_bot_role: PermissionOverwrite(
-                                        view_channel=True, send_messages=True
-                                    ),
+                                    feature_bot_role: PermissionOverwrite(view_channel=True, send_messages=True),
                                 },
                             ),
                         ]
@@ -217,12 +193,7 @@ async def on_voice_state_update(
                         await cc_channel.send(f"<@{member.id}>" + command_mess)
 
                     except discord.errors.HTTPException:
-                        await asyncio.gather(
-                            *[
-                                x.delete()
-                                for x in [vc_channel, cc_channel, data_voice_channel]
-                            ]
-                        )
+                        await asyncio.gather(*[x.delete() for x in [vc_channel, cc_channel, data_voice_channel]])
                         all_created_vc_id.remove(vc_channel.id)
 
 
@@ -284,9 +255,7 @@ async def room_permission(
                 )
                 message = room_permission_effect[status]["message"]
 
-                await current_channel.set_permissions(
-                    server_info.guild.default_role, overwrite=overwrite
-                )
+                await current_channel.set_permissions(server_info.guild.default_role, overwrite=overwrite)
                 await send(message)
 
             if name:
@@ -298,29 +267,21 @@ async def room_permission(
                         await current_channel.edit(name=new_name)
                         await send("Tên kênh đã được đổi thành " + new_name)
                 else:
-                    await send(
-                        "**Không được đổi tên kênh có những từ cấm nha mầy, tau táng cho á**"
-                    )
+                    await send("**Không được đổi tên kênh có những từ cấm nha mầy, tau táng cho á**")
 
             if limit:
                 category_id = interaction.channel.category.id
                 for _, value in server_info.channel_cre.items():
                     if value["category_id"] == category_id:
                         if value["limit"][0] == value["limit"][1]:
-                            await send(
-                                "Bạn không thể đặt limit cho phòng " + value["locate"]
-                            )
+                            await send("Bạn không thể đặt limit cho phòng " + value["locate"])
                         elif limit >= value["limit"][0] and limit <= value["limit"][1]:
                             await current_channel.edit(user_limit=limit)
                             await send(f"**Đã đặt limit cho phòng:** {limit}")
                         elif limit < value["limit"][0]:
-                            await send(
-                                f'Bạn không thể đặt limit phòng {value["locate"]} bé hơn {value["limit"][0]}'
-                            )
+                            await send(f'Bạn không thể đặt limit phòng {value["locate"]} bé hơn {value["limit"][0]}')
                         elif limit > value["limit"][1]:
-                            await send(
-                                f'Bạn không thể đặt limit phòng {value["locate"]} lớn hơn {value["limit"][1]}'
-                            )
+                            await send(f'Bạn không thể đặt limit phòng {value["locate"]} lớn hơn {value["limit"][1]}')
 
             if member:
                 overwrite = discord.PermissionOverwrite()
@@ -384,10 +345,7 @@ async def invite(interaction: Interaction):
     async def user_select_callback(callback_interaction: Interaction):
         # Get member from call back interaction
         members = await asyncio.gather(
-            *[
-                callback_interaction.guild.fetch_member(member_id)
-                for member_id in callback_interaction.data["values"]
-            ]
+            *[callback_interaction.guild.fetch_member(member_id) for member_id in callback_interaction.data["values"]]
         )
 
         # Set permission for members
@@ -395,24 +353,14 @@ async def invite(interaction: Interaction):
         current_channel = interaction.user.voice.channel
         overwrite.view_channel = True
         overwrite.connect = True
-        await asyncio.gather(
-            *[
-                current_channel.set_permissions(member, overwrite=overwrite)
-                for member in members
-            ]
-        )
+        await asyncio.gather(*[current_channel.set_permissions(member, overwrite=overwrite) for member in members])
         invite_link = await current_channel.create_invite(max_uses=1, unique=True)
 
         # send message to members
         try:
             await asyncio.gather(
                 *[
-                    member.send(
-                        "**"
-                        + str(interaction.user.name)
-                        + "** đã mời bạn vào học: "
-                        + str(invite_link)
-                    )
+                    member.send("**" + str(interaction.user.name) + "** đã mời bạn vào học: " + str(invite_link))
                     for member in members
                 ]
             )
@@ -421,9 +369,7 @@ async def invite(interaction: Interaction):
 
         # send message to channel
         await callback_interaction.response.send_message(
-            "Đã mời "
-            + ",".join([f"<@{member.id}>" for member in members])
-            + " vào phòng"
+            "Đã mời " + ",".join([f"<@{member.id}>" for member in members]) + " vào phòng"
         )
 
     user_select.callback = user_select_callback
@@ -441,10 +387,7 @@ async def allow(interaction: Interaction):
     async def user_select_callback(callback_interaction: Interaction):
         # Get member from call back interaction
         members = await asyncio.gather(
-            *[
-                callback_interaction.guild.fetch_member(member_id)
-                for member_id in callback_interaction.data["values"]
-            ]
+            *[callback_interaction.guild.fetch_member(member_id) for member_id in callback_interaction.data["values"]]
         )
 
         # Set permission for members
@@ -452,18 +395,11 @@ async def allow(interaction: Interaction):
         current_channel = interaction.user.voice.channel
         overwrite.view_channel = True
         overwrite.connect = True
-        await asyncio.gather(
-            *[
-                current_channel.set_permissions(member, overwrite=overwrite)
-                for member in members
-            ]
-        )
+        await asyncio.gather(*[current_channel.set_permissions(member, overwrite=overwrite) for member in members])
 
         # send message to channel
         await callback_interaction.response.send_message(
-            "Đã cấp quyền cho "
-            + ",".join([f"<@{member.id}>" for member in members])
-            + " vào phòng"
+            "Đã cấp quyền cho " + ",".join([f"<@{member.id}>" for member in members]) + " vào phòng"
         )
 
     user_select.callback = user_select_callback

@@ -17,7 +17,7 @@ async def remove_color_role_from_user(role_names: list[Role], user: User) -> Non
 @bot.tree.command(name="color", description="Đổi màu cho tên")
 @app_commands.describe(number="Số thứ tự của màu")
 async def limit(interaction: Interaction, number: int):
-    if number > len(server_info.color_roles):
+    if number <= 0 or number > len(server_info.color_roles):
         await interaction.response.send_message("Chọn sai số màu")
     else:
         user = interaction.user
@@ -26,14 +26,10 @@ async def limit(interaction: Interaction, number: int):
             await remove_color_role_from_user(role_names=role_names, user=user)
             color_new = server_info.guild.get_role(server_info.color_roles[number - 1])
             await user.add_roles(color_new)
-            await interaction.response.send_message(
-                f"Bạn đã đổi sang màu **{number}** thành công"
-            )
+            await interaction.response.send_message(f"Bạn đã đổi sang màu **{number}** thành công")
 
         else:
-            await interaction.response.send_message(
-                "Bạn chưa có role HOMIE hoặc HSTC để đổi màu"
-            )
+            await interaction.response.send_message("Bạn chưa có role HOMIE hoặc HSTC để đổi màu")
 
 
 @bot.tree.command(name="rmcolor", description="Loại bỏ mảu khỏi tên")

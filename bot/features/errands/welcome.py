@@ -16,9 +16,7 @@ async def on_member_join(member: discord.Member):
 
     if member.id not in welcome_member:
         embed = discord.Embed(
-            title="**Chào mừng "
-            + member.name
-            + " đến với Cộng Đồng học tập BetterMe**",
+            title="**Chào mừng " + member.name + " đến với Cộng Đồng học tập BetterMe**",
             description=" Hãy giới thiệu bản thân cho mọi người biết ở <#894594032947310602> nhé",
             colour=discord.Colour.gold(),
         )
@@ -41,9 +39,7 @@ async def on_member_join(member: discord.Member):
         embed.add_field(name="**Hướng dẫn cơ bản**", value=field2, inline=False)
         embed.add_field(name="**Set role**", value=field3, inline=False)
 
-        msg = await server_info.welcome_channel.send(
-            content=member.mention, embed=embed
-        )
+        msg = await server_info.welcome_channel.send(content=member.mention, embed=embed)
         welcome_member.append(member.id)
         await asyncio.sleep(600)
         await msg.delete()

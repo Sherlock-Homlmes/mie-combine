@@ -27,21 +27,13 @@ repos:
   #       types: [file]
 
   # python
-  - repo: https://github.com/psf/black
-    rev: 23.7.0
-    hooks:
-      # formater
-      - id: black
-        name: black
-        args: [--safe]
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.292
+    rev: v0.1.8
     hooks:
       # linter
       - id: ruff
         name: ruff
         args: [--fix, --exit-non-zero-on-fix]
-      # # formatter(beta)
-      # - id: ruff-format
-      #   args: [--check]
+      # formatter(beta)
+      - id: ruff-format
+        args: [--check]

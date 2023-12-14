@@ -123,9 +123,7 @@ class Confession:
         return files_to_send
 
     async def end_confession(self):
-        confession = await Confessions.find_one(
-            Confessions.channel_id == str(self.channel.id)
-        )
+        confession = await Confessions.find_one(Confessions.channel_id == str(self.channel.id))
         if confession:
             await self.text_process()
             try:
@@ -139,13 +137,9 @@ class Confession:
                     elif self.cfs_type == "public":
                         await self.send_public_confession()
 
-                    server_info_data = await ErrandData.find_one(
-                        ErrandData.name == "server_info"
-                    )
+                    server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
                     server_info_data.value["confession_count"] += 1
-                    server_info.confession_count = server_info_data.value[
-                        "confession_count"
-                    ]
+                    server_info.confession_count = server_info_data.value["confession_count"]
                     await server_info_data.save()
 
                     message = "Cảm ơn bạn đã chia sẻ cùng chúng mình"
@@ -155,9 +149,7 @@ class Confession:
                 if message:
                     await self.member.send(message)
             except discord.errors.HTTPException:
-                await self.channel.send(
-                    "Confession quá dài. Hãy đảm bảo confession của bạn không quá 4000 kí tự."
-                )
+                await self.channel.send("Confession quá dài. Hãy đảm bảo confession của bạn không quá 4000 kí tự.")
 
     async def send_private_confession(self):
         files = await self.send_files()
@@ -169,13 +161,9 @@ class Confession:
             colour=discord.Colour.gold(),
         )
         embed.set_footer(text="""BetterMe - Better everyday""")
-        await server_info.confession_channel.send(
-            content=content, embed=embed, files=files
-        )
+        await server_info.confession_channel.send(content=content, embed=embed, files=files)
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-        await server_info.manage_confession_channel.send(
-            content=content, embed=embed, files=files
-        )
+        await server_info.manage_confession_channel.send(content=content, embed=embed, files=files)
 
     async def send_public_confession(self):
         files = await self.send_files()
@@ -189,21 +177,15 @@ class Confession:
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
         embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
         embed.set_footer(text="""BetterMe - Better everyday""")
-        await server_info.confession_channel.send(
-            content=content, embed=embed, files=files
-        )
-        await server_info.manage_confession_channel.send(
-            content=content, embed=embed, files=files
-        )
+        await server_info.confession_channel.send(content=content, embed=embed, files=files)
+        await server_info.manage_confession_channel.send(content=content, embed=embed, files=files)
 
 
 # end confession
 @bot.tree.command(name="end_confession", description="Kết thúc confession")
 async def end(interaction: discord.Interaction):
     await interaction.response.defer()
-    confession = await Confessions.find_one(
-        Confessions.channel_id == str(interaction.channel.id)
-    )
+    confession = await Confessions.find_one(Confessions.channel_id == str(interaction.channel.id))
     if confession:
         confession = Confession(
             channel=interaction.channel,
@@ -218,13 +200,11 @@ async def end(interaction: discord.Interaction):
         )
 
 
+# REFACTOR: not using on_interaction
 @bot.listen()
 async def on_interaction(interaction: discord.Interaction):
     if interaction.message:
-        if (
-            interaction.message.id == server_info.confession_dropdown_id
-            and interaction.type == discord.InteractionType.component
-        ):
+        if interaction.message.id == server_info.confession_dropdown_id and interaction.type == discord.InteractionType.component:
             await interaction.response.defer()
             member = interaction.user
             values = interaction.data["values"]
@@ -238,9 +218,7 @@ async def on_interaction(interaction: discord.Interaction):
                 channel = await interaction.channel.category.create_text_channel(
                     chanel_name,
                     overwrites={
-                        interaction.guild.default_role: discord.PermissionOverwrite(
-                            view_channel=False
-                        ),
+                        interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
                         member: discord.PermissionOverwrite(view_channel=True),
                     },
                     reason=None,
@@ -252,9 +230,7 @@ async def on_interaction(interaction: discord.Interaction):
                 elif "public-confession" in values:
                     cfs_type = "public"
 
-                confession = Confession(
-                    channel=channel, member=member, cfs_type=cfs_type, files=[]
-                )
+                confession = Confession(channel=channel, member=member, cfs_type=cfs_type, files=[])
                 await confession.set_confession()
                 await confession.end_confession()
 

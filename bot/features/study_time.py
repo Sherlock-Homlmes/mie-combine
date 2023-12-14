@@ -58,9 +58,7 @@ async def on_voice_state_update(
 
     # member leave channel
     elif member_before.channel and not member_after.channel:
-        user_study_section = await UserStudySection.find_one(
-            UserStudySection.user.discord_id == str(member.id), fetch_links=True
-        )
+        user_study_section = await UserStudySection.find_one(UserStudySection.user.discord_id == str(member.id), fetch_links=True)
         try:
             await user_study_section.delete()
         except AttributeError as e:
@@ -83,9 +81,7 @@ async def member_study_time(interaction: discord.Interaction, member: discord.Me
 
 @bot.tree.command(name="study_time", description="Xem tổng thời gian học")
 async def study_time(interaction: discord.Interaction):
-    total_time = await UserDailyStudyTime.get_user_total_study_time(
-        user_id=interaction.user.id
-    )
+    total_time = await UserDailyStudyTime.get_user_total_study_time(user_id=interaction.user.id)
     if total_time:
         content = f"Tổng thời gian học: {total_time}'"
     else:

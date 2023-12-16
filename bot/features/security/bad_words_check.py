@@ -1,21 +1,13 @@
 # default
 from datetime import timedelta
-from enum import Enum
 
 #  lib
 import discord
 
 # local
 from bot import bot, server_info
-from models import BadUsers, Users
+from models import BadUsers, Users, BanFormEnum
 from other_modules.time_modules import Now
-
-
-# ban type
-class BanFormEnum(Enum):
-    WARN = "warn"
-    MUTE = "mute"
-    BAN = "ban"
 
 
 # level 1

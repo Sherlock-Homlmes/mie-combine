@@ -1,5 +1,6 @@
 # default
 import aiohttp
+import asyncio
 import datetime
 from math import trunc
 
@@ -34,8 +35,12 @@ async def static_channels():
     thpt = f"THPT: {thpt_left.days} ngày {trunc(thpt_left.seconds / 3600)} giờ"
     cap3 = f"Cấp 3: {cap3_left.days} ngày {trunc(cap3_left.seconds / 3600)} giờ"
 
-    await server_info.cap3_channel.edit(name=cap3)
-    await server_info.thpt_channel.edit(name=thpt)
+    await asyncio.gather(
+        *[
+            server_info.cap3_channel.edit(name=cap3),
+            server_info.thpt_channel.edit(name=thpt),
+        ]
+    )
 
     # server stats
     async with aiohttp.ClientSession() as session:
@@ -49,9 +54,13 @@ async def static_channels():
     total_member = guild.member_count
     online_member = resp["presence_count"]
 
-    await server_info.total_mem_channel.edit(name=f"Thành viên: {total_member} người")
-    await server_info.online_mem_channel.edit(name=f"Online: {online_member} người")
-    await server_info.study_count_channel.edit(name=f"Đang học: {total_voice_member} người")
+    await asyncio.gather(
+        *[
+            server_info.total_mem_channel.edit(name=f"Thành viên: {total_member} người"),
+            server_info.online_mem_channel.edit(name=f"Online: {online_member} người"),
+            server_info.study_count_channel.edit(name=f"Đang học: {total_voice_member} người"),
+        ]
+    )
 
 
 def discord_server_info():

@@ -1,3 +1,4 @@
+# REFACTOR
 # default
 import asyncio
 from typing import Optional, Union
@@ -310,11 +311,19 @@ async def room_permission(
             if member:
                 overwrite = discord.PermissionOverwrite()
                 if status == "kick":
-                    overwrite.connect = False
-                    await current_channel.set_permissions(member, overwrite=overwrite)
-                    if member in current_channel.members:
-                        await member.move_to(None)
-                    await send("<@" + str(member.id) + "> đã mất quyền vào phòng")
+                    is_owner_channel = await VoiceChannels.find_one(
+                        VoiceChannels.owner.discord_id == str(member.id),
+                        VoiceChannels.vc_id == current_channel.id,
+                        fetch_links=True,
+                    )
+                    if is_owner_channel:
+                        await send("Bạn không thể  kick chủ phòng")
+                    else:
+                        overwrite.connect = False
+                        await current_channel.set_permissions(member, overwrite=overwrite)
+                        if member in current_channel.members:
+                            await member.move_to(None)
+                        await send("<@" + str(member.id) + "> đã mất quyền vào phòng")
 
         else:
             await send("Bạn không ở trong phòng được tạo bởi Mie")

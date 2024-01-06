@@ -109,7 +109,7 @@ class Confession:
                     self.content += message.content + ". "
                 if message.attachments:
                     for attach in message.attachments:
-                        image = save_image(attach.url)
+                        image = await save_image(attach.url)
                         self.files.append(image)
 
     async def send_files(self):

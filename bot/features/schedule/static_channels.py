@@ -1,8 +1,9 @@
 # default
-import aiohttp
 import asyncio
 import datetime
 from math import trunc
+
+import aiohttp
 
 # lib
 from discord.ext import tasks
@@ -23,7 +24,7 @@ async def static_channels():
 
     now = Now().now
     cap3day = datetime.datetime(now.year, 6, 6)
-    thptday = datetime.datetime(now.year, 6, 28)
+    thptday = datetime.datetime(now.year, 6, 27)
     if (cap3day - now).days < 0:
         cap3day = datetime.datetime(now.year + 1, 6, 6)
     if (thptday - now).days < 0:

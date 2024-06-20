@@ -5,8 +5,9 @@ import random
 from discord import Interaction
 
 # local
-from bot import bot
-from models import ErrandData, TopicEnum
+from core.bot_conf.conf import bot
+from core.models import ErrandData
+from core.schemas import TopicEnum
 
 
 async def get_topic(interaction: Interaction, topic: TopicEnum):

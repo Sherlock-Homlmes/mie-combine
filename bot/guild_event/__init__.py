@@ -2,7 +2,7 @@ from .on_member_join import *
 from .on_member_leave import *
 
 
-from bot import bot
+from core.bot_conf.conf import bot
 
 
 @bot.listen()

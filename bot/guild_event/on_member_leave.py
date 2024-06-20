@@ -3,9 +3,9 @@ import discord
 from beanie.odm.operators.update.general import Set
 
 # local
-from bot import bot
-from models import Users
-from other_modules.time_modules import Now
+from core.bot_conf.conf import bot
+from core.models import Users
+from utils.time_modules import Now
 
 
 @bot.listen()

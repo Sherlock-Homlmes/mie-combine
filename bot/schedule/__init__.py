@@ -2,7 +2,7 @@
 import asyncio
 
 # local
-from bot import bot
+from core.bot_conf.conf import bot
 
 from .static_channels import static_channels
 

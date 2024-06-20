@@ -1,14 +1,15 @@
 # default
 import asyncio
 
-# lib
-
-# local
-from .settings import bot, guild_id, server_info  # noqa: F401
-from models import ErrandData
-from other_modules.discord_bot.get_object import get_channel
-
+# TODO: remove this
+from bot import *  # noqa: F403
 from core.database.mongodb_async import connect_to_database
+from core.models import ErrandData
+from utils.discord_bot.get_object import get_channel
+
+# lib
+# local
+from .conf import bot, guild_id, server_info  # noqa: F401
 
 
 @bot.listen()

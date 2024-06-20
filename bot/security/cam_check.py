@@ -8,7 +8,7 @@ from typing import List
 import discord
 
 # local
-from bot import bot, server_info
+from core.bot_conf.conf import bot, server_info
 
 
 @dataclass

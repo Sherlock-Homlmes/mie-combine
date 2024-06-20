@@ -5,10 +5,10 @@ import discord
 from discord import app_commands
 
 # local
-from bot import bot
-from bot.features.guild_event.on_member_join import on_member_join
-from models import UserDailyStudyTime, Users, UserStudySection
-from other_modules.time_modules import Now
+from core.bot_conf.conf import bot
+from bot.guild_event.on_member_join import on_member_join
+from core.models import UserDailyStudyTime, Users, UserStudySection
+from utils.time_modules import Now
 
 updating_members = []
 

@@ -5,9 +5,10 @@ from datetime import timedelta
 import discord
 
 # local
-from bot import bot, server_info
-from models import BadUsers, Users, BanFormEnum
-from other_modules.time_modules import Now
+from core.bot_conf.conf import bot, server_info
+from core.models import BadUsers, Users
+from core.schemas import BanFormEnum
+from utils.time_modules import Now
 
 
 # level 1

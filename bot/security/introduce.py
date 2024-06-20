@@ -3,7 +3,7 @@
 import discord
 
 # local
-from bot import bot
+from core.bot_conf.conf import bot
 
 
 @bot.listen()

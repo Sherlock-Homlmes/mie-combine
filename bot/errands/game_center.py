@@ -6,7 +6,7 @@ import discord
 from discord import Interaction
 
 # local
-from bot import bot, server_info, guild_id
+from core.bot_conf.conf import bot, server_info, guild_id
 
 
 @bot.listen()

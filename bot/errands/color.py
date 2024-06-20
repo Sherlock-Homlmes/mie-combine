@@ -2,7 +2,7 @@
 from discord import app_commands, Interaction, User, Role
 
 # local
-from bot import bot, server_info
+from core.bot_conf.conf import bot, server_info
 
 
 async def remove_color_role_from_user(role_names: list[Role], user: User) -> None:

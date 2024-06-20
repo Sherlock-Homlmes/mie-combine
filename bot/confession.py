@@ -10,10 +10,10 @@ from discord.ext.commands import context, has_permissions
 from discord.ui import View
 
 # local
-from bot import bot, guild_id, server_info
-from models import Confessions, ErrandData
-from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
-from other_modules.image_handle import delete_image, save_image
+from core.bot_conf.conf import bot, guild_id, server_info
+from core.models import Confessions, ErrandData
+from utils.discord_bot.channel_name import rewrite_confession_channel_name
+from utils.image_handle import delete_image, save_image
 
 
 # Create choose confession message

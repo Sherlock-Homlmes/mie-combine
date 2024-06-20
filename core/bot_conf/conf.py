@@ -12,7 +12,7 @@ class Bot(commands.Bot):
         super().__init__(*args, **kwargs)
 
     async def on_ready(self):
-        print(f"We have logged in as {self.user} combine bot")
+        print(f"We have logged in as {self.user} bot")
 
     # auto sync command on ready
     async def setup_hook(self):
@@ -58,6 +58,6 @@ class ServerInfo:
 
 # START
 guild_id = 880360143768924210
-prefix = "dump,"
+prefix = "dum,"
 bot = Bot(command_prefix=prefix, intents=discord.Intents.all())
 server_info = ServerInfo()

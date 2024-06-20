@@ -10,13 +10,13 @@ from discord.ext.commands import has_role
 from discord.ui import View
 
 # local
-from bot import bot, guild_id, server_info
-from models import Users, VoiceChannels
-from other_modules.discord_bot.channel_name import (
+from core.bot_conf.conf import bot, guild_id, server_info
+from core.models import Users, VoiceChannels
+from utils.discord_bot.channel_name import (
     check_avaiable_name,
     rewrite_create_voice_channel_name,
 )
-from other_modules.time_modules import Now
+from utils.time_modules import Now
 
 command_mess = """
 **Các lệnh:**

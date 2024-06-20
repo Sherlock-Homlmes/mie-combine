@@ -2,7 +2,7 @@ from .introduce import *
 from .cam_check import *
 from .bad_words_check import *
 
-from bot import bot
+from core.bot_conf.conf import bot
 
 
 @bot.listen()

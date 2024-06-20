@@ -3,7 +3,7 @@ from .topic import *
 from .game_center import *
 from .welcome import *
 
-from bot import bot
+from core.bot_conf.conf import bot
 
 
 @bot.listen()

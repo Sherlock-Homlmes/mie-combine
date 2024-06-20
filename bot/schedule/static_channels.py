@@ -8,8 +8,8 @@ from math import trunc
 from discord.ext import tasks
 
 # local
-from bot import bot, guild_id, server_info
-from other_modules.time_modules import Now
+from core.bot_conf.conf import bot, guild_id, server_info
+from utils.time_modules import Now
 
 total_member = 10000
 online_member = 1000

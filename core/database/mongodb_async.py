@@ -4,7 +4,7 @@ import motor.motor_asyncio
 
 # local
 from core.env import env
-from models import (
+from core.models import (
     Users,
     BadUsers,
     Confessions,
@@ -14,10 +14,9 @@ from models import (
     UserStudySection,
 )
 
-client = motor.motor_asyncio.AsyncIOMotorClient(env.DATABASE_URL)
-
 
 async def connect_to_database():
+    client = motor.motor_asyncio.AsyncIOMotorClient(env.DATABASE_URL)
     await beanie.init_beanie(
         database=client.discord_betterme,
         document_models=[

@@ -3,8 +3,8 @@ import discord
 from beanie.odm.operators.update.general import Set
 
 # local
-from bot import bot
-from models import Users
+from core.bot_conf.conf import bot
+from core.models import Users
 
 
 @bot.listen()

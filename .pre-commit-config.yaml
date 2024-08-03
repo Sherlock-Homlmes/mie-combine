@@ -36,4 +36,4 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
       # formatter(beta)
       - id: ruff-format
-        args: [--check]
+        args: []

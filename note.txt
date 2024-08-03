@@ -3,9 +3,15 @@
     - Create vc: When host up -> auto create vc
     - Errands:Welcome: delete message after up host
     - Guild event: user update
+    - AI
+        Answer base on user chat history
+        Answer base on context
+    - private comment in confession
 
 /// Refactor:
-- better env for dev && isolate from production
-- Add all setting to core
-- Transfer all to pydantic
-- All Embed model to 1 file
+    - better env for dev && isolate from production
+    - Add all setting to core
+    - Transfer all to pydantic
+    - All Embed model to 1 file
+
+If you can not start bot using vscode, use system terminal instead

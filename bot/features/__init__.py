@@ -6,6 +6,7 @@ from .errands import *
 from .confession import *
 from .create_vc import *
 from .study_time import *
+from .ai import *
 
 
 ###### not implement

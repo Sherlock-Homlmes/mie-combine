@@ -23,8 +23,7 @@ async def on_message(message):
                     file = await save_image(message.attachments[0].url)
                     f = genai.upload_file(file)
                     contents = [message_without_mention, f]
-                except Exception as e:
-                    print(e)
+                except Exception:
                     await message.channel.send(
                         "Xảy ra lỗi trong quá trình xử lý", reference=message
                     )

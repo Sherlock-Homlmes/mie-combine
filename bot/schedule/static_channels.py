@@ -17,7 +17,7 @@ online_member = 1000
 total_voice_member = 50
 
 
-@tasks.loop(minutes=6)
+@tasks.loop(minutes=10)
 async def static_channels():
     global online_member, total_member, total_voice_member
     # count down

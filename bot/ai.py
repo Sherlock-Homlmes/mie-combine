@@ -15,17 +15,16 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    answer_conditions = [
-        bot.user.mentioned_in(message),
-        message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập",
-    ]
-    if any(answer_conditions):
+    if bot.user.mentioned_in(message) or (
+        message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập"
+    ):
         async with message.channel.typing():
             message_without_mention = (
                 re.sub(r"<@.*?>", "\n", message.content) + "\n Answer in Vietnamese. No yapping"
             )
-            if message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập":
-                message_without_mention = message.channel.name + "\n" + message_without_mention
+            # message.channel.parent is currently error
+            # if message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập":
+            #     message_without_mention = f"{message.channel.name}\n{message_without_mention}"
             contents = None
             if len(message.attachments):
                 try:

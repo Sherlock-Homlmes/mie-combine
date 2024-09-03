@@ -14,38 +14,36 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 async def on_message(message):
     if message.author.bot:
         return
-    if any(
+
+    answer_conditions = [
         bot.user.mentioned_in(message),
         message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập",
-    ):
+    ]
+    if any(answer_conditions):
         async with message.channel.typing():
             message_without_mention = (
-                message.channel.name
-                + "\n"
-                + re.sub(r"<@.*?>", "\n", message.content)
-                + "\n Answer in Vietnamese. No yapping"
+                re.sub(r"<@.*?>", "\n", message.content) + "\n Answer in Vietnamese. No yapping"
             )
+            if message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập":
+                message_without_mention = message.channel.name + "\n" + message_without_mention
             contents = None
             if len(message.attachments):
                 try:
-                    # file = await save_image(message.attachments[0].url)
-                    # f = genai.upload_file(file)
-                    files = [await save_image(f) for f in message.attachments]
-                    fs = [genai.upload_file(f) for f in files]
-                    contents = [
-                        message_without_mention,
-                    ]
-                    contents.extend(fs)
+                    file = await save_image(message.attachments[0].url)
+                    f = genai.upload_file(file)
+                    contents = [message_without_mention, f]
+                    # files = [await save_image(f) for f in message.attachments]
+                    # fs = [genai.upload_file(f) for f in files]
+                    # contents.extend(fs)
                 except Exception:
                     await message.channel.send(
                         "Xảy ra lỗi trong quá trình xử lý", reference=message
                     )
                     return
                 finally:
-                    for file in files:
-                        delete_image(file)
+                    # for file in files:
+                    delete_image(file)
             else:
                 contents = message_without_mention
             response = model.generate_content(contents)
-            print(response.text)
             await message.channel.send(response.text, reference=message)

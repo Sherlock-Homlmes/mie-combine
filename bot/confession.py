@@ -11,7 +11,7 @@ from discord.ui import View
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from core.models import Confessions, ErrandData
+from core.models import Confessions, ConfessionStatusEnum, ConfessionTypeEnum, ErrandData
 from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
 from other_modules.image_handle import delete_image, save_image
 
@@ -63,12 +63,14 @@ class Confession:
     # value create when processing
     files: list
     content: str = ""
+    model: Confessions = None
+    is_sended: bool = False
 
     async def set_confession(self):
         # insert confession to database
         confession = Confessions(
-            channel_id=str(self.channel.id),
-            member_id=str(self.member.id),
+            channel_id=self.channel.id,
+            member_id=self.member.id,
             type=self.cfs_type,
         )
         await confession.insert()
@@ -90,7 +92,7 @@ class Confession:
         # wait 30 minutes
         await asyncio.sleep(1800)
 
-        if await Confessions.find_one(Confessions.channel_id == str(self.channel.id)):
+        if await Confessions.find_one(Confessions.channel_id == self.channel.id):
             await self.channel.send(
                 self.member.mention
                 + "**Những lời tâm tư ngàn lời không nói hết. Nếu bạn muốn tiếp tục tâm sự hãy tạo 1 kênh mới. Kênh này sẽ biến mất sau 2 phút nữa. **"  # noqa: E501
@@ -123,18 +125,19 @@ class Confession:
         return files_to_send
 
     async def end_confession(self):
-        confession = await Confessions.find_one(Confessions.channel_id == str(self.channel.id))
+        confession = await Confessions.find_one(Confessions.channel_id == self.channel.id)
         if confession:
             await self.text_process()
             try:
+                self.model = confession
                 if len(self.content) == 0 and self.files == []:
                     message = None
                 elif len(self.content) < 50 and self.files == []:
                     message = "Nội dung confession của bạn rất ngắn nên sẽ không được gửi đi. Lưu ý: nếu gửi confession khó hiểu, không có chủ đích sẽ bị mute ít nhất 3 ngày"  # noqa: E501
                 else:
-                    if self.cfs_type == "private":
+                    if self.cfs_type == ConfessionTypeEnum.PRIVATE:
                         await self.send_private_confession()
-                    elif self.cfs_type == "public":
+                    elif self.cfs_type == ConfessionTypeEnum.PUBLIC:
                         await self.send_public_confession()
 
                     server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
@@ -143,8 +146,10 @@ class Confession:
                     await server_info_data.save()
 
                     message = "Cảm ơn bạn đã chia sẻ cùng chúng mình"
+                    self.is_sended = True
 
-                await confession.delete()
+                if not self.is_sended:
+                    await confession.delete()
                 await self.channel.delete()
                 if message:
                     await self.member.send(message)
@@ -163,9 +168,27 @@ class Confession:
             colour=discord.Colour.gold(),
         )
         embed.set_footer(text="""BetterMe - Better everyday""")
-        await server_info.confession_channel.send(content=content, embed=embed, files=files)
+        message = await server_info.confession_channel.send(
+            content=content, embed=embed, files=files
+        )
+        thread = await message.create_thread(name="Rep confession ở đây nè!!!")
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-        await server_info.manage_confession_channel.send(content=content, embed=embed, files=files)
+        manage_message = await server_info.manage_confession_channel.send(
+            content=content, embed=embed, files=files
+        )
+        manage_thread = await manage_message.create_thread(name="Rep confession ở đây nè!!!")
+        server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
+        server_info_data.value["confession_count"] += 1
+        await self.model.set(
+            {
+                Confessions.status: ConfessionStatusEnum.CLOSE,
+                Confessions.confession_number: server_info_data.value["confession_count"],
+                Confessions.content: self.content,
+                Confessions.thread_id: thread.id,
+                Confessions.manage_thread_id: manage_thread.id,
+            }
+        )
+        await server_info_data.save()
 
     async def send_public_confession(self):
         files = await self.send_files()
@@ -179,15 +202,33 @@ class Confession:
         embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
         embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
         embed.set_footer(text="""BetterMe - Better everyday""")
-        await server_info.confession_channel.send(content=content, embed=embed, files=files)
-        await server_info.manage_confession_channel.send(content=content, embed=embed, files=files)
+        message = await server_info.confession_channel.send(
+            content=content, embed=embed, files=files
+        )
+        thread = await message.create_thread(name="Rep confession ở đây nè!!!")
+        manage_message = await server_info.manage_confession_channel.send(
+            content=content, embed=embed, files=files
+        )
+        manage_thread = await manage_message.create_thread(name="Rep confession ở đây nè!!!")
+        server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
+        server_info_data.value["confession_count"] += 1
+        await self.model.set(
+            {
+                Confessions.status: ConfessionStatusEnum.CLOSE,
+                Confessions.confession_number: server_info_data.value["confession_count"],
+                Confessions.content: self.content,
+                Confessions.thread_id: thread.id,
+                Confessions.manage_thread_id: manage_thread.id,
+            }
+        )
+        await server_info_data.save()
 
 
 # end confession
 @bot.tree.command(name="end_confession", description="Kết thúc confession")
-async def end(interaction: discord.Interaction):
+async def end_confession(interaction: discord.Interaction):
     await interaction.response.defer()
-    confession = await Confessions.find_one(Confessions.channel_id == str(interaction.channel.id))
+    confession = await Confessions.find_one(Confessions.channel_id == interaction.channel.id)
     if confession:
         confession = Confession(
             channel=interaction.channel,
@@ -214,7 +255,9 @@ async def on_interaction(interaction: discord.Interaction):
             member = interaction.user
             values = interaction.data["values"]
 
-            exist = await Confessions.find_one(Confessions.member_id == str(member.id))
+            exist = await Confessions.find_one(
+                Confessions.member_id == member.id, Confessions.status == ConfessionStatusEnum.OPEN
+            )
             if exist:
                 await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
             elif "private-confession" in values or "public-confession" in values:
@@ -249,12 +292,12 @@ async def fix_confession():
         member: discord.Member | discord.User
         channel, member = await asyncio.gather(
             *[
-                server_info.guild.fetch_channel(int(confession_data.channel_id)),
-                server_info.guild.fetch_member(int(confession_data.member_id)),
+                server_info.guild.fetch_channel(confession_data.channel_id),
+                server_info.guild.fetch_member(confession_data.member_id),
             ]
         )
         # delete if confession channel last longer than 40 minutes
-        if (now - channel.created_at).seconds >= 2400:
+        if channel and (now - channel.created_at).seconds >= 2400:
             await Confession(
                 channel=channel,
                 member=member,

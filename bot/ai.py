@@ -20,7 +20,6 @@ async def on_message(message):
         and message.channel.parent
         and message.channel.parent.name == "giúp-đỡ-học-tập"
     ):
-        print(message.position)
         async with message.channel.typing():
             message_without_mention = (
                 re.sub(r"<@.*?>", "\n", message.content) + "\n Answer in Vietnamese. No yapping"

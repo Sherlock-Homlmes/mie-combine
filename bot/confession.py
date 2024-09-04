@@ -177,18 +177,15 @@ class Confession:
             content=content, embed=embed, files=files
         )
         manage_thread = await manage_message.create_thread(name="Rep confession ở đây nè!!!")
-        server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
-        server_info_data.value["confession_count"] += 1
         await self.model.set(
             {
                 Confessions.status: ConfessionStatusEnum.CLOSE,
-                Confessions.confession_number: server_info_data.value["confession_count"],
+                Confessions.confession_index: server_info.confession_count,
                 Confessions.content: self.content,
                 Confessions.thread_id: thread.id,
                 Confessions.manage_thread_id: manage_thread.id,
             }
         )
-        await server_info_data.save()
 
     async def send_public_confession(self):
         files = await self.send_files()
@@ -210,18 +207,15 @@ class Confession:
             content=content, embed=embed, files=files
         )
         manage_thread = await manage_message.create_thread(name="Rep confession ở đây nè!!!")
-        server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
-        server_info_data.value["confession_count"] += 1
         await self.model.set(
             {
                 Confessions.status: ConfessionStatusEnum.CLOSE,
-                Confessions.confession_number: server_info_data.value["confession_count"],
+                Confessions.confession_index: server_info.confession_count,
                 Confessions.content: self.content,
                 Confessions.thread_id: thread.id,
                 Confessions.manage_thread_id: manage_thread.id,
             }
         )
-        await server_info_data.save()
 
 
 # end confession

@@ -16,8 +16,11 @@ async def on_message(message):
         return
 
     if bot.user.mentioned_in(message) or (
-        message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập"
+        message.position == 0
+        and message.channel.parent
+        and message.channel.parent.name == "giúp-đỡ-học-tập"
     ):
+        print(message.position)
         async with message.channel.typing():
             message_without_mention = (
                 re.sub(r"<@.*?>", "\n", message.content) + "\n Answer in Vietnamese. No yapping"

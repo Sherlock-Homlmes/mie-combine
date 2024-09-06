@@ -61,21 +61,24 @@ class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
             return
 
         cfs = await CloseConfessions.find_one(CloseConfessions.message_id == interaction.message.id)
-        other_thread_replies = [
-            reply.member_index
-            for reply in cfs.thread_replies
-            if reply.created_by != interaction.user.id
-        ]
-        if not len(cfs.thread_replies):
-            member_index = 1
-        elif len(cfs.thread_replies) != len(other_thread_replies):
-            member_index = [
+        if interaction.message.id == cfs.created_by:
+            member_index = 0
+        else:
+            other_thread_replies = [
                 reply.member_index
                 for reply in cfs.thread_replies
-                if reply.created_by == interaction.user.id
-            ][0]
-        else:
-            member_index = max(other_thread_replies) + 1
+                if reply.created_by != interaction.user.id
+            ]
+            if not len(cfs.thread_replies):
+                member_index = 1
+            elif len(cfs.thread_replies) != len(other_thread_replies):
+                member_index = [
+                    reply.member_index
+                    for reply in cfs.thread_replies
+                    if reply.created_by == interaction.user.id
+                ][0]
+            else:
+                member_index = max(other_thread_replies) + 1
         thread_reply = ConfessionReply(
             created_by=interaction.user.id,
             member_index=member_index,
@@ -89,7 +92,11 @@ class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
         await asyncio.gather(
             *[
                 cfs.save(),
-                thread.send(f"**Từ: Người ẩn danh{member_index}**\n{self.content}"),
+                thread.send(
+                    f"**Từ: Người ẩn danh {member_index}**\n{self.content}"
+                    if member_index
+                    else f"**Từ: Chủ post**\n{self.content}"
+                ),
                 manage_thread.send(
                     f"**Từ: Người ẩn danh {member_index}** <@{interaction.user.id}>\n{self.content}",
                 ),

@@ -61,7 +61,7 @@ class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
             return
 
         cfs = await CloseConfessions.find_one(CloseConfessions.message_id == interaction.message.id)
-        if interaction.message.id == cfs.created_by:
+        if interaction.user.id == cfs.created_by:
             member_index = 0
         else:
             other_thread_replies = [

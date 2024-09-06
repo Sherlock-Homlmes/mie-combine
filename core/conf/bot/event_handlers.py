@@ -1,19 +1,12 @@
 # default
 import asyncio
 
-# lib
-
-# local
-from .conf import bot, guild_id, server_info  # noqa: F401
 from core.models import ErrandData
 from other_modules.discord_bot.get_object import get_channel
 
-
-@bot.listen()
-async def on_ready():
-    print("Getting server info...")
-    await get_server_info()
-    print("Bot ready")
+# lib
+# local
+from .conf import bot, guild_id, server_info  # noqa: F401
 
 
 async def get_server_info():

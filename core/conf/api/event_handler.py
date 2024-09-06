@@ -1,16 +1,12 @@
-import signal
 import asyncio
+import signal
 
-# libraries
-import beanie
+from core.conf.bot.conf import bot
+from core.env import env
+from core.models import connect_db
 
 # local
 from .conf import app
-from core.env import env
-from core.models import document_models
-from core.database.mongodb import client
-from core.conf.bot.conf import bot
-
 
 running = True
 
@@ -31,15 +27,6 @@ runner = BackgroundRunner()
 def stop_server(*args):
     global running
     running = False
-
-
-async def connect_db() -> None:
-    print("Connecting to database...")
-    await beanie.init_beanie(
-        database=client.discord_betterme,
-        document_models=document_models,
-    )
-    print("Connect to database success")
 
 
 @app.on_event("startup")

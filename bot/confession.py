@@ -1,6 +1,5 @@
 # default
 import asyncio
-import datetime
 from dataclasses import dataclass
 from typing import Optional, Union
 
@@ -11,9 +10,12 @@ from discord.ui import View
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from core.models import Confessions, ConfessionStatusEnum, ConfessionTypeEnum, ErrandData
+from core.models import CloseConfessions, ConfessionTypeEnum, OpenConfessions
 from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
 from other_modules.image_handle import delete_image, save_image
+from other_modules.time_modules import Now
+
+confession_thread_ids = []
 
 
 # Create choose confession message
@@ -58,22 +60,21 @@ class Confession:
     # default value
     channel: discord.TextChannel
     member: Optional[Union[discord.Member, discord.User]]
-    cfs_type: str
+    cfs_type: ConfessionTypeEnum
 
     # value create when processing
     files: list
     content: str = ""
-    model: Confessions = None
+    model: OpenConfessions = None
     is_sended: bool = False
 
     async def set_confession(self):
         # insert confession to database
-        confession = Confessions(
+        await OpenConfessions(
             channel_id=self.channel.id,
-            member_id=self.member.id,
+            created_by=self.member.id,
             type=self.cfs_type,
-        )
-        await confession.insert()
+        ).insert()
 
         # send help messsage to channel
         embed = discord.Embed(
@@ -92,7 +93,7 @@ class Confession:
         # wait 30 minutes
         await asyncio.sleep(1800)
 
-        if await Confessions.find_one(Confessions.channel_id == self.channel.id):
+        if await OpenConfessions.find_one(OpenConfessions.channel_id == self.channel.id):
             await self.channel.send(
                 self.member.mention
                 + "**Những lời tâm tư ngàn lời không nói hết. Nếu bạn muốn tiếp tục tâm sự hãy tạo 1 kênh mới. Kênh này sẽ biến mất sau 2 phút nữa. **"  # noqa: E501
@@ -125,7 +126,7 @@ class Confession:
         return files_to_send
 
     async def end_confession(self):
-        confession = await Confessions.find_one(Confessions.channel_id == self.channel.id)
+        confession = await OpenConfessions.find_one(OpenConfessions.channel_id == self.channel.id)
         if confession:
             await self.text_process()
             try:
@@ -135,16 +136,7 @@ class Confession:
                 elif len(self.content) < 50 and self.files == []:
                     message = "Nội dung confession của bạn rất ngắn nên sẽ không được gửi đi. Lưu ý: nếu gửi confession khó hiểu, không có chủ đích sẽ bị mute ít nhất 3 ngày"  # noqa: E501
                 else:
-                    if self.cfs_type == ConfessionTypeEnum.PRIVATE:
-                        await self.send_private_confession()
-                    elif self.cfs_type == ConfessionTypeEnum.PUBLIC:
-                        await self.send_public_confession()
-
-                    server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
-                    server_info_data.value["confession_count"] += 1
-                    server_info.confession_count = server_info_data.value["confession_count"]
-                    await server_info_data.save()
-
+                    await self.send_confession()
                     message = "Cảm ơn bạn đã chia sẻ cùng chúng mình"
                     self.is_sended = True
 
@@ -158,63 +150,45 @@ class Confession:
                     "Confession quá dài. Hãy đảm bảo confession của bạn không quá 4000 kí tự."
                 )
 
-    async def send_private_confession(self):
+    async def send_confession(self):
+        confession_count = await CloseConfessions.find_all().max(CloseConfessions.index) or 0
+        print(confession_count)
+        confession_count += 1
         files = await self.send_files()
 
-        content = f"``` Confession {server_info.confession_count}-ẩn danh```"
+        content = f"``` Confession {confession_count}-ẩn danh```"
         embed = discord.Embed(
             title="**Tâm sự ẩn danh**",
             description=self.content,
             colour=discord.Colour.gold(),
         )
         embed.set_footer(text="""BetterMe - Better everyday""")
+        if self.model.type == ConfessionTypeEnum.PUBLIC:
+            embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
+            embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
         message = await server_info.confession_channel.send(
             content=content, embed=embed, files=files
         )
         thread = await message.create_thread(name="Rep confession ở đây nè!!!")
-        embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
+        if self.model.type == ConfessionTypeEnum.PRIVATE:
+            embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
+            embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
         manage_message = await server_info.manage_confession_channel.send(
             content=content, embed=embed, files=files
         )
-        manage_thread = await manage_message.create_thread(name="Rep confession ở đây nè!!!")
-        await self.model.set(
-            {
-                Confessions.status: ConfessionStatusEnum.CLOSE,
-                Confessions.confession_index: server_info.confession_count,
-                Confessions.content: self.content,
-                Confessions.thread_id: thread.id,
-                Confessions.manage_thread_id: manage_thread.id,
-            }
-        )
-
-    async def send_public_confession(self):
-        files = await self.send_files()
-
-        content = f"``` Confession {server_info.confession_count}-công khai```"
-        embed = discord.Embed(
-            title="**Tâm sự của " + self.member.name + "**",
-            description=self.content,
-            colour=discord.Colour.gold(),
-        )
-        embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-        embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
-        embed.set_footer(text="""BetterMe - Better everyday""")
-        message = await server_info.confession_channel.send(
-            content=content, embed=embed, files=files
-        )
-        thread = await message.create_thread(name="Rep confession ở đây nè!!!")
-        manage_message = await server_info.manage_confession_channel.send(
-            content=content, embed=embed, files=files
-        )
-        manage_thread = await manage_message.create_thread(name="Rep confession ở đây nè!!!")
-        await self.model.set(
-            {
-                Confessions.status: ConfessionStatusEnum.CLOSE,
-                Confessions.confession_index: server_info.confession_count,
-                Confessions.content: self.content,
-                Confessions.thread_id: thread.id,
-                Confessions.manage_thread_id: manage_thread.id,
-            }
+        manage_thread = await manage_message.create_thread(name="Rep confession")
+        await asyncio.gather(
+            *[
+                CloseConfessions(
+                    index=confession_count,
+                    content=self.content,
+                    thread_id=thread.id,
+                    manage_thread_id=manage_thread.id,
+                    type=self.model.type,
+                    created_by=self.model.created_by,
+                ).insert(),
+                self.model.delete(),
+            ]
         )
 
 
@@ -222,11 +196,13 @@ class Confession:
 @bot.tree.command(name="end_confession", description="Kết thúc confession")
 async def end_confession(interaction: discord.Interaction):
     await interaction.response.defer()
-    confession = await Confessions.find_one(Confessions.channel_id == interaction.channel.id)
+    confession = await OpenConfessions.find_one(
+        OpenConfessions.channel_id == interaction.channel.id
+    )
     if confession:
         confession = Confession(
             channel=interaction.channel,
-            member=await interaction.guild.fetch_member(confession.member_id),
+            member=await interaction.guild.fetch_member(confession.created_by),
             cfs_type=confession.type,
             files=[],
         )
@@ -249,10 +225,8 @@ async def on_interaction(interaction: discord.Interaction):
             member = interaction.user
             values = interaction.data["values"]
 
-            exist = await Confessions.find_one(
-                Confessions.member_id == member.id, Confessions.status == ConfessionStatusEnum.OPEN
-            )
-            if exist:
+            # Not allow create confession if that member already have exist confession
+            if await OpenConfessions.find_one(OpenConfessions.created_by == member.id):
                 await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
             elif "private-confession" in values or "public-confession" in values:
                 chanel_name = rewrite_confession_channel_name(member.name, "confession")
@@ -270,9 +244,9 @@ async def on_interaction(interaction: discord.Interaction):
 
                 # confession
                 if "private-confession" in values:
-                    cfs_type = "private"
+                    cfs_type = ConfessionTypeEnum.PRIVATE
                 elif "public-confession" in values:
-                    cfs_type = "public"
+                    cfs_type = ConfessionTypeEnum.PUBLIC
 
                 confession = Confession(channel=channel, member=member, cfs_type=cfs_type, files=[])
                 await confession.set_confession()
@@ -280,14 +254,14 @@ async def on_interaction(interaction: discord.Interaction):
 
 
 async def fix_confession():
-    now = datetime.datetime.now(datetime.timezone.utc)
-    async for confession_data in Confessions.find():
+    now = Now().now
+    async for confession_data in OpenConfessions.find():
         channel: discord.TextChannel
         member: discord.Member | discord.User
         channel, member = await asyncio.gather(
             *[
                 server_info.guild.fetch_channel(confession_data.channel_id),
-                server_info.guild.fetch_member(confession_data.member_id),
+                server_info.guild.fetch_member(confession_data.created_by),
             ]
         )
         # delete if confession channel last longer than 40 minutes

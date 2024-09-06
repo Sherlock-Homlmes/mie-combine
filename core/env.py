@@ -1,4 +1,5 @@
 from enum import Enum
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,6 +9,7 @@ class ENVEnum(str, Enum):
 
 
 class Env(BaseSettings):
+    BOT_ONLY: bool = False
     BOT_TOKEN: str
     DATABASE_URL: str
     GEMINI_AI_API_KEY: str

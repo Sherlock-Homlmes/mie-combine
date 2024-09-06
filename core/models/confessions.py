@@ -1,8 +1,11 @@
+import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from beanie import Document
+from beanie import Document, Insert, UnionDoc, before_event
 from pydantic import BaseModel
+
+from other_modules.time_modules import Now
 
 
 class ConfessionTypeEnum(str, Enum):
@@ -16,20 +19,49 @@ class ConfessionStatusEnum(str, Enum):
 
 
 class ConfessionReply(BaseModel):
-    member_id: str
+    created_by: str
     member_position: int
     content: str
 
+    created_at: Optional[str] = None
+    updated_at: Optional[datetime.datetime] = None
 
-class Confessions(Document):
+
+class Confessions(UnionDoc):
+    class Settings:
+        name = "Confessions"  # Collection name
+        class_id = "_class_id"  # _class_id is default beanie internal field used to filter children Documents
+
+
+class OpenConfessions(Document):
     channel_id: int
-    member_id: int
+    created_by: int
+    type: ConfessionTypeEnum
+    created_at: Optional[datetime.datetime] = None
+
+    class Settings:
+        union_doc = Confessions
+
+    ### Events
+    @before_event(Insert)
+    async def set_created_at(self):
+        now = Now().now
+        self.created_at = now
+
+
+class CloseConfessions(OpenConfessions):
+    index: int
+    channel_id: Union[int, None] = None
+    created_by: int
 
     type: ConfessionTypeEnum
-    status: ConfessionStatusEnum = ConfessionStatusEnum.OPEN
 
-    confession_index: Optional[int] = None
-    content: Optional[str] = None
-    thread_id: Optional[int] = None
-    manage_thread_id: Optional[int] = None
+    content: str
+    thread_id: int
+    manage_thread_id: int
     thread_replies: List[ConfessionReply] = []
+
+    updated_at: Optional[datetime.datetime] = None
+
+    class Settings:
+        union_doc = Confessions

@@ -8,7 +8,8 @@ import discord
 from discord.ext import commands
 
 # local
-from core.env import is_dev_env
+from core.env import env, is_dev_env
+from core.models import connect_db
 
 is_app_running = True
 
@@ -19,9 +20,14 @@ class Bot(commands.Bot):
 
     async def on_ready(self):
         global is_app_running
-        print(f"We have logged in as {self.user} combine bot")
+        from .event_handlers import get_server_info
 
-        if is_dev_env:
+        if env.BOT_ONLY:
+            await connect_db()
+        await get_server_info()
+        print(f"{self.user} ready")
+
+        if is_dev_env and not env.BOT_ONLY:
             # Stop bot when reload
             while is_app_running:
                 from core.event_handler import running

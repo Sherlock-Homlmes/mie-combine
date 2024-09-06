@@ -8,6 +8,8 @@ import discord
 from discord import ui
 from discord.ext.commands import context, has_permissions
 
+from bot.security.bad_words_check import check_bad_words
+
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
 from core.models import CloseConfessions, ConfessionReply, ConfessionTypeEnum, OpenConfessions
@@ -49,6 +51,15 @@ class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
     content = ui.TextInput(label="Nội dung", style=discord.TextStyle.paragraph)
 
     async def on_submit(self, interaction: discord.Interaction):
+        if not check_bad_words(str(self.content)):
+            (
+                await interaction.response.send_message(
+                    f"**Vui lòng không sử dụng từ nhạy cảm trong câu của bạn**\n**Nội dung:** {str(self.content)}",
+                    ephemeral=True,
+                ),
+            )
+            return
+
         cfs = await CloseConfessions.find_one(CloseConfessions.message_id == interaction.message.id)
         other_thread_replies = [
             reply.member_index

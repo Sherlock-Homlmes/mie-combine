@@ -6,9 +6,8 @@ import discord
 
 # local
 from core.conf.bot.conf import bot, server_info
-from core.models import BadUsers, Users, BanFormEnum
+from core.models import BadUsers, BanFormEnum, Users
 from other_modules.time_modules import Now
-
 
 # level 1
 # check if word is exact as bad word
@@ -195,7 +194,7 @@ async def punish(mem_id: int, message_content: str):
 
 @bot.listen()
 async def on_message(message: discord.Message):
-    if check_bad_words(message.content) is False:
+    if message.author.id != bot.user.id and check_bad_words(message.content) is False:
         try:
             await message.delete()
         except discord.errors.NotFound:

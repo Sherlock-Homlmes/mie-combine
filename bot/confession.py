@@ -5,12 +5,12 @@ from typing import Optional, Union
 
 # library
 import discord
+from discord import ui
 from discord.ext.commands import context, has_permissions
-from discord.ui import View
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from core.models import CloseConfessions, ConfessionTypeEnum, OpenConfessions
+from core.models import CloseConfessions, ConfessionReply, ConfessionTypeEnum, OpenConfessions
 from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
 from other_modules.image_handle import delete_image, save_image
 from other_modules.time_modules import Now
@@ -19,8 +19,8 @@ confession_thread_ids = []
 
 
 # Create choose confession message
-class ConfessionOption(View):
-    @discord.ui.select(
+class ConfessionOption(ui.View):
+    @ui.select(
         placeholder="Lựa chọn",
         options=[
             discord.SelectOption(
@@ -37,6 +37,54 @@ class ConfessionOption(View):
     )
     async def select_callback(self, select, interaction):
         pass
+
+
+class ConfessionPrivateReplyButton(ui.View):
+    @ui.button(label="Trả lời ẩn danh", custom_id="private-reply-confession")
+    async def select_callback(self, interaction, button):
+        pass
+
+
+class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
+    content = ui.TextInput(label="Nội dung", style=discord.TextStyle.paragraph)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        cfs = await CloseConfessions.find_one(CloseConfessions.message_id == interaction.message.id)
+        other_thread_replies = [
+            reply.member_index
+            for reply in cfs.thread_replies
+            if reply.created_by != interaction.user.id
+        ]
+        if not len(cfs.thread_replies):
+            member_index = 1
+        elif len(cfs.thread_replies) != len(other_thread_replies):
+            member_index = [
+                reply.member_index
+                for reply in cfs.thread_replies
+                if reply.created_by == interaction.user.id
+            ][0]
+        else:
+            member_index = max(other_thread_replies) + 1
+        thread_reply = ConfessionReply(
+            created_by=interaction.user.id,
+            member_index=member_index,
+            content=str(self.content),
+            created_at=Now().now,
+        )
+        cfs.thread_replies.append(thread_reply)
+        guild = bot.get_guild(guild_id)
+        thread = guild.get_thread(cfs.thread_id)
+        manage_thread = guild.get_thread(cfs.manage_thread_id)
+        await asyncio.gather(
+            *[
+                cfs.save(),
+                thread.send(f"**Từ: Người ẩn danh{member_index}**\n{self.content}"),
+                manage_thread.send(
+                    f"**Từ: Người ẩn danh {member_index}** <@{interaction.user.id}>\n{self.content}",
+                ),
+                interaction.response.send_message("Đã gửi tin nhắn ẩn danh", ephemeral=True),
+            ]
+        )
 
 
 @bot.listen()
@@ -152,7 +200,6 @@ class Confession:
 
     async def send_confession(self):
         confession_count = await CloseConfessions.find_all().max(CloseConfessions.index) or 0
-        print(confession_count)
         confession_count += 1
         files = await self.send_files()
 
@@ -167,7 +214,7 @@ class Confession:
             embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
             embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
         message = await server_info.confession_channel.send(
-            content=content, embed=embed, files=files
+            content=content, embed=embed, files=files, view=ConfessionPrivateReplyButton()
         )
         thread = await message.create_thread(name="Rep confession ở đây nè!!!")
         if self.model.type == ConfessionTypeEnum.PRIVATE:
@@ -182,6 +229,7 @@ class Confession:
                 CloseConfessions(
                     index=confession_count,
                     content=self.content,
+                    message_id=message.id,
                     thread_id=thread.id,
                     manage_thread_id=manage_thread.id,
                     type=self.model.type,
@@ -216,7 +264,9 @@ async def end_confession(interaction: discord.Interaction):
 # REFACTOR: not using on_interaction
 @bot.listen()
 async def on_interaction(interaction: discord.Interaction):
-    if interaction.message:
+    if interaction.data.get("custom_id") == "private-reply-confession":
+        await interaction.response.send_modal(ConfessionPrivateReplyModal())
+    elif interaction.message:
         if (
             interaction.message.id == server_info.confession_dropdown_id
             and interaction.type == discord.InteractionType.component

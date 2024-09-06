@@ -19,11 +19,11 @@ class ConfessionStatusEnum(str, Enum):
 
 
 class ConfessionReply(BaseModel):
-    created_by: str
-    member_position: int
+    created_by: int
+    member_index: int
     content: str
 
-    created_at: Optional[str] = None
+    created_at: Optional[datetime.datetime] = None
     updated_at: Optional[datetime.datetime] = None
 
 
@@ -57,6 +57,7 @@ class CloseConfessions(OpenConfessions):
     type: ConfessionTypeEnum
 
     content: str
+    message_id: int
     thread_id: int
     manage_thread_id: int
     thread_replies: List[ConfessionReply] = []

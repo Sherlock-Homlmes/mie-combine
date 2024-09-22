@@ -18,7 +18,6 @@ exact_bad_words = [
     "đĩ",
     "đụ",
     "cock",
-    "đù",
     "vl",
     "lìn",
     "cmn",
@@ -154,42 +153,36 @@ async def punish(mem_id: int, message_content: str):
         await BadUsers.find(BadUsers.user.discord_id == mem_id, fetch_links=True).to_list()
     )
 
-    if counter < 3:
+    # counter <= 4: warn
+    # counter <= 11: mute
+    # counter > 11: ban
+    if counter <= 4:
         form = BanFormEnum.WARN.value
         hours = 0
         penalize = "Cảnh báo"
         colour = discord.Colour.orange()
     else:
         colour = discord.Colour.red()
-        if counter <= 8:
+        if counter <= 11:
             mute_hour_count_map = {
-                3: 3,
-                4: 12,
-                5: 24,
-                6: 72,
-                7: 180,
-                8: 360,
+                5: 3,
+                6: 6,
+                7: 12,
+                8: 24,
+                9: 72,
+                10: 180,
+                11: 360,
             }
             form = BanFormEnum.MUTE.value
             hours = mute_hour_count_map[counter]
             penalize = f"Thời gian chờ {hours} tiếng"
 
-        elif counter >= 9:
+        elif counter > 11:
             form = BanFormEnum.BAN.value
             hours = 0
             penalize = "BAN !!!"
 
     return (form, hours, penalize, colour)
-
-
-### Các mức phạt:
-# 1-2 lần: warn
-# 3 lần: tempmute 3h
-# 4 lần: tempmute 12h
-# 5 lần: tempmute 24h
-# 6 lần: tempmute 72h
-# 7 lần: tempmute 360h
-# 8 lần: ban
 
 
 @bot.listen()

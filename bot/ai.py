@@ -4,7 +4,7 @@ import google.generativeai as genai
 
 from core.conf.bot.conf import bot
 from core.env import env
-from other_modules.image_handle import delete_image, save_image
+from utils.image_handle import delete_image, save_image
 
 genai.configure(api_key=env.GEMINI_AI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")

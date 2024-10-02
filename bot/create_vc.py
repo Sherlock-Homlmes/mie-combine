@@ -12,11 +12,11 @@ from discord.ui import View
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
 from core.models import Users, VoiceChannels
-from other_modules.discord_bot.channel_name import (
+from utils.discord_bot.channel_name import (
     check_avaiable_name,
     rewrite_create_voice_channel_name,
 )
-from other_modules.time_modules import Now
+from utils.time_modules import Now
 
 command_mess = """
 **Các lệnh:**
@@ -31,7 +31,7 @@ command_mess = """
 
 /mute: tắt mic phòng
 
-/unmute: bỏ mic phòng
+/unmute: bật mic phòng
 
 /allow: cho phép người bạn muốn vào phòng
 
@@ -46,7 +46,6 @@ command_mess = """
 ```
 
 ***Chú ý:**
--Phòng chat này chỉ những người đang trong phòng của bạn mới thấy
 -Phòng sẽ mất khi không còn ai trong phòng
 -Bạn có thể gọi bot trong kênh này
 ||Chúc bạn học vui :3||

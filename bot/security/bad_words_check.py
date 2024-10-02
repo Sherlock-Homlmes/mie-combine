@@ -7,7 +7,7 @@ import discord
 # local
 from core.conf.bot.conf import bot, server_info
 from core.models import BadUsers, BanFormEnum, Users
-from other_modules.time_modules import Now
+from utils.time_modules import Now
 
 # level 1
 # check if word is exact as bad word

@@ -5,7 +5,7 @@ from beanie.odm.operators.update.general import Set
 # local
 from core.conf.bot.conf import bot
 from core.models import Users
-from other_modules.time_modules import Now
+from utils.time_modules import Now
 
 
 @bot.listen()

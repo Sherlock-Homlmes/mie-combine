@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 from beanie import Document, Insert, UnionDoc, before_event
 from pydantic import BaseModel
 
-from other_modules.time_modules import Now
+from utils.time_modules import Now
 
 
 class ConfessionTypeEnum(str, Enum):

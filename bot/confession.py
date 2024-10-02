@@ -13,9 +13,9 @@ from bot.security.bad_words_check import check_bad_words
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
 from core.models import CloseConfessions, ConfessionReply, ConfessionTypeEnum, OpenConfessions
-from other_modules.discord_bot.channel_name import rewrite_confession_channel_name
-from other_modules.image_handle import delete_image, save_image
-from other_modules.time_modules import Now
+from utils.discord_bot.channel_name import rewrite_confession_channel_name
+from utils.image_handle import delete_image, save_image
+from utils.time_modules import Now
 
 confession_thread_ids = []
 

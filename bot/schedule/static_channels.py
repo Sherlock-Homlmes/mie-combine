@@ -10,7 +10,7 @@ from discord.ext import tasks
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from other_modules.time_modules import Now
+from utils.time_modules import Now
 
 total_member = 10000
 online_member = 1000

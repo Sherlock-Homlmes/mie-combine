@@ -6,7 +6,7 @@ from beanie import Document, Link, before_event, Delete
 
 # local
 from .users import Users
-from other_modules.time_modules import Now
+from utils.time_modules import Now
 from .user_daily_study_time import UserDailyStudyTime
 
 

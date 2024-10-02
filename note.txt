@@ -6,11 +6,9 @@
     - AI
         Answer base on user chat history
         Answer base on context
-    - private comment in confession
 
 /// Refactor:
     - better env for dev && isolate from production
-    - Add all setting to core
     - Transfer all to pydantic
     - All Embed model to 1 file
 

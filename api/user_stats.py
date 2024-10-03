@@ -15,4 +15,4 @@ router = APIRouter()
 async def user_stats(
     params: Annotated[dict, Depends(UserStatsGetQuery)],
 ) -> UserStatsGetResponse:
-    return await UserDailyStudyTimes.get_user_total_study_time(params.user_discord_id)
+    return await UserDailyStudyTimes.get_user_study_time_stats(params.user_discord_id)

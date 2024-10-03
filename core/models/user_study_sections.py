@@ -7,7 +7,7 @@ from beanie import Document, Link, before_event, Delete
 # local
 from .users import Users
 from utils.time_modules import Now
-from .user_daily_study_time import UserDailyStudyTime
+from .user_daily_study_time import UserDailyStudyTimes
 
 
 class UserStudySection(Document):
@@ -23,10 +23,9 @@ class UserStudySection(Document):
 
             # if study time != 0
             if any(study_time):
-                user_daily_study_time = await UserDailyStudyTime.find_one(
-                    UserDailyStudyTime.user.discord_id == self.user.discord_id,
-                    UserDailyStudyTime.date == now.today,
-                    fetch_links=True,
+                user_daily_study_time = await UserDailyStudyTimes.find_one(
+                    UserDailyStudyTimes.user_discord_id == int(self.user.discord_id),
+                    UserDailyStudyTimes.date == now.today,
                 )
                 if user_daily_study_time:
                     user_daily_study_time.study_time = [
@@ -35,8 +34,10 @@ class UserStudySection(Document):
                     ]
                     await user_daily_study_time.save()
                 else:
-                    await UserDailyStudyTime(
-                        user=self.user, study_time=study_time, date=now.today
+                    await UserDailyStudyTimes(
+                        user_discord_id=int(self.user.discord_id),
+                        study_time=study_time,
+                        date=now.today,
                     ).insert()
 
         # calculate if start study date != end study date
@@ -52,9 +53,8 @@ class UserStudySection(Document):
             today_study_time = timedelta_to_daily_list(yesterday_midnight, now.now)
 
             if any(yesterday_study_time):
-                user_daily_study_time = await UserDailyStudyTime.find_one(
-                    UserDailyStudyTime.user.discord_id == self.user.discord_id,
-                    fetch_links=True,
+                user_daily_study_time = await UserDailyStudyTimes.find_one(
+                    UserDailyStudyTimes.user_discord_id == int(self.user.discord_id),
                 )
                 if user_daily_study_time:
                     user_daily_study_time.study_time = [
@@ -63,13 +63,15 @@ class UserStudySection(Document):
                     ]
                     await user_daily_study_time.save()
                 else:
-                    await UserDailyStudyTime(
-                        user=self.user,
+                    await UserDailyStudyTimes(
+                        user_discord_id=int(self.user.discord_id),
                         study_time=yesterday_study_time,
                         date=now.some_day_before(1),
                     ).insert()
-                await UserDailyStudyTime(
-                    user=self.user, study_time=today_study_time, date=now.today
+                await UserDailyStudyTimes(
+                    user_discord_id=int(self.user.discord_id),
+                    study_time=today_study_time,
+                    date=now.today,
                 ).insert()
 
     @before_event(Delete)

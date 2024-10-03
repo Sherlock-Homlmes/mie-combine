@@ -1,0 +1,91 @@
+<div>
+  <canvas id="my-chart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // TODO: data processing + render template + image pixel? + image combine
+  let isDownloaded = false
+
+  const randomStr = () => (Math.random() + 1).toString(36).substring(7)
+  const userId = "123"
+  const generateImageName = () => `${randomStr()}_${userId}.png`
+
+  let ctx = document.getElementById('my-chart').getContext('2d');
+  const data = [
+    {'date': '1', 'study_time': 4},
+    {'date': '2', 'study_time': 5},
+    {'date': '3', 'study_time': 7},
+    {'date': '4', 'study_time': 9},
+    {'date': '5', 'study_time': 10},
+    {'date': '6', 'study_time': 14},
+    {'date': '7', 'study_time': 5},
+    {'date': '8', 'study_time': 13},
+    {'date': '9', 'study_time': 23},
+    {'date': '10', 'study_time': 13},
+    {'date': '11', 'study_time': 4},
+    {'date': '12', 'study_time': 5},
+    {'date': '13', 'study_time': 7},
+    {'date': '14', 'study_time': 9},
+    {'date': '15', 'study_time': 10},
+    {'date': '16', 'study_time': 13},
+    {'date': '17', 'study_time': 5},
+    {'date': '18', 'study_time': 13},
+    {'date': '19', 'study_time': 21},
+    {'date': '20', 'study_time': 13},
+    {'date': '21', 'study_time': 4},
+    {'date': '22', 'study_time': 5},
+    {'date': '23', 'study_time': 7},
+    {'date': '24', 'study_time': 9},
+    {'date': '25', 'study_time': 10},
+    {'date': '26', 'study_time': 13},
+    {'date': '27', 'study_time': 5},
+    {'date': '28', 'study_time': 13},
+    {'date': '29', 'study_time': 22.5},
+    {'date': '30', 'study_time': 13},
+]
+
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(x => x.date),
+      datasets: [{
+        label: 'This month',
+        data: data.map(x => x.study_time),
+        backgroundColor: "#ffd400",
+        borderRadius: 5,
+        borderWidth: 0,
+      },
+    {
+        label: 'Last month',
+        data: data.reverse().map(x => x.study_time),
+        backgroundColor: "#AEAEAE",
+        borderRadius: 5,
+        borderWidth: 0,
+      }
+    ]
+    },
+    options: {
+        animation: {
+            onComplete: () => {
+                if(isDownloaded) return
+                var a = document.createElement('a');
+                a.href = chart.toBase64Image();
+                a.download = generateImageName();
+                a.click();
+                isDownloaded = true
+            },
+        },
+      scales: {
+            x: {
+         beginAtZero: true,
+                stacked: true
+            },
+            y: {
+         beginAtZero: true,
+            }
+      },
+    }
+  });
+</script>

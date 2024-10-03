@@ -1,23 +1,23 @@
 # default
 import datetime
-from typing import List
+from typing import List, Optional
 
 import pymongo
 
 # lib
-from beanie import Document, Indexed, Link
+from beanie import Document, Indexed
 from pydantic import validator
 
 # local
-from .users import Users
+from api.schemas import UserStatsGetResponse, DataUserDailyStudyTime
 
 
-class UserDailyStudyTime(Document):
-    user: Link[Users]
-    study_time: List[int]
+class UserDailyStudyTimes(Document):
+    user_discord_id: int
     """
         Study time type = List[time: int] (24 elements)
     """
+    study_time: List[int]
     date: Indexed(datetime.datetime, index_type=pymongo.DESCENDING)
 
     class Settings:
@@ -43,11 +43,21 @@ class UserDailyStudyTime(Document):
         return value
 
     @staticmethod
-    async def get_user_total_study_time(user_id: int):
-        user_daily_study_time = await UserDailyStudyTime.find(
-            UserDailyStudyTime.user.discord_id == str(user_id), fetch_links=True
-        ).to_list()
+    async def get_user_study_time_stats(
+        user_discord_id: int,
+        from_date: Optional[datetime.datetime] = None,
+        to_date: Optional[datetime.datetime] = None,
+    ):
+        user_daily_study_time = (
+            await UserDailyStudyTimes.find(UserDailyStudyTimes.user_discord_id == user_discord_id)
+            .project(DataUserDailyStudyTime)
+            .to_list()
+        )
         total_time = sum([sum(x.study_time) for x in user_daily_study_time])
         if not total_time:
             total_time = 0
-        return total_time
+        return UserStatsGetResponse(
+            user_discord_id=user_discord_id,
+            daily_study_time=user_daily_study_time,
+            total=total_time,
+        )

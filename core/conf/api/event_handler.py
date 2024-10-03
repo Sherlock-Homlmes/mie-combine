@@ -47,4 +47,5 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown_event():
     if bot.is_ready():
+        print("Bot shutting down")
         await bot.close()

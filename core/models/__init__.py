@@ -15,6 +15,7 @@ from .enums import *
 from .errand_data import ErrandData
 from .user_daily_study_time import UserDailyStudyTimes
 from .user_study_sections import UserStudySection
+from .user_ai_chat_history import UserAIChatHistory, Content, FileData
 from .users import Users
 from .voice_channels import VoiceChannels
 
@@ -28,6 +29,7 @@ document_models = [
     VoiceChannels,
     UserStudySection,
     UserDailyStudyTimes,
+    UserAIChatHistory,
 ]
 
 

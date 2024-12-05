@@ -41,6 +41,8 @@ included_bad_words = [
     "buồi",
     "buoi`",
     "buoi'",
+    "dái",
+    "dai'",
     "đm",
     "vcl",
     "đéo",
@@ -56,6 +58,33 @@ included_bad_words = [
     "đcm",
     "dcm",
     "djt",
+    "vai lon",
+    "thang lon",
+    "thằng lon",
+    "cai' lon",
+    "cái lon",
+    "con cac",
+    "con lon",
+    "dau lon",
+    "đầu lon",
+    "đầu cac",
+    "đầu buoi",
+    "biết lon",
+    "biết buoi",
+    "biết cac",
+    "biết cak",
+    "dau cac",
+    "sục cu",
+    "sục ku",
+    "hãm lon",
+    "ham~ lon",
+    "ham lon",
+    "hãm cac",
+    "ham~ cac",
+    "ham cac",
+    "hãm cak",
+    "ham~ cak",
+    "ham cak",
     # en
     "wtf",
 ]
@@ -84,12 +113,14 @@ space_bad_words = [
     "blowjob",
     "titjob",
     "fuck",
+    "fvck",
     "bitch",
 ]
 
 seperate = [
     "-",
     " ",
+    "_",
 ]
 
 

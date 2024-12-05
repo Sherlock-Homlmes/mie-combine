@@ -78,12 +78,8 @@ class CheckCamEmbedMessage:
 
 check_cam_member_ids = []
 sleep_time = [30, 50]
-cam_channel_names = [
-    "full cam",
-]
-cam_stream_channel_names = [
-    "cam/stream",
-]
+cam_channel_names = ["full cam", "full 🍊"]
+cam_stream_channel_names = ["cam/stream", "cam or stream", "🍊/💻", "🍊 or 💻"]
 
 
 @bot.listen()
@@ -118,8 +114,7 @@ async def on_voice_state_update(
         }
         if any(check_type_map[check_type] for check_type in check_types):
             return "PASS"
-        else:
-            return "FAIL"
+        return "FAIL"
 
     current_channel_id = current_channel.id
     check_types = get_channel_check_types(current_channel)

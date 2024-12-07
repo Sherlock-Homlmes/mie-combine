@@ -103,7 +103,6 @@ space_bad_words = [
     "đéo",
     "đ!t",
     "d!t",
-    "vkl",
     "vklm",
     "dcmm",
     "đcmm",

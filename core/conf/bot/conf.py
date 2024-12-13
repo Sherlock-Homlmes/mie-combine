@@ -21,10 +21,21 @@ class Bot(commands.Bot):
     async def on_ready(self):
         global is_app_running
         from .event_handlers import get_server_info
+        from bot.confession import (
+            ConfessionCreateButton,
+            ConfessionEndButton,
+            ConfessionPrivateReplyButton,
+        )
 
         if env.BOT_ONLY:
             await connect_db()
         await get_server_info()
+
+        # persistent models
+        for model in [ConfessionCreateButton, ConfessionEndButton, ConfessionPrivateReplyButton]:
+            view = model(timeout=None)
+            self.add_view(view)
+
         print(f"{self.user} ready")
 
         if is_dev_env and not env.BOT_ONLY:

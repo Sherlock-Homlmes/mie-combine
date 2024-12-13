@@ -1,3 +1,4 @@
+# TODO: refactor
 # default
 import asyncio
 from dataclasses import dataclass
@@ -41,10 +42,80 @@ class ConfessionOption(ui.View):
         pass
 
 
+class ConfessionCreateButton(ui.View):
+    cfs_type: ConfessionTypeEnum = None
+    interaction = None
+
+    @ui.button(
+        label="Confession ẩn danh",
+        emoji="🔒",
+        style=discord.ButtonStyle.primary,
+        custom_id="create-private-confession",
+    )
+    async def create_private_confession(self, interaction, button):
+        self.interaction = interaction
+        self.cfs_type = ConfessionTypeEnum.PRIVATE
+        await self.create_confession()
+
+    @ui.button(
+        label="Confession công khai",
+        emoji="💌",
+        style=discord.ButtonStyle.primary,
+        custom_id="create-public-confession",
+    )
+    async def create_public_confession(self, interaction, button):
+        self.interaction = interaction
+        self.cfs_type = ConfessionTypeEnum.PUBLIC
+        await self.create_confession()
+
+    async def create_confession(self):
+        interaction = self.interaction
+        await interaction.response.defer()
+        member = interaction.user
+
+        # Not allow create confession if that member already have exist confession
+        if await OpenConfessions.find_one(OpenConfessions.created_by == member.id):
+            await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
+            return
+        chanel_name = rewrite_confession_channel_name(member.name, "confession")
+
+        channel = await interaction.channel.category.create_text_channel(
+            chanel_name,
+            overwrites={
+                interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                member: discord.PermissionOverwrite(view_channel=True),
+            },
+            reason=None,
+        )
+
+        confession = Confession(channel=channel, member=member, cfs_type=self.cfs_type, files=[])
+        await confession.set_confession()
+        await confession.end_confession()
+
+
+class ConfessionEndButton(ui.View):
+    @ui.button(label="End confession", custom_id="end-confession")
+    async def select_callback(self, interaction, button):
+        await interaction.response.defer()
+        confession = await OpenConfessions.find_one(
+            OpenConfessions.channel_id == interaction.channel.id
+        )
+        if confession:
+            confession = Confession(
+                channel=interaction.channel,
+                member=await interaction.guild.fetch_member(confession.created_by),
+                cfs_type=confession.type,
+                files=[],
+            )
+            await confession.end_confession()
+        else:
+            await interaction.channel.delete()
+
+
 class ConfessionPrivateReplyButton(ui.View):
     @ui.button(label="Trả lời ẩn danh", custom_id="private-reply-confession")
     async def select_callback(self, interaction, button):
-        pass
+        await interaction.response.send_modal(ConfessionPrivateReplyModal())
 
 
 class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
@@ -112,10 +183,13 @@ async def on_ready():
     await fix_confession()
 
 
-@bot.command(name="confession")
+@bot.command(name="test-confession")
 @has_permissions(administrator=True)
 async def confession_choose(ctx: context.Context):
-    view = ConfessionOption()
+    # v1
+    # view = ConfessionOption()
+    # v2
+    view = ConfessionCreateButton(timeout=None)
     await ctx.message.delete()
     await ctx.send(view=view)
 
@@ -150,11 +224,13 @@ class Confession:
         )
         embed.add_field(
             name="**Chú ý**",
-            value="Kênh sẽ biến mất sau 30 phút hoặc bạn gõ lệnh ``/end_confession`` ",
+            value="Kênh sẽ biến mất sau 30 phút hoặc ấn nút ``End confession`` ",
             inline=False,
         )
         embed.set_footer(text="""BetterMe - Better everyday""")
-        await self.channel.send(content=self.member.mention, embed=embed)
+        await self.channel.send(
+            content=self.member.mention, embed=embed, view=ConfessionEndButton()
+        )
 
         # wait 30 minutes
         await asyncio.sleep(1800)
@@ -256,69 +332,6 @@ class Confession:
                 self.model.delete(),
             ]
         )
-
-
-# end confession
-@bot.tree.command(name="end_confession", description="Kết thúc confession")
-async def end_confession(interaction: discord.Interaction):
-    await interaction.response.defer()
-    confession = await OpenConfessions.find_one(
-        OpenConfessions.channel_id == interaction.channel.id
-    )
-    if confession:
-        confession = Confession(
-            channel=interaction.channel,
-            member=await interaction.guild.fetch_member(confession.created_by),
-            cfs_type=confession.type,
-            files=[],
-        )
-        await confession.end_confession()
-    else:
-        await interaction.response(
-            "Hãy gõ lệnh này trong kênh confession của bạn",
-        )
-
-
-# REFACTOR: not using on_interaction
-@bot.listen()
-async def on_interaction(interaction: discord.Interaction):
-    if interaction.data.get("custom_id") == "private-reply-confession":
-        await interaction.response.send_modal(ConfessionPrivateReplyModal())
-    elif interaction.message:
-        if (
-            interaction.message.id == server_info.confession_dropdown_id
-            and interaction.type == discord.InteractionType.component
-        ):
-            await interaction.response.defer()
-            member = interaction.user
-            values = interaction.data["values"]
-
-            # Not allow create confession if that member already have exist confession
-            if await OpenConfessions.find_one(OpenConfessions.created_by == member.id):
-                await member.send("Bạn chỉ có thể tạo 1 kênh confession 1 lúc")
-            elif "private-confession" in values or "public-confession" in values:
-                chanel_name = rewrite_confession_channel_name(member.name, "confession")
-
-                channel = await interaction.channel.category.create_text_channel(
-                    chanel_name,
-                    overwrites={
-                        interaction.guild.default_role: discord.PermissionOverwrite(
-                            view_channel=False
-                        ),
-                        member: discord.PermissionOverwrite(view_channel=True),
-                    },
-                    reason=None,
-                )
-
-                # confession
-                if "private-confession" in values:
-                    cfs_type = ConfessionTypeEnum.PRIVATE
-                elif "public-confession" in values:
-                    cfs_type = ConfessionTypeEnum.PUBLIC
-
-                confession = Confession(channel=channel, member=member, cfs_type=cfs_type, files=[])
-                await confession.set_confession()
-                await confession.end_confession()
 
 
 async def fix_confession():

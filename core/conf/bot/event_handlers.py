@@ -16,6 +16,12 @@ async def get_server_info():
     server_info_data = await ErrandData.find_one(ErrandData.name == "server_info")
     server_info_data = server_info_data.value
 
+    # Test data
+
+    # server_info_data["confession_dropdown_id"] = 1280893469782708286
+    # server_info_data["confession_channel_id"] = 1280890216504234067
+    # server_info_data["manage_confession_channel_id"] = 1280891220838846544
+
     # get guild
     server_info.guild = await bot.fetch_guild(guild_id)
     server_info.every_one_role = server_info.guild.get_role(server_info.guild.id)
@@ -62,7 +68,6 @@ async def get_server_info():
     server_info.confession_channel = confession_channel
     server_info.manage_confession_channel = manage_confession_channel
     server_info.confession_dropdown_id = server_info_data["confession_dropdown_id"]
-    server_info.confession_count = server_info_data["confession_count"]
     # schedule
     server_info.cap3_channel = cap3_channel
     server_info.thpt_channel = thpt_channel

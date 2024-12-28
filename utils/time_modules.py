@@ -3,7 +3,7 @@ import pytz
 from cachetools.func import ttl_cache
 
 
-@ttl_cache(maxsize=1, ttl=30)
+@ttl_cache(maxsize=1, ttl=60)
 def vn_now() -> datetime.datetime:
     utc_now = pytz.utc.localize(datetime.datetime.utcnow())
     pst_now = utc_now.astimezone(pytz.timezone("Asia/Ho_Chi_Minh"))

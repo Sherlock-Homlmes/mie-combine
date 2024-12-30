@@ -27,7 +27,7 @@ class UserAIChatHistory(Document):
     response: str
 
     @staticmethod
-    async def get_history(user_id: int, channel_id: int, limit=10):
+    async def get_history(user_id: int, channel_id: int, limit=20):
         model_histories = await UserAIChatHistory.find(
             {"created_by": user_id, "channel_id": channel_id}, limit=limit
         ).to_list()

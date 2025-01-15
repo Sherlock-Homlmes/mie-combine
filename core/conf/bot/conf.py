@@ -26,13 +26,19 @@ class Bot(commands.Bot):
             ConfessionEndButton,
             ConfessionPrivateReplyButton,
         )
+        from bot.security.bad_words_check import RemoveFalseBadWordButton
 
         if env.BOT_ONLY:
             await connect_db()
         await get_server_info()
 
         # persistent models
-        for model in [ConfessionCreateButton, ConfessionEndButton, ConfessionPrivateReplyButton]:
+        for model in [
+            ConfessionCreateButton,
+            ConfessionEndButton,
+            ConfessionPrivateReplyButton,
+            RemoveFalseBadWordButton,
+        ]:
             view = model(timeout=None)
             self.add_view(view)
 
@@ -80,6 +86,7 @@ class ServerInfo:
     study_count_channel: discord.TextChannel = None
     # security
     diary_channel: discord.TextChannel = None
+    admin_false_bad_word_log_channel: discord.TextChannel = None
     full_cam_channels: List[discord.VoiceChannel] = None
     cam_stream_channels: List[discord.VoiceChannel] = None
     # create voice channel

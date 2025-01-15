@@ -21,6 +21,8 @@ async def get_server_info():
     # server_info_data["confession_dropdown_id"] = 1280893469782708286
     # server_info_data["confession_channel_id"] = 1280890216504234067
     # server_info_data["manage_confession_channel_id"] = 1280891220838846544
+    # server_info_data["diary_channel_id"] = 1329116022057472021
+    # server_info_data["admin_false_bad_word_log_channel_id"] = 1329116331496439911
 
     # get guild
     server_info.guild = await bot.fetch_guild(guild_id)
@@ -38,6 +40,7 @@ async def get_server_info():
         "study_count_channel_id",
         # get security channels
         "diary_channel_id",
+        "admin_false_bad_word_log_channel_id",
         "full_cam_channel_ids",
         "cam_stream_channel_ids",
         # errands
@@ -52,6 +55,7 @@ async def get_server_info():
         online_mem_channel,
         study_count_channel,
         diary_channel,
+        admin_false_bad_word_log_channel,
         full_cam_channels,
         cam_stream_channels,
         welcome_channel,
@@ -76,6 +80,7 @@ async def get_server_info():
     server_info.study_count_channel = study_count_channel
     # security
     server_info.diary_channel = diary_channel
+    server_info.admin_false_bad_word_log_channel = admin_false_bad_word_log_channel
     server_info.full_cam_channels = full_cam_channels
     server_info.cam_stream_channels = cam_stream_channels
     # create voice channel

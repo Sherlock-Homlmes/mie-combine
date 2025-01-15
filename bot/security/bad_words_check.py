@@ -3,6 +3,7 @@ from datetime import timedelta
 
 #  lib
 import discord
+from discord import ui
 
 # local
 from core.conf.bot.conf import bot, server_info
@@ -123,6 +124,23 @@ seperate = [
 ]
 
 
+class RemoveFalseBadWordButton(ui.View):
+    @ui.button(label="Remove", custom_id="remove-bad-word")
+    async def select_callback(self, interaction, button):
+        await interaction.response.defer()
+        model = await BadUsers.find_one(
+            BadUsers.diary_message_id == interaction.message.id, fetch_links=True
+        )
+        if not model:
+            return
+        embed = discord.Embed(colour=discord.Colour.green())
+        embed.add_field(name="User", value=f"<@{model.user.discord_id}>", inline=True)
+        embed.add_field(name="Moderator", value=interaction.message.author.mention, inline=True)
+        embed.add_field(name="Content", value=model.bad_content, inline=True)
+        await server_info.admin_false_bad_word_log_channel.send(embed=embed)
+        await model.delete()
+
+
 def check_bad_words(content: str) -> bool:
     content = content.lower()
     content_words = content.split(" ")
@@ -172,7 +190,7 @@ async def punish(mem_id: int, message_content: str):
     mem_id = str(mem_id)
     await remove_exprired_bad_user(mem_id)
 
-    await BadUsers(
+    model = await BadUsers(
         user=await Users.find_one(Users.discord_id == mem_id),
         bad_content=message_content,
         created_at=Now().now,
@@ -212,47 +230,55 @@ async def punish(mem_id: int, message_content: str):
             hours = 0
             penalize = "BAN !!!"
 
-    return (form, hours, penalize, colour)
+    return (form, hours, penalize, colour, model)
 
 
 @bot.listen()
 async def on_message(message: discord.Message):
-    if message.author.id != bot.user.id and check_bad_words(message.content) is False:
-        try:
-            await message.delete()
-        except discord.errors.NotFound:
-            print("Bad word error: Not found message")
+    if message.author.bot:
+        return
+    if check_bad_words(message.content):
+        return
 
-        # process mute time
-        form, hours, penalize, colour = await punish(message.author.id, message.content)
-        reason = "Ngôn từ không phù hợp"
-        if form == BanFormEnum.BAN.value:
-            await message.author.ban(reason=reason)
-        elif form == BanFormEnum.MUTE.value:
-            unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
-            await message.author.timeout(unmuted_time, reason=reason)
-        elif form == BanFormEnum.WARN.value:
-            pass
+    try:
+        await message.delete()
+    except discord.errors.NotFound:
+        print("Bad word error: Not found message")
 
-        # send to channel
-        embed = discord.Embed(title=None, description=f"**Lý do:** {reason}", colour=colour)
-        embed.set_author(
-            name=f"[{form}] {message.author.name}#{message.author.discriminator}",
-            icon_url=message.author.avatar.url,
-        )
-        await message.channel.send(content=message.author.mention, embed=embed)
+    # process mute time
+    form, hours, penalize, colour, model = await punish(message.author.id, message.content)
+    reason = "Ngôn từ không phù hợp"
+    if form == BanFormEnum.BAN.value:
+        await message.author.ban(reason=reason)
+    elif form == BanFormEnum.MUTE.value:
+        unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
+        await message.author.timeout(unmuted_time, reason=reason)
+    elif form == BanFormEnum.WARN.value:
+        pass
 
-        # send to diary
-        embed = discord.Embed(colour=colour)
-        embed.set_author(
-            name=f"[{form}] {message.author.name}#{message.author.discriminator}",
-            icon_url=message.author.avatar.url,
-        )
-        embed.add_field(name="User", value=message.author.mention, inline=True)
-        embed.add_field(name="Moderator", value=bot.user.mention, inline=True)
-        embed.add_field(name="Reason", value=reason, inline=True)
-        embed.add_field(name="Channel", value=f"<#{message.channel.id}>", inline=False)
-        embed.add_field(name="Message", value=message.content, inline=False)
-        embed.add_field(name="Penalize", value=penalize, inline=False)
+    # send to channel
+    embed = discord.Embed(title=None, description=f"**Lý do:** {reason}", colour=colour)
+    embed.set_author(
+        name=f"[{form}] {message.author.name}#{message.author.discriminator}",
+        icon_url=message.author.avatar.url,
+    )
+    await message.channel.send(content=message.author.mention, embed=embed)
 
-        await server_info.diary_channel.send(embed=embed)
+    # send to diary
+    embed = discord.Embed(colour=colour)
+    embed.set_author(
+        name=f"[{form}] {message.author.name}#{message.author.discriminator}",
+        icon_url=message.author.avatar.url,
+    )
+    embed.add_field(name="User", value=message.author.mention, inline=True)
+    embed.add_field(name="Moderator", value=bot.user.mention, inline=True)
+    embed.add_field(name="Reason", value=reason, inline=True)
+    embed.add_field(name="Channel", value=f"<#{message.channel.id}>", inline=False)
+    embed.add_field(name="Message", value=message.content, inline=False)
+    embed.add_field(name="Penalize", value=penalize, inline=False)
+
+    diary_message = await server_info.diary_channel.send(
+        embed=embed, view=RemoveFalseBadWordButton()
+    )
+    model.diary_message_id = diary_message.id
+    await model.save()

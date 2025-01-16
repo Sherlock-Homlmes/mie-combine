@@ -354,3 +354,9 @@ async def fix_confession():
                 files=[],
             ).end_confession()
     print("fix confession done")
+
+
+@bot.listen()
+async def on_message_delete(message):
+    if message.channel.id == server_info.confession_channel.id:
+        await CloseConfessions.find_one(CloseConfessions.message_id == message.id).delete()

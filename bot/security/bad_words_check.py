@@ -139,6 +139,8 @@ class RemoveFalseBadWordButton(ui.View):
         embed.add_field(name="Content", value=model.bad_content, inline=True)
         await server_info.admin_false_bad_word_log_channel.send(embed=embed)
         await model.delete()
+        member = await server_info.guild.fetch_member(model.user.discord_id)
+        await member.edit(timed_out_until=None)
 
 
 def check_bad_words(content: str) -> bool:

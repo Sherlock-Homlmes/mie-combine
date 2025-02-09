@@ -64,6 +64,10 @@ async def static_channels():
     )
 
 
+def good_luck():
+    pass
+
+
 def discord_server_info():
     global total_member, online_member
     return {

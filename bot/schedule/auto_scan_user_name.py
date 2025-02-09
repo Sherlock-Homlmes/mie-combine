@@ -4,13 +4,14 @@ import asyncio
 # lib
 from discord.ext import tasks
 
+from bot.confession import check_bad_words
+
 # local
 from core.conf.bot.conf import server_info
-from bot.confession import check_bad_words
 
 
 @tasks.loop(hours=24)
-async def auto_scan_user_name():
+async def scan_user_name():
     warning_members = []
     async for member in server_info.guild.fetch_members():
         if not check_bad_words(member.name or "") or not check_bad_words(member.nick or ""):

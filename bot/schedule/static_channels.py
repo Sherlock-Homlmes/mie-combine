@@ -64,6 +64,7 @@ async def static_channels():
     )
 
 
+# TODO
 def good_luck():
     pass
 

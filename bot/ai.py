@@ -4,11 +4,11 @@ import google.generativeai as genai
 
 from core.conf.bot.conf import bot
 from core.env import env
+from core.models import Content, FileData, UserAIChatHistory
 from utils.image_handle import delete_image, save_image
-from core.models import UserAIChatHistory, Content, FileData
 
 genai.configure(api_key=env.GEMINI_AI_API_KEY)
-model_type = "gemini-1.5-flash"
+model_type = "gemini-2.0-flash-exp"
 model = genai.GenerativeModel(model_type)
 
 

@@ -1,11 +1,11 @@
+/// Bug:
+    - Update pyproject.toml file
 /// Feat:
-    - Image_handler save image to async
     - Create vc: When host up -> auto create vc
     - Errands:Welcome: delete message after up host
     - Guild event: user update
-    - AI
-        Answer base on user chat history
-        Answer base on context
+    - Add docker
+    - Image_handler save image to async
 
 /// Refactor:
     - better env for dev && isolate from production

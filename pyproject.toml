@@ -7,7 +7,7 @@ readme = "README.md"
 
 
 [tool.poetry.dependencies]
-python = "^3.10.6"
+python = "^3.10.10"
 discord = "^2.3.2"
 beanie = "^1.23.1"
 pytz = "^2023.3.post1"

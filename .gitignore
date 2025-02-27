@@ -24,3 +24,5 @@ data/
 tests.py
 store/
 database_access.py
+test.py
+assets/cache/*

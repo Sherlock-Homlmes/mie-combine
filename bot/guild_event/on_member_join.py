@@ -17,14 +17,18 @@ async def on_member_join(member: discord.Member):
         Set(
             {
                 Users.name: member.name,
+                Users.nick: member.nick,
                 Users.avatar: avatar,
+                Users.is_bot: member.bot,
                 Users.joined_at: member.joined_at,
             }
         ),
         on_insert=Users(
             discord_id=str(member.id),
             name=member.name,
+            nick=member.nick,
             avatar=avatar,
+            is_bot=member.bot,
             created_at=member.created_at,
             joined_at=member.joined_at,
         ),

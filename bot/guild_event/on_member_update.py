@@ -34,4 +34,3 @@ async def on_member_update(_: discord.Member, member_after: discord.Member):
             joined_at=member_after.joined_at,
         ),
     )
-    print(f"Update {member_after} info")

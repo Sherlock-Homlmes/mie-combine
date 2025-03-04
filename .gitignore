@@ -21,8 +21,6 @@ __pycache__/
 data/
 .ruff_cache/
 
-tests.py
 store/
 database_access.py
-test.py
-assets/cache/*
+assets/cache/

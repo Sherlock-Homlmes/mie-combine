@@ -23,4 +23,5 @@ data/
 
 store/
 database_access.py
-assets/cache/
+assets/cache/*
+!assets/cache/keep.py

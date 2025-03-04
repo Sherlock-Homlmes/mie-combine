@@ -74,7 +74,7 @@ data_infos = [
         "text_font_size": 70,
         "text_max_width": 650,
         "text_format_type": "CENTER",
-        "time_position": (1400, 1185),
+        "time_position": (1400, 1200),
         "time_font_size": 50,
     },
     {
@@ -84,7 +84,7 @@ data_infos = [
         "text_font_size": 70,
         "text_max_width": 650,
         "text_format_type": "CENTER",
-        "time_position": (700, 1185),
+        "time_position": (700, 1200),
         "time_font_size": 50,
     },
     {
@@ -94,7 +94,7 @@ data_infos = [
         "text_font_size": 70,
         "text_max_width": 650,
         "text_format_type": "CENTER",
-        "time_position": (2100, 1185),
+        "time_position": (2100, 1200),
         "time_font_size": 50,
     },
     # top 10
@@ -199,8 +199,8 @@ def leaderboard_image(leaderboard_data: dict):
     d = ImageDraw.Draw(final_img)
 
     fonts = {
-        50: ImageFont.truetype("./assets/Roboto-Medium.ttf", 50),
-        70: ImageFont.truetype("./assets/NotoSans.ttf", 70),
+        50: ImageFont.truetype("./assets/Roboto-Bold.ttf", 50),
+        70: ImageFont.truetype("./assets/Roboto-ExtraBold.ttf", 75),
         90: ImageFont.truetype("./assets/Roboto-ExtraBold.ttf", 90),
     }
 

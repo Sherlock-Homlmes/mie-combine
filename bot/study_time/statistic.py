@@ -1,6 +1,5 @@
 # default
 import asyncio
-from datetime import datetime, timedelta
 import math
 from typing import Optional
 
@@ -9,6 +8,7 @@ import discord
 from discord import app_commands
 import pymongo
 from PIL import Image, ImageDraw, ImageFont
+from pydantic import BaseModel
 
 # local
 from core.conf.bot.conf import bot
@@ -224,17 +224,12 @@ def leaderboard_image(leaderboard_data: dict):
     final_img.save("./assets/cache/test.png")
 
 
-@bot.tree.command(name="leaderboard", description="Bảng xếp hạng")
-@app_commands.describe(time_range="Khoảng thời gian")
-@app_commands.choices(
-    time_range=[
-        app_commands.Choice(name="All time", value=1),
-        app_commands.Choice(name="This month", value=2),
-    ]
-)
-async def leaderboard(interaction: discord.Interaction, time_range: app_commands.Choice[int]):
-    await interaction.response.defer()
+class LeaderboardInfo(BaseModel):
+    content: str
+    img_path: str
 
+
+async def generate_leaderboard_info(time_range: str) -> LeaderboardInfo:
     # Aggregation pipeline to calculate total study time per user for the current month
     pipeline = [
         {
@@ -247,21 +242,44 @@ async def leaderboard(interaction: discord.Interaction, time_range: app_commands
         {"$limit": 10},
     ]
 
-    content = None
-    if time_range == 1:
+    time_module = Now()
+    if time_range == "Tất cả":
+        content = "Leaderboard server Betterme"
         pass
-    elif time_range == 2:
-        now = Now().now
-        content = f"Leaderboard tháng {now.month}/{now.year}"
-        month_start = datetime(now.year, now.month, 1)
-        # TODO: fix this
-        month_end = month_start + timedelta(days=31)  # Assuming a 31-day month for simplicity
-        pipeline.append(
+    elif time_range == "Tháng này":
+        content = f"Leaderboard tháng {time_module.now.month}/{time_module.now.year}"
+        month_start = time_module.first_day_of_month()
+        month_end = time_module.last_day_of_month()
+        pipeline.insert(
+            0,
             {
                 "$match": {
-                    "date": {"$gte": month_start, "$lt": month_end},
+                    "date": {"$gte": month_start, "$lte": month_end},
                 }
-            }
+            },
+        )
+    elif time_range == "Tuần này":
+        week_start = time_module.first_day_of_week()
+        week_end = time_module.last_day_of_week()
+        content = "Leaderboard tuần này"
+        pipeline.insert(
+            0,
+            {
+                "$match": {
+                    "date": {"$gte": week_start, "$lte": week_end},
+                }
+            },
+        )
+    elif time_range == "Hôm nay":
+        content = "Leaderboard hôm nay"
+        today = time_module.today
+        pipeline.insert(
+            0,
+            {
+                "$match": {
+                    "date": {"$eq": today},
+                }
+            },
         )
 
     results = await UserDailyStudyTimes.aggregate(pipeline).to_list()
@@ -269,7 +287,12 @@ async def leaderboard(interaction: discord.Interaction, time_range: app_commands
         *[Users.find_one({Users.discord_id: str(result["_id"])}) for result in results]
     )
     users_avatar = await asyncio.gather(
-        *[save_image(user.avatar, f"./assets/cache/{user.discord_id}.png") for user in users]
+        *[
+            save_image(
+                user.avatar, target_path=f"./assets/cache/{user.discord_id}.png", use_cache=True
+            )
+            for user in users
+        ]
     )
 
     for idx, result in enumerate(results):
@@ -307,5 +330,21 @@ async def leaderboard(interaction: discord.Interaction, time_range: app_commands
         result["time"] = total_study_time
     leaderboard_image(results)
 
-    with open("./assets/cache/test.png", "rb") as f:
-        await interaction.followup.send(content=content, file=discord.File(f))
+    return LeaderboardInfo(content=content, img_path="./assets/cache/test.png")
+
+
+@bot.tree.command(name="leaderboard", description="Bảng xếp hạng thời gian học")
+@app_commands.describe(time_range="Khoảng thời gian")
+@app_commands.choices(
+    time_range=[
+        app_commands.Choice(name="Tất cả", value=1),
+        app_commands.Choice(name="Tháng này", value=2),
+        app_commands.Choice(name="Tuần này", value=3),
+        app_commands.Choice(name="Hôm nay", value=4),
+    ]
+)
+async def leaderboard(interaction: discord.Interaction, time_range: app_commands.Choice[int]):
+    await interaction.response.defer()
+    leaderboard_info = await generate_leaderboard_info(time_range.name)
+    with open(leaderboard_info.img_path, "rb") as f:
+        await interaction.followup.send(content=leaderboard_info.content, file=discord.File(f))

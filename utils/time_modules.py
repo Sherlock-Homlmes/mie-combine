@@ -32,3 +32,40 @@ class Now:
     def some_day_after(self, days: int) -> datetime.datetime:
         that_day = self.now + datetime.timedelta(days=days)
         return datetime.datetime(that_day.year, that_day.month, that_day.day)
+
+    def first_day_of_month(self) -> datetime.datetime:
+        """
+        The first day of current month.
+        """
+        return datetime.datetime(self.now.year, self.now.month, 1)
+
+    def last_day_of_month(self) -> datetime.datetime:
+        """
+        The last day of current month.
+        """
+        if self.now.month == 12:
+            next_month = 1
+            next_year = self.now.year + 1
+        else:
+            next_month = self.now.month + 1
+            next_year = self.now.year
+
+        first_day_next_month = datetime.datetime(next_year, next_month, 1)
+        return first_day_next_month - datetime.timedelta(days=1)
+
+    def first_day_of_week(self):
+        """
+        The first day of current week (Monday).
+        """
+        weekday = self.today.weekday()  # Monday is 0, Sunday is 6
+        days_to_subtract = weekday  # Subtract 'weekday' days to get to Monday
+        first_day = self.today - datetime.timedelta(days=days_to_subtract)
+        return first_day
+
+    def last_day_of_week(self):
+        """
+        The last day of current week (Sunday).
+        """
+        first_day = self.first_day_of_week()  # Get the Monday of the week
+        last_day = first_day + datetime.timedelta(days=6)  # Add 6 days to get to Sunday
+        return last_day

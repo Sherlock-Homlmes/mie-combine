@@ -1,11 +1,17 @@
 /// Bug:
     - Update pyproject.toml file
 /// Feat:
+    - Role study time:
+        auto reset role monthly
+    - Schedule event leaderboard
+    - Leaderboard current position
+    - Change module to cog
+    - Better error handler
+    - Use poetry in hosting
     - Create vc: When host up -> auto create vc
     - Errands:Welcome: delete message after up host
     - Guild event: user update
     - Add docker
-    - Image_handler save image to async
 
 /// Refactor:
     - better env for dev && isolate from production

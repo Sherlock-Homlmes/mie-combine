@@ -65,14 +65,42 @@ class Bot(commands.Bot):
 
 
 @dataclass
+class ServerRoleIds:
+    admin: int = None
+    feature_bot: int = None
+
+    iron: int = None
+    bronze: int = None
+    silver: int = None
+    gold: int = None
+    diamond: int = None
+    master: int = None
+    challenger: int = None
+
+
+@dataclass
+class ServerRoles:
+    every_one_role: discord.Role = None
+
+    iron: discord.Role = None
+    bronze: discord.Role = None
+    silver: discord.Role = None
+    gold: discord.Role = None
+    diamond: discord.Role = None
+    master: discord.Role = None
+    challenger: discord.Role = None
+
+
+# TODO: change to cluster role_id, role, channel, channel_id
+@dataclass
 class ServerInfo:
     # guild
     guild: discord.Guild = None
-    # role
-    every_one_role: discord.Role = None
     # role_id
-    admin_role_id: int = None
-    feature_bot_role_id: int = None
+    role_ids = ServerRoleIds()
+    # role
+    roles = ServerRoles()
+    every_one_role: discord.Role = None
     # confession
     confession_dropdown_id: int = None
     confession_channel: discord.TextChannel = None

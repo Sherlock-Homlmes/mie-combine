@@ -7,6 +7,7 @@ import pymongo
 # lib
 from beanie import Document, Indexed
 from pydantic import validator
+from cache import AsyncTTL
 
 # local
 from api.schemas import UserStatsGetResponse, DataUserDailyStudyTime
@@ -43,15 +44,21 @@ class UserDailyStudyTimes(Document):
         return value
 
     @staticmethod
+    @AsyncTTL(time_to_live=60)
     async def get_user_study_time_stats(
         user_discord_id: int,
         from_date: Optional[datetime.datetime] = None,
         to_date: Optional[datetime.datetime] = None,
-    ):
+    ) -> UserStatsGetResponse:
+        queries = {"user_discord_id": user_discord_id}
+        date_queries = {}
+        if from_date:
+            date_queries["$gte"] = from_date
+        if to_date:
+            date_queries["$lte"] = to_date
+        queries["date"] = date_queries
         user_daily_study_time = (
-            await UserDailyStudyTimes.find(UserDailyStudyTimes.user_discord_id == user_discord_id)
-            .project(DataUserDailyStudyTime)
-            .to_list()
+            await UserDailyStudyTimes.find(queries).project(DataUserDailyStudyTime).to_list()
         )
         total_time = sum([sum(x.study_time) for x in user_daily_study_time])
         if not total_time:

@@ -137,7 +137,7 @@ async def on_voice_state_update(
                     # create
                     vc_name = f"#{rewrite_create_voice_channel_name(member.name)}'s room"
 
-                    feature_bot_role = server_info.guild.get_role(server_info.feature_bot_role_id)
+                    feature_bot_role = server_info.guild.get_role(server_info.role_ids.feature_bot)
                     vc_channel: discord.VoiceChannel
                     vc_channel = await voice_channel_after.category.create_voice_channel(
                         name=vc_name,
@@ -285,7 +285,7 @@ async def room_permission(
 
 
 @bot.tree.command(name="clean", description="room clear")
-@has_role(server_info.admin_role_id)
+@has_role(server_info.role_ids.admin)
 async def clean(interaction: Interaction):
     await fix_room()
     await interaction.response.send_message("Fix done")

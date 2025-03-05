@@ -26,7 +26,7 @@ async def get_server_info():
 
     # get guild
     server_info.guild = await bot.fetch_guild(guild_id)
-    server_info.every_one_role = server_info.guild.get_role(server_info.guild.id)
+    server_info.roles.every_one_role = server_info.guild.get_role(server_info.guild.id)
 
     channels = [
         # get confession channels
@@ -64,9 +64,9 @@ async def get_server_info():
     )
     # set value
 
-    # role
-    server_info.admin_role_id = server_info_data["admin_role_id"]
-    server_info.feature_bot_role_id = server_info_data["feature_bot_role_id"]
+    # role id
+    server_info.role_ids.admin = server_info_data["admin_role_id"]
+    server_info.role_ids.feature_bot = server_info_data["feature_bot_role_id"]
 
     # confession
     server_info.confession_channel = confession_channel
@@ -91,3 +91,22 @@ async def get_server_info():
     server_info.game_roles = server_info_data["game_roles"]
     server_info.welcome_channel = welcome_channel
     server_info.game_center_interaction_id = server_info_data["game_center_interaction_id"]
+
+    # monthly role
+
+    # TODO: add this to errand data
+    server_info.role_ids.iron = 1346834532606672948
+    server_info.role_ids.bronze = 1346835956669349910
+    server_info.role_ids.silver = 1346834833296457798
+    server_info.role_ids.gold = 1346834974908612700
+    server_info.role_ids.diamond = 1346835233257029755
+    server_info.role_ids.master = 1346835472982478890
+    server_info.role_ids.challenger = 1346835593040232592
+
+    server_info.roles.iron = server_info.guild.get_role(server_info.role_ids.iron)
+    server_info.roles.bronze = server_info.guild.get_role(server_info.role_ids.bronze)
+    server_info.roles.silver = server_info.guild.get_role(server_info.role_ids.silver)
+    server_info.roles.gold = server_info.guild.get_role(server_info.role_ids.gold)
+    server_info.roles.diamond = server_info.guild.get_role(server_info.role_ids.diamond)
+    server_info.roles.master = server_info.guild.get_role(server_info.role_ids.master)
+    server_info.roles.challenger = server_info.guild.get_role(server_info.role_ids.challenger)

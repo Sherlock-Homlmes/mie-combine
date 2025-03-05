@@ -2,6 +2,7 @@
 import asyncio
 import math
 from typing import Optional
+import random
 
 # lib
 import discord
@@ -9,6 +10,7 @@ from discord import app_commands
 import pymongo
 from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel
+from cache import AsyncTTL
 
 # local
 from core.conf.bot.conf import bot
@@ -193,7 +195,7 @@ def calculate_position(
     return (center_x_position - text_width / 2, y_position)
 
 
-def leaderboard_image(leaderboard_data: dict):
+def generate_leaderboard_image(leaderboard_data: dict, img_path: Optional[str] = None) -> str:
     foreground_img = Image.open("./assets/top_leaderboard.png")
     final_img = Image.new("RGBA", foreground_img.size)
     d = ImageDraw.Draw(final_img)
@@ -221,7 +223,11 @@ def leaderboard_image(leaderboard_data: dict):
         time_font = fonts[data_infos[idx]["time_font_size"]]
         d.text(text_pos, text, font=user_name_font, fill=user_name_color)
         d.text(time_pos, time_text, font=time_font, fill=(255, 255, 255))
-    final_img.save("./assets/cache/test.png")
+
+    if img_path is None:
+        img_path = f"./assets/cache/{random.randint(1, 1000000)}"
+    final_img.save(img_path)
+    return img_path
 
 
 class LeaderboardInfo(BaseModel):
@@ -229,7 +235,10 @@ class LeaderboardInfo(BaseModel):
     img_path: str
 
 
-async def generate_leaderboard_info(time_range: str) -> LeaderboardInfo:
+@AsyncTTL(time_to_live=60)
+async def generate_leaderboard_info(
+    time_range: str, member_id: Optional[int] = None
+) -> LeaderboardInfo:
     # Aggregation pipeline to calculate total study time per user for the current month
     pipeline = [
         {
@@ -245,11 +254,13 @@ async def generate_leaderboard_info(time_range: str) -> LeaderboardInfo:
     time_module = Now()
     if time_range == "Tất cả":
         content = "Leaderboard server Betterme"
+        img_name = "top-all.png"
         pass
     elif time_range == "Tháng này":
         content = f"Leaderboard tháng {time_module.now.month}/{time_module.now.year}"
         month_start = time_module.first_day_of_month()
         month_end = time_module.last_day_of_month()
+        img_name = "top-month.png"
         pipeline.insert(
             0,
             {
@@ -262,6 +273,7 @@ async def generate_leaderboard_info(time_range: str) -> LeaderboardInfo:
         week_start = time_module.first_day_of_week()
         week_end = time_module.last_day_of_week()
         content = "Leaderboard tuần này"
+        img_name = "top-week.png"
         pipeline.insert(
             0,
             {
@@ -273,6 +285,7 @@ async def generate_leaderboard_info(time_range: str) -> LeaderboardInfo:
     elif time_range == "Hôm nay":
         content = "Leaderboard hôm nay"
         today = time_module.today
+        img_name = "top-today.png"
         pipeline.insert(
             0,
             {
@@ -328,9 +341,11 @@ async def generate_leaderboard_info(time_range: str) -> LeaderboardInfo:
             data_info["time_font_size"],
         )
         result["time"] = total_study_time
-    leaderboard_image(results)
 
-    return LeaderboardInfo(content=content, img_path="./assets/cache/test.png")
+    img_path = f"./assets/cache/{img_name}"
+    generate_leaderboard_image(results, img_path)
+
+    return LeaderboardInfo(content=content, img_path=img_path)
 
 
 @bot.tree.command(name="leaderboard", description="Bảng xếp hạng thời gian học")

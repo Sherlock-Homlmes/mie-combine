@@ -178,6 +178,17 @@ test = ["anyio[trio]", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "mock (>=
 trio = ["trio (<0.22)"]
 
 [[package]]
+name = "async-cache"
+version = "1.1.1"
+description = "An asyncio Cache"
+optional = false
+python-versions = ">=3.3"
+groups = ["main"]
+files = [
+    {file = "async-cache-1.1.1.tar.gz", hash = "sha256:81aa9ccd19fb06784aaf30bd5f2043dc0a23fc3e998b93d0c2c17d1af9803393"},
+]
+
+[[package]]
 name = "async-timeout"
 version = "5.0.1"
 description = "Timeout context manager for asyncio programs"
@@ -1458,4 +1469,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10.10"
-content-hash = "69eb90c1f1a9abf2bc9a2ab8ef75954dd85cfaa2e8718aae7ccfd36d8e3ef5ab"
+content-hash = "86897066d2bd9d6c106de1a76180d8fc38fc2f45e9e9b4c395b6e32de95bc197"

@@ -69,3 +69,9 @@ class Now:
         first_day = self.first_day_of_week()  # Get the Monday of the week
         last_day = first_day + datetime.timedelta(days=6)  # Add 6 days to get to Sunday
         return last_day
+
+    def first_day_of_next_month(self) -> datetime.datetime:
+        """
+        The first day of next month.
+        """
+        return self.last_day_of_month() + datetime.timedelta(days=1)

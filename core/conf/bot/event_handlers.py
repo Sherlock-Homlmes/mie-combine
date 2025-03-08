@@ -110,3 +110,5 @@ async def get_server_info():
     server_info.roles.diamond = server_info.guild.get_role(server_info.role_ids.diamond)
     server_info.roles.master = server_info.guild.get_role(server_info.role_ids.master)
     server_info.roles.challenger = server_info.guild.get_role(server_info.role_ids.challenger)
+
+    server_info.channels.leaderboard = await get_channel(server_info.guild, 1347781344817578045)

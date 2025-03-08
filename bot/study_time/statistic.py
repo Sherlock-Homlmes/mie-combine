@@ -1,7 +1,7 @@
 # default
 import asyncio
 import math
-from typing import Optional
+from typing import Optional, List
 import random
 
 # lib
@@ -233,6 +233,7 @@ def generate_leaderboard_image(leaderboard_data: dict, img_path: Optional[str] =
 class LeaderboardInfo(BaseModel):
     content: str
     img_path: str
+    member_ids: List[int]
 
 
 @AsyncTTL(time_to_live=60)
@@ -345,7 +346,9 @@ async def generate_leaderboard_info(
     img_path = f"./assets/cache/{img_name}"
     generate_leaderboard_image(results, img_path)
 
-    return LeaderboardInfo(content=content, img_path=img_path)
+    return LeaderboardInfo(
+        content=content, img_path=img_path, member_ids=[user.discord_id for user in users]
+    )
 
 
 @bot.tree.command(name="leaderboard", description="Bảng xếp hạng thời gian học")

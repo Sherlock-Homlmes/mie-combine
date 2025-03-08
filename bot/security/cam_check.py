@@ -78,7 +78,7 @@ class CheckCamEmbedMessage:
 
 check_cam_member_ids = []
 sleep_time = [30, 50]
-cam_channel_names = ["full cam", "full 🍊"]
+cam_channel_names = ["full cam", "full 🍊", "desk cam"]
 cam_stream_channel_names = ["cam/stream", "cam or stream", "🍊/💻", "🍊 or 💻"]
 
 

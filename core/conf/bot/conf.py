@@ -91,6 +91,11 @@ class ServerRoles:
     challenger: discord.Role = None
 
 
+@dataclass
+class ServerChannels:
+    leaderboard: discord.TextChannel = None
+
+
 # TODO: change to cluster role_id, role, channel, channel_id
 @dataclass
 class ServerInfo:
@@ -101,6 +106,8 @@ class ServerInfo:
     # role
     roles = ServerRoles()
     every_one_role: discord.Role = None
+    # channel
+    channels = ServerChannels()
     # confession
     confession_dropdown_id: int = None
     confession_channel: discord.TextChannel = None

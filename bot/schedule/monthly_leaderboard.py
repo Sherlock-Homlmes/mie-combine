@@ -65,6 +65,6 @@ async def before_leaderboard_monthly():
 async def before_auto_reset_role_monthly():
     time_module = Now()
     now = time_module.now
-    first_day_of_next_month = time_module.first_day_of_next_month() - datetime.timedelta(minutes=30)
+    first_day_of_next_month = time_module.first_day_of_next_month()
     delta = (first_day_of_next_month - now).total_seconds()
     await asyncio.sleep(delta)

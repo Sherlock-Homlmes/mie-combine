@@ -3,6 +3,7 @@ import asyncio
 import math
 from typing import Optional, List
 import random
+import copy
 
 # lib
 import discord
@@ -67,7 +68,7 @@ async def daily(interaction: discord.Interaction):
     await interaction.response.send_message(content)
 
 
-data_infos = [
+data_format_infos_top = [
     # top 3
     {
         "img_position": (1162, 497),
@@ -172,6 +173,19 @@ data_infos = [
     },
 ]
 
+data_format_info = {
+    "img_position": [115, 725],
+    "img_size": 188,
+    "idx_text_position": [440, 784],
+    "idx_text_font_size": 70,
+    "text_position": [718, 784],
+    "text_font_size": 70,
+    "text_max_width": None,
+    "text_format_type": None,
+    "time_position": [2200, 784],
+    "time_font_size": 70,
+}
+
 
 def convert_text(text: str, text_font: int, max_width: Optional[int] = None) -> tuple[int, int]:
     if not max_width:
@@ -195,8 +209,16 @@ def calculate_position(
     return (center_x_position - text_width / 2, y_position)
 
 
-def generate_leaderboard_image(leaderboard_data: dict, img_path: Optional[str] = None) -> str:
-    foreground_img = Image.open("./assets/top_leaderboard.png")
+def generate_leaderboard_image(
+    leaderboard_data: dict,
+    start_idx: int,
+    target_idx: Optional[int] = None,
+    img_path: Optional[str] = None,
+) -> str:
+    is_top = start_idx == 0
+    foreground_img = Image.open(
+        "./assets/top_leaderboard.png" if is_top else "./assets/leaderboard.png"
+    )
     final_img = Image.new("RGBA", foreground_img.size)
     d = ImageDraw.Draw(final_img)
 
@@ -214,15 +236,28 @@ def generate_leaderboard_image(leaderboard_data: dict, img_path: Optional[str] =
         final_img.paste(user_avatar, img_pos)
     final_img.paste(foreground_img, (0, 0), foreground_img)
     for idx, data in enumerate(leaderboard_data):
+        # TODO: do this
+        # if not is_top and target_idx - start_idx == idx:
+        #     print(target_idx, start_idx, target_idx - start_idx, idx)
+        #     target_row =  Image.open("./assets/target_row.png")
+        #     img_pos = data["img_position"]
+        #     final_img.paste(target_row, (img_pos[0]+60, img_pos[1]+10))
         text_pos = data["text_position"]
         text = data["text"]
         time_pos = data["time_position"]
         time_text = data["time"]
-        user_name_font = fonts[data_infos[idx]["text_font_size"]]
-        user_name_color = (255, 255, 255) if idx > 2 else (224, 174, 51)
-        time_font = fonts[data_infos[idx]["time_font_size"]]
+        user_name_font = fonts[data["text_font_size"]]
+        user_name_color = (255, 255, 255) if not is_top or idx > 2 else (224, 174, 51)
+        time_font = fonts[data["time_font_size"]]
         d.text(text_pos, text, font=user_name_font, fill=user_name_color)
         d.text(time_pos, time_text, font=time_font, fill=(255, 255, 255))
+        if data.get("idx_text"):
+            d.text(
+                data["idx_text_position"],
+                data["idx_text"],
+                font=fonts[data["idx_text_font_size"]],
+                fill=(255, 255, 255),
+            )
 
     if img_path is None:
         img_path = f"./assets/cache/{random.randint(1, 1000000)}"
@@ -249,19 +284,19 @@ async def generate_leaderboard_info(
             }
         },
         {"$sort": {"total_study_time": pymongo.DESCENDING}},
-        {"$limit": 10},
     ]
+    if not member_id:
+        pipeline.append({"$limit": 10})
 
     time_module = Now()
     if time_range == "Tất cả":
         content = "Leaderboard server Betterme"
-        img_name = "top-all.png"
-        pass
+        img_name = "all.png"
     elif time_range == "Tháng này":
         content = f"Leaderboard tháng {time_module.now.month}/{time_module.now.year}"
         month_start = time_module.first_day_of_month()
         month_end = time_module.last_day_of_month()
-        img_name = "top-month.png"
+        img_name = "month.png"
         pipeline.insert(
             0,
             {
@@ -274,7 +309,7 @@ async def generate_leaderboard_info(
         week_start = time_module.first_day_of_week()
         week_end = time_module.last_day_of_week()
         content = "Leaderboard tuần này"
-        img_name = "top-week.png"
+        img_name = "week.png"
         pipeline.insert(
             0,
             {
@@ -286,7 +321,7 @@ async def generate_leaderboard_info(
     elif time_range == "Hôm nay":
         content = "Leaderboard hôm nay"
         today = time_module.today
-        img_name = "top-today.png"
+        img_name = "today.png"
         pipeline.insert(
             0,
             {
@@ -297,6 +332,23 @@ async def generate_leaderboard_info(
         )
 
     results = await UserDailyStudyTimes.aggregate(pipeline).to_list()
+    target_idx = None
+    start_idx = None
+    if member_id:
+        try:
+            target_idx = next(
+                i for i, item in enumerate(results) if item["_id"] == 880359404036317215
+            )
+        except StopIteration:
+            # TODO: fix this exception
+            raise ValueError()
+        start_idx = target_idx // 10 * 10
+        end_idx = min([len(results) - 1, start_idx + 10])
+        results = results[start_idx:end_idx]
+        img_name = f"page-{start_idx//10+1}-" + img_name
+    else:
+        img_name = "page-1-" + img_name
+
     users = await asyncio.gather(
         *[Users.find_one({Users.discord_id: str(result["_id"])}) for result in results]
     )
@@ -310,7 +362,14 @@ async def generate_leaderboard_info(
     )
 
     for idx, result in enumerate(results):
-        data_info = data_infos[idx]
+        if start_idx == 0:
+            data_info = data_format_infos_top[idx]
+        else:
+            data_info = copy.deepcopy(data_format_info)
+            data_info["img_position"][1] += 213 * idx
+            data_info["idx_text_position"][1] += 213 * idx
+            data_info["text_position"][1] += 213 * idx
+            data_info["time_position"][1] += 213 * idx
 
         total_time_hour = result["total_study_time"] // 60
         total_time_min = result["total_study_time"] % 60
@@ -334,6 +393,11 @@ async def generate_leaderboard_info(
         else:
             result["text_position"] = data_info["text_position"]
             result["text"] = users[idx].nick if users[idx].nick else users[idx].name
+        result["text_font_size"] = data_info["text_font_size"]
+
+        result["idx_text_position"] = data_info["idx_text_position"]
+        result["idx_text"] = str(start_idx + idx + 1)
+        result["idx_text_font_size"] = data_info["idx_text_font_size"]
 
         result["time_position"] = calculate_position(
             data_info["time_position"][0],
@@ -342,9 +406,12 @@ async def generate_leaderboard_info(
             data_info["time_font_size"],
         )
         result["time"] = total_study_time
+        result["time_font_size"] = data_info["time_font_size"]
 
     img_path = f"./assets/cache/{img_name}"
-    generate_leaderboard_image(results, img_path)
+    generate_leaderboard_image(
+        leaderboard_data=results, start_idx=start_idx, target_idx=target_idx, img_path=img_path
+    )
 
     return LeaderboardInfo(
         content=content, img_path=img_path, member_ids=[user.discord_id for user in users]
@@ -363,6 +430,12 @@ async def generate_leaderboard_info(
 )
 async def leaderboard(interaction: discord.Interaction, time_range: app_commands.Choice[int]):
     await interaction.response.defer()
-    leaderboard_info = await generate_leaderboard_info(time_range.name)
-    with open(leaderboard_info.img_path, "rb") as f:
-        await interaction.followup.send(content=leaderboard_info.content, file=discord.File(f))
+    # BUG: last one in list
+    try:
+        leaderboard_info = await generate_leaderboard_info(
+            time_range.name, member_id=interaction.user.id
+        )
+        with open(leaderboard_info.img_path, "rb") as f:
+            await interaction.followup.send(content=leaderboard_info.content, file=discord.File(f))
+    except ValueError:
+        await interaction.followup.send(content="Bạn chưa học trong khoảng thời gian này")

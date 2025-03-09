@@ -56,7 +56,8 @@ class UserDailyStudyTimes(Document):
             date_queries["$gte"] = from_date
         if to_date:
             date_queries["$lte"] = to_date
-        queries["date"] = date_queries
+        if len(date_queries.keys()):
+            queries["date"] = date_queries
         user_daily_study_time = (
             await UserDailyStudyTimes.find(queries).project(DataUserDailyStudyTime).to_list()
         )

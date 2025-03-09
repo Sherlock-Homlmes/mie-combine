@@ -7,7 +7,7 @@ import discord
 from discord.ext import tasks
 
 # local
-from core.conf.bot.conf import bot, server_info, guild_id
+from core.conf.bot.conf import bot, server_info
 from utils.time_modules import Now
 from bot.study_time.statistic import generate_leaderboard_info
 
@@ -34,7 +34,6 @@ async def leaderboard_monthly():
 
 @tasks.loop(hours=720)
 async def auto_reset_role_monthly():
-    guild = bot.get_guild(guild_id)
     all_role_ids = [
         server_info.role_ids.challenger,
         server_info.role_ids.master,
@@ -45,7 +44,7 @@ async def auto_reset_role_monthly():
         server_info.role_ids.iron,
     ]
     for role_id in all_role_ids:
-        role = guild.get_role(role_id)
+        role = server_info.guild.get_role(role_id)
         for member in role.members:
             if member.id == 880359404036317215:
                 await member.remove_roles(role)

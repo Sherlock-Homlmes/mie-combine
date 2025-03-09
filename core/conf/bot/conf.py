@@ -69,6 +69,8 @@ class ServerRoleIds:
     admin: int = None
     feature_bot: int = None
 
+    positive_student: int = None
+
     iron: int = None
     bronze: int = None
     silver: int = None
@@ -81,6 +83,8 @@ class ServerRoleIds:
 @dataclass
 class ServerRoles:
     every_one_role: discord.Role = None
+
+    positive_student: discord.Role = None
 
     iron: discord.Role = None
     bronze: discord.Role = None
@@ -122,8 +126,6 @@ class ServerInfo:
     # security
     diary_channel: discord.TextChannel = None
     admin_false_bad_word_log_channel: discord.TextChannel = None
-    full_cam_channels: List[discord.VoiceChannel] = None
-    cam_stream_channels: List[discord.VoiceChannel] = None
     # create voice channel
     channel_cre: Dict = None
     # errands

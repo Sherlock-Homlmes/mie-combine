@@ -14,7 +14,7 @@ from api.schemas import UserStatsGetResponse, DataUserDailyStudyTime
 
 
 class UserDailyStudyTimes(Document):
-    user_discord_id: int
+    user_discord_id: Indexed(int, index_type=pymongo.DESCENDING)
     """
         Study time type = List[time: int] (24 elements)
     """
@@ -23,6 +23,12 @@ class UserDailyStudyTimes(Document):
 
     class Settings:
         validate_on_save = True
+        indexes = [
+            [
+                ("user_discord_id", pymongo.DESCENDING),
+                ("date", pymongo.DESCENDING),
+            ],
+        ]
 
     @validator("study_time")
     def studytime_must_lt_60_and_gt_0(cls, value):

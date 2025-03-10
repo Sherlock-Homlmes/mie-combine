@@ -72,7 +72,7 @@ async def on_voice_state_update(
         # Add positive student role
         if server_info.role_ids.positive_student not in member_role_ids:
             user_study_stats = await UserDailyStudyTimes.get_user_study_time_stats(member.id)
-            if user_study_stats.total >= 200:
+            if user_study_stats.total >= 200 * 60:
                 embed = discord.Embed(
                     title="**Chúc mừng**",
                     description="Bạn đã học hơn 200h và đạt được danh hiệu học sinh tích cực. Giờ đây bạn có thể đổi màu tên của bạn bất kì lúc nào bạn muốn bằng lệnh `/color`",

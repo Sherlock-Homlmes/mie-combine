@@ -337,7 +337,7 @@ async def generate_leaderboard_info(
     if member_id:
         try:
             target_idx = next(
-                i for i, item in enumerate(results) if item["_id"] == 880359404036317215
+                i for i, item in enumerate(results) if item["_id"] == member_id
             )
         except StopIteration:
             # TODO: fix this exception

@@ -394,10 +394,11 @@ async def generate_leaderboard_info(
             result["text_position"] = data_info["text_position"]
             result["text"] = users[idx].nick if users[idx].nick else users[idx].name
         result["text_font_size"] = data_info["text_font_size"]
-
-        result["idx_text_position"] = data_info["idx_text_position"]
-        result["idx_text"] = str(start_idx + idx + 1)
-        result["idx_text_font_size"] = data_info["idx_text_font_size"]
+        
+        if data_info.get("idx_text"):
+            result["idx_text_position"] = data_info["idx_text_position"]
+            result["idx_text"] = str(start_idx + idx + 1)
+            result["idx_text_font_size"] = data_info["idx_text_font_size"]
 
         result["time_position"] = calculate_position(
             data_info["time_position"][0],

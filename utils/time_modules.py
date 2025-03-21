@@ -1,5 +1,6 @@
 import datetime
 import pytz
+from typing import Optional
 from cachetools.func import ttl_cache
 
 
@@ -75,3 +76,21 @@ class Now:
         The first day of next month.
         """
         return self.last_day_of_month() + datetime.timedelta(days=1)
+
+
+def generate_date_strings(
+    start_date: datetime.datetime, end_date: datetime.datetime, format_type: Optional[str] = "%d/%m"
+) -> datetime.datetime:
+    """
+    Generate a list of string from date to date with custom format
+    """
+    date_strings = []
+    current_dt = start_date
+
+    if start_date > end_date:
+        raise ValueError("Start date cannot be after end date.")
+
+    while current_dt <= end_date:
+        date_strings.append(current_dt.strftime(format_type))
+        current_dt += datetime.timedelta(days=1)
+    return date_strings

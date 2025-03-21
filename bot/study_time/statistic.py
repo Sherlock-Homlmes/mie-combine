@@ -4,6 +4,8 @@ import math
 from typing import Optional, List
 import random
 import copy
+import json
+from urllib.parse import urlencode
 
 # lib
 import discord
@@ -12,11 +14,12 @@ import pymongo
 from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel
 from cache import AsyncTTL
+from quickchart import QuickChart
 
 # local
 from core.conf.bot.conf import bot
 from core.models import UserDailyStudyTimes, Users
-from utils.time_modules import Now
+from utils.time_modules import Now, generate_date_strings
 from utils.image_handle import save_image
 
 
@@ -38,34 +41,171 @@ async def member_study_time(interaction: discord.Interaction, member: discord.Me
     await interaction.response.send_message(content)
 
 
-@bot.tree.command(name="study_time", description="Xem tổng thời gian học")
-async def study_time(interaction: discord.Interaction):
-    user_daily_study_time = await UserDailyStudyTimes.find(
-        UserDailyStudyTimes.user_discord_id == interaction.user.id
-    ).to_list()
-    total_time = sum([sum(x.study_time) for x in user_daily_study_time])
-    if not total_time:
-        total_time = 0
-    if total_time:
-        content = f"Tổng thời gian học: {total_time//60}h {total_time%60}'"
-    else:
-        content = "Bạn chưa học trong BetterMe"
-    await interaction.response.send_message(content)
-
-
-@bot.tree.command(name="daily", description="Xem thời gian học hôm nay")
-async def daily(interaction: discord.Interaction):
-    total_time = await UserDailyStudyTimes.find_one(
-        UserDailyStudyTimes.user_discord_id == interaction.user.id,
-        UserDailyStudyTimes.date == Now().today,
+async def generate_member_study_time_image(
+    member_id: int, time_range: Optional[str] = "Tất cả"
+) -> str:
+    time_module = Now()
+    sub_labels = []
+    time_range_date_map = {
+        "Tất cả": {
+            "start_date": None,
+            "end_date": None,
+        },
+        "Tháng này": {
+            "start_date": time_module.first_day_of_month(),
+            "end_date": time_module.last_day_of_month(),
+        },
+        "Tuần này": {
+            "start_date": time_module.first_day_of_week(),
+            "end_date": time_module.last_day_of_week(),
+        },
+        "Hôm nay": {
+            "start_date": time_module.today,
+            "end_date": time_module.today,
+        },
+    }
+    start_date = time_range_date_map[time_range]["start_date"]
+    end_date = time_range_date_map[time_range]["end_date"]
+    study_time_stats = await UserDailyStudyTimes.get_user_study_time_stats(
+        member_id, start_date, end_date
     )
-    if total_time:
-        content = f"Thời gian học hôm nay: {total_time.study_time}"
-    else:
-        total_time = [0] * 24
-        content = "Bạn chưa học hôm nay"
+    if study_time_stats.total == 0:
+        raise ValueError("No data")
+    chart_legend_label = (
+        f"Tổng thời gian: {study_time_stats.total//60} giờ {study_time_stats.total%60} phút"
+    )
 
-    await interaction.response.send_message(content)
+    sub_labels = []
+    data = [23, 0, 3, 5, 16, 2, 21]
+    max_value = 24
+    file_path = "./assets/cache/"
+    if time_range == "Tất cả":
+        pass
+    elif time_range == "Tháng này":
+        file_path += f"{member_id}-month.png"
+        labels = generate_date_strings(start_date, end_date)
+        study_time_date_data = study_time_stats.daily_study_time_to_object()
+        data = []
+        for label in labels:
+            data.append(sum(study_time_date_data.get(label, [])) / 60)
+    elif time_range == "Tuần này":
+        file_path += f"{member_id}-week.png"
+        labels = generate_date_strings(start_date, end_date)
+        labels = ["M", "T", "W", "T", "F", "S", "S"]
+        study_time_date_data = study_time_stats.daily_study_time_to_object()
+        data = []
+        sub_labels = generate_date_strings(start_date, end_date)
+        data = []
+        for label in sub_labels:
+            data.append(sum(study_time_date_data.get(label, [])) / 60)
+    elif time_range == "Hôm nay":
+        file_path += f"{member_id}-today.png"
+        max_value = 60
+        labels = [str(i) for i in range(1, 25)]
+        data = study_time_stats.daily_study_time[0].study_time
+
+    max_data_value = max(data)
+    step_size = max_data_value // 5
+
+    qc = QuickChart()
+    qc.width = 500
+    qc.height = 300
+    qc.device_pixel_ratio = 2.0
+    config = {
+        "type": "bar",
+        "data": {
+            "labels": labels,
+            "datasets": [
+                {
+                    "label": chart_legend_label,
+                    "backgroundColor": "rgb(221, 178, 29)",
+                    "data": data,
+                    "borderRadius": 100,
+                    "borderSkipped": False,
+                },
+            ],
+        },
+        "options": {
+            "plugins": {
+                "legend": {
+                    "position": "bottom",
+                    "labels": {
+                        "usePointStyle": True,
+                        "pointStyle": "rectRounded",
+                    },
+                },
+            },
+            "scales": {
+                "x": {
+                    "grid": {
+                        "display": False,
+                        "drawTicks": False,
+                    },
+                    "ticks": {
+                        "color": "rgba(255, 255, 255, 1)",
+                    },
+                },
+                "y": {
+                    "grid": {
+                        "display": True,
+                        "lineWidth": 4,
+                        "color": "rgb(4, 34, 49)",
+                        "drawTicks": False,
+                        "tickBorderDash": [10],
+                    },
+                    "min": 0,
+                    "max": max_value if max_data_value - step_size > max_value * 4 / 5 else None,
+                    "ticks": {
+                        "color": "rgba(255, 255, 255, 1)",
+                        "stepSize": step_size,
+                    },
+                    "drawOnChartArea": False,
+                },
+            },
+        },
+    }
+    if len(sub_labels):
+        config["options"]["scales"]["x2"] = {
+            "labels": sub_labels,
+        }
+
+    params = {
+        "chart": json.dumps(config),
+        "width": 500,
+        "height": 300,
+        "backgroundColor": "rgb(5, 25, 35)",
+        "version": 4,
+    }
+    await save_image(f"https://quickchart.io/chart?{urlencode(params)}", file_path)
+
+    chart_img = Image.open(file_path)
+    final_img = Image.new("RGBA", (1100, 650), (5, 25, 35))
+    final_img.paste(chart_img, (50, 50))
+    final_img.save(file_path)
+    return file_path
+
+
+@bot.tree.command(name="study_time", description="Xem tổng thời gian học")
+@app_commands.describe(time_range="Khoảng thời gian")
+@app_commands.choices(
+    time_range=[
+        # app_commands.Choice(name="Tất cả", value=1),
+        app_commands.Choice(name="Tháng này", value=2),
+        app_commands.Choice(name="Tuần này", value=3),
+        app_commands.Choice(name="Hôm nay", value=4),
+    ]
+)
+async def study_time(interaction: discord.Interaction, time_range: app_commands.Choice[int]):
+    await interaction.response.defer()
+
+    try:
+        statistic_path = await generate_member_study_time_image(
+            interaction.user.id, time_range.name
+        )
+        with open(statistic_path, "rb") as f:
+            await interaction.followup.send(file=discord.File(f))
+    except ValueError:
+        await interaction.followup.send(content="Bạn chưa học trong khoảng thời gian này")
 
 
 data_format_infos_top = [
@@ -273,7 +413,7 @@ class LeaderboardInfo(BaseModel):
 
 @AsyncTTL(time_to_live=60)
 async def generate_leaderboard_info(
-    time_range: str, member_id: Optional[int] = None
+    time_range: Optional[str] = "Tất cả", member_id: Optional[int] = None
 ) -> LeaderboardInfo:
     # Aggregation pipeline to calculate total study time per user for the current month
     pipeline = [
@@ -336,12 +476,9 @@ async def generate_leaderboard_info(
     start_idx = None
     if member_id:
         try:
-            target_idx = next(
-                i for i, item in enumerate(results) if item["_id"] == member_id
-            )
+            target_idx = next(i for i, item in enumerate(results) if item["_id"] == member_id)
         except StopIteration:
-            # TODO: fix this exception
-            raise ValueError()
+            raise ValueError("No data")
         start_idx = target_idx // 10 * 10
         end_idx = min([len(results) - 1, start_idx + 10])
         results = results[start_idx:end_idx]
@@ -394,8 +531,8 @@ async def generate_leaderboard_info(
             result["text_position"] = data_info["text_position"]
             result["text"] = users[idx].nick if users[idx].nick else users[idx].name
         result["text_font_size"] = data_info["text_font_size"]
-        
-        if data_info.get("idx_text"):
+
+        if data_info.get("idx_text_position"):
             result["idx_text_position"] = data_info["idx_text_position"]
             result["idx_text"] = str(start_idx + idx + 1)
             result["idx_text_font_size"] = data_info["idx_text_font_size"]

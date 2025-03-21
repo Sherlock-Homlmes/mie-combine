@@ -28,5 +28,10 @@ class UserStatsGetResponse(BaseModel):
     user_discord_id: int
     total: int
     daily_study_time: List[DataUserDailyStudyTime]
-    # total_this_month: int
-    # total_this_week: int
+
+    def daily_study_time_to_object(self):
+        result = {}
+        for data in self.daily_study_time:
+            date_str = data.date.strftime("%d/%m")
+            result[date_str] = data.study_time
+        return result

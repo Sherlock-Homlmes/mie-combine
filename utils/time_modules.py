@@ -71,11 +71,38 @@ class Now:
         last_day = first_day + datetime.timedelta(days=6)  # Add 6 days to get to Sunday
         return last_day
 
+    def first_day_of_last_week(self):
+        """
+        The first day of last week (Monday).
+        """
+        first_day = self.first_day_of_week()
+        return first_day - datetime.timedelta(days=7)
+
+    def last_day_of_last_week(self):
+        """
+        The last day of last week (Monday).
+        """
+        first_day = self.first_day_of_week()
+        return first_day - datetime.timedelta(days=1)
+
     def first_day_of_next_month(self) -> datetime.datetime:
         """
         The first day of next month.
         """
         return self.last_day_of_month() + datetime.timedelta(days=1)
+
+    def first_day_of_last_month(self) -> datetime.datetime:
+        """
+        The first day of last month.
+        """
+        last_day_of_last_month = self.last_day_of_last_month()
+        return datetime.datetime(last_day_of_last_month.year, last_day_of_last_month.month, 1)
+
+    def last_day_of_last_month(self) -> datetime.datetime:
+        """
+        The last day of last month.
+        """
+        return self.first_day_of_month() - datetime.timedelta(days=1)
 
 
 def generate_date_strings(

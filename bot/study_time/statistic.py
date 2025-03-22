@@ -52,15 +52,15 @@ async def generate_member_study_time_image(
             "end_date": None,
         },
         "Tháng này": {
-            "start_date": time_module.first_day_of_month(),
+            "start_date": time_module.first_day_of_last_month(),
             "end_date": time_module.last_day_of_month(),
         },
         "Tuần này": {
-            "start_date": time_module.first_day_of_week(),
+            "start_date": time_module.first_day_of_last_week(),
             "end_date": time_module.last_day_of_week(),
         },
         "Hôm nay": {
-            "start_date": time_module.today,
+            "start_date": time_module.some_day_before(1),
             "end_date": time_module.today,
         },
     }
@@ -71,38 +71,77 @@ async def generate_member_study_time_image(
     )
     if study_time_stats.total == 0:
         raise ValueError("No data")
-    chart_legend_label = (
-        f"Tổng thời gian: {study_time_stats.total//60} giờ {study_time_stats.total%60} phút"
-    )
 
+    labels = []
     sub_labels = []
-    data = [23, 0, 3, 5, 16, 2, 21]
+    data = []
+    data2 = []
+    total_time = 0
+    total_past_time = 0
+    chart_legend_label = ""
+    chart_legend_label2 = ""
+
     max_value = 24
     file_path = "./assets/cache/"
+
     if time_range == "Tất cả":
         pass
     elif time_range == "Tháng này":
         file_path += f"{member_id}-month.png"
-        labels = generate_date_strings(start_date, end_date)
+
+        first_day_of_last_month = start_date
+        last_day_of_last_month = time_module.last_day_of_last_month()
+        first_day_of_this_month = time_module.first_day_of_month()
+        last_day_of_this_month = end_date
         study_time_date_data = study_time_stats.daily_study_time_to_object()
-        data = []
+
+        labels = generate_date_strings(first_day_of_this_month, last_day_of_this_month)
         for label in labels:
             data.append(sum(study_time_date_data.get(label, [])) / 60)
+            total_time += sum(study_time_date_data.get(label, []))
+        chart_legend_label = f"Tháng này: {total_time//60} giờ {total_time%60} phút"
+
+        labels2 = generate_date_strings(first_day_of_last_month, last_day_of_last_month)
+        for label in labels2:
+            data2.append(sum(study_time_date_data.get(label, [])) / 60)
+            total_past_time += sum(study_time_date_data.get(label, []))
+        chart_legend_label2 = f"Tháng trước: {total_past_time//60} giờ {total_past_time%60} phút"
+
     elif time_range == "Tuần này":
         file_path += f"{member_id}-week.png"
-        labels = generate_date_strings(start_date, end_date)
         labels = ["M", "T", "W", "T", "F", "S", "S"]
+
+        first_day_of_last_week = start_date
+        last_day_of_last_week = time_module.last_day_of_last_week()
+        first_day_of_this_week = time_module.first_day_of_week()
+        last_day_of_this_week = end_date
         study_time_date_data = study_time_stats.daily_study_time_to_object()
-        data = []
-        sub_labels = generate_date_strings(start_date, end_date)
-        data = []
+
+        sub_labels = generate_date_strings(first_day_of_this_week, last_day_of_this_week)
         for label in sub_labels:
             data.append(sum(study_time_date_data.get(label, [])) / 60)
+            total_time += sum(study_time_date_data.get(label, []))
+        chart_legend_label = f"Tuần này: {total_time//60} giờ {total_time%60} phút"
+
+        labels2 = generate_date_strings(first_day_of_last_week, last_day_of_last_week)
+        for label in labels2:
+            data2.append(sum(study_time_date_data.get(label, [])) / 60)
+            total_past_time += sum(study_time_date_data.get(label, []))
+        chart_legend_label2 = f"Tuần trước: {total_past_time//60} giờ {total_past_time%60} phút"
     elif time_range == "Hôm nay":
         file_path += f"{member_id}-today.png"
         max_value = 60
-        labels = [str(i) for i in range(1, 25)]
-        data = study_time_stats.daily_study_time[0].study_time
+        labels = [str(i) for i in range(0, 24)]
+
+        study_time_date_data = study_time_stats.daily_study_time_to_object()
+
+        date_strings = generate_date_strings(time_module.some_day_before(1), time_module.today)
+        data = study_time_date_data.get(date_strings[1], [])
+        data2 = study_time_date_data.get(date_strings[0], [])
+        total_time = sum(data)
+        total_past_time = sum(data2)
+        chart_legend_label = f"Hôm nay: {total_time//60} giờ {total_time%60} phút"
+        chart_legend_label2 = f"Hôm qua: {total_past_time//60} giờ {total_past_time%60} phút"
 
     max_data_value = max(data)
     step_size = max_data_value // 5
@@ -137,6 +176,7 @@ async def generate_member_study_time_image(
             },
             "scales": {
                 "x": {
+                    "stacked": True,
                     "grid": {
                         "display": False,
                         "drawTicks": False,
@@ -168,6 +208,22 @@ async def generate_member_study_time_image(
         config["options"]["scales"]["x2"] = {
             "labels": sub_labels,
         }
+    if len(data2):
+        len_list1 = len(data)
+        len_list2 = len(data2)
+        if len_list1 > len_list2:
+            data2.extend([0] * (len_list1 - len_list2))
+        elif len_list2 > len_list1:
+            data2 = data2[:len_list1]
+        config["data"]["datasets"].append(
+            {
+                "label": chart_legend_label2,
+                "backgroundColor": "rgb(45, 99, 117)",
+                "data": data2,
+                "borderRadius": 100,
+                "borderSkipped": False,
+            }
+        )
 
     params = {
         "chart": json.dumps(config),

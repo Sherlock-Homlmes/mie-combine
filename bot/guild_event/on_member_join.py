@@ -13,7 +13,7 @@ async def on_member_join(member: discord.Member):
         avatar = member.default_avatar.url
     else:
         avatar = member.avatar.url
-    await Users.find_one(Users.discord_id == str(member.id)).upsert(
+    await Users.find_one(Users.discord_id == member.id).upsert(
         Set(
             {
                 Users.name: member.name,
@@ -24,7 +24,7 @@ async def on_member_join(member: discord.Member):
             }
         ),
         on_insert=Users(
-            discord_id=str(member.id),
+            discord_id=member.id,
             name=member.name,
             nick=member.nick,
             avatar=avatar,

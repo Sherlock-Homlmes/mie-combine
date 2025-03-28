@@ -24,7 +24,7 @@ class UserStudySection(Document):
             # if study time != 0
             if any(study_time):
                 user_daily_study_time = await UserDailyStudyTimes.find_one(
-                    UserDailyStudyTimes.user_discord_id == int(self.user.discord_id),
+                    UserDailyStudyTimes.user_discord_id == self.user.discord_id,
                     UserDailyStudyTimes.date == now.today,
                 )
                 if user_daily_study_time:
@@ -35,7 +35,7 @@ class UserStudySection(Document):
                     await user_daily_study_time.save()
                 else:
                     await UserDailyStudyTimes(
-                        user_discord_id=int(self.user.discord_id),
+                        user_discord_id=self.user.discord_id,
                         study_time=study_time,
                         date=now.today,
                     ).insert()
@@ -54,7 +54,7 @@ class UserStudySection(Document):
 
             if any(yesterday_study_time):
                 user_daily_study_time = await UserDailyStudyTimes.find_one(
-                    UserDailyStudyTimes.user_discord_id == int(self.user.discord_id),
+                    UserDailyStudyTimes.user_discord_id == self.user.discord_id,
                 )
                 if user_daily_study_time:
                     user_daily_study_time.study_time = [
@@ -64,12 +64,12 @@ class UserStudySection(Document):
                     await user_daily_study_time.save()
                 else:
                     await UserDailyStudyTimes(
-                        user_discord_id=int(self.user.discord_id),
+                        user_discord_id=self.user.discord_id,
                         study_time=yesterday_study_time,
                         date=now.some_day_before(1),
                     ).insert()
                 await UserDailyStudyTimes(
-                    user_discord_id=int(self.user.discord_id),
+                    user_discord_id=self.user.discord_id,
                     study_time=today_study_time,
                     date=now.today,
                 ).insert()

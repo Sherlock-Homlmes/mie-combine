@@ -7,7 +7,7 @@ from beanie import Document
 
 
 class Users(Document):
-    discord_id: str
+    discord_id: int
     name: str
     nick: Optional[str] = None
     avatar: str

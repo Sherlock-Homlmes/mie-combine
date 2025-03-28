@@ -543,7 +543,7 @@ async def generate_leaderboard_info(
         img_name = "page-1-" + img_name
 
     users = await asyncio.gather(
-        *[Users.find_one({Users.discord_id: str(result["_id"])}) for result in results]
+        *[Users.find_one({Users.discord_id: result["_id"]}) for result in results]
     )
     users_avatar = await asyncio.gather(
         *[

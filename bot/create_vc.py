@@ -153,7 +153,7 @@ async def on_voice_state_update(
                     all_created_vc_id.append(vc_channel.id)
 
                     data_voice_channel = VoiceChannels(
-                        owner=await Users.find_one(Users.discord_id == str(member.id)),
+                        owner=await Users.find_one(Users.discord_id == member.id),
                         vc_id=vc_channel.id,
                         created_at=Now().now,
                     )
@@ -265,7 +265,7 @@ async def room_permission(
 
             if member and status == "kick":
                 is_owner_channel = await VoiceChannels.find_one(
-                    VoiceChannels.owner.discord_id == str(member.id),
+                    VoiceChannels.owner.discord_id == member.id,
                     VoiceChannels.vc_id == current_channel.id,
                     fetch_links=True,
                 )

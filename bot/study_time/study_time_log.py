@@ -33,7 +33,7 @@ async def on_voice_state_update(
         try:
             # add study section
             user_study_section = await UserStudySection.find_one(
-                UserStudySection.user.discord_id == str(member.id),
+                UserStudySection.user.discord_id == member.id,
                 fetch_links=True,
             )
             # check if exist study section
@@ -43,7 +43,7 @@ async def on_voice_state_update(
             # if not exist study section
             else:
                 await UserStudySection(
-                    user=await Users.find_one(Users.discord_id == str(member.id)),
+                    user=await Users.find_one(Users.discord_id == member.id),
                     start_study_time=Now().now,
                 ).insert()
 
@@ -51,14 +51,14 @@ async def on_voice_state_update(
         except Exception:
             await on_member_join(member=member)
             await UserStudySection(
-                user=await Users.find_one(Users.discord_id == str(member.id)),
+                user=await Users.find_one(Users.discord_id == member.id),
                 start_study_time=Now().now,
             ).insert()
 
     # member leave channel
     elif member_before.channel and not member_after.channel:
         user_study_section = await UserStudySection.find_one(
-            UserStudySection.user.discord_id == str(member.id), fetch_links=True
+            UserStudySection.user.discord_id == member.id, fetch_links=True
         )
         try:
             await user_study_section.delete()

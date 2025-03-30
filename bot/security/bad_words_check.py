@@ -128,11 +128,13 @@ class RemoveFalseBadWordButton(ui.View):
     @ui.button(label="Remove", custom_id="remove-bad-word")
     async def select_callback(self, interaction, button):
         await interaction.response.defer()
-        model = await BadUsers.find_one(
+        # TODO: fix this. currently not working with find_one
+        model = await BadUsers.find(
             BadUsers.diary_message_id == interaction.message.id, fetch_links=True
-        )
+        ).to_list()
         if not model:
             return
+        model = model[0]
         embed = discord.Embed(colour=discord.Colour.green())
         embed.add_field(name="User", value=f"<@{model.user.discord_id}>", inline=True)
         embed.add_field(name="Moderator", value=interaction.message.author.mention, inline=True)

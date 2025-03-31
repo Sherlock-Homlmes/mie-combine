@@ -529,7 +529,7 @@ async def generate_leaderboard_info(
 
     results = await UserDailyStudyTimes.aggregate(pipeline).to_list()
     target_idx = None
-    start_idx = None
+    start_idx = 0
     if member_id:
         try:
             target_idx = next(i for i, item in enumerate(results) if item["_id"] == member_id)
@@ -555,7 +555,7 @@ async def generate_leaderboard_info(
     )
 
     for idx, result in enumerate(results):
-        if start_idx == 0 or start_idx is None:
+        if start_idx == 0:
             data_info = copy.deepcopy(data_format_infos_top[idx])
         else:
             data_info = copy.deepcopy(data_format_info)

@@ -555,8 +555,8 @@ async def generate_leaderboard_info(
     )
 
     for idx, result in enumerate(results):
-        if start_idx == 0:
-            data_info = data_format_infos_top[idx]
+        if start_idx == 0 or start_idx is None:
+            data_info = copy.deepcopy(data_format_infos_top[idx])
         else:
             data_info = copy.deepcopy(data_format_info)
             data_info["img_position"][1] += 213 * idx

@@ -98,6 +98,7 @@ class ServerRoles:
 @dataclass
 class ServerChannels:
     leaderboard: discord.TextChannel = None
+    general_chat: discord.TextChannel = None
 
 
 # TODO: change to cluster role_id, role, channel, channel_id

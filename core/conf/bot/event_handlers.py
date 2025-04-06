@@ -44,6 +44,7 @@ async def get_server_info():
         # errands
         "welcome_channel_id",
         "leaderboard_channel_id",
+        "general_chat_channel_id",
     ]
     (
         server_info.confession_channel,
@@ -57,6 +58,7 @@ async def get_server_info():
         server_info.admin_false_bad_word_log_channel,
         server_info.welcome_channel,
         server_info.channels.leaderboard,
+        server_info.channels.general_chat,
     ) = await asyncio.gather(
         *[get_channel(server_info.guild, server_info_data[channel]) for channel in channels]
     )

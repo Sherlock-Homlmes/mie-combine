@@ -28,7 +28,8 @@ async def on_message(message):
                 message.author.id, message.channel.id
             )
             message_without_mention = (
-                re.sub(r"<@.*?>", "\n", message.content) + "\n Answer in Vietnamese. No yapping"
+                re.sub(r"<@.*?>", "\n", message.content)
+                + "\n Answer in Vietnamese except there are request to answer in other language above. No yapping"
             )
             # message.channel.parent is currently error
             # if message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập":

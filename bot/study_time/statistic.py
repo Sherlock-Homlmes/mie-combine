@@ -432,12 +432,14 @@ def generate_leaderboard_image(
         final_img.paste(user_avatar, img_pos)
     final_img.paste(foreground_img, (0, 0), foreground_img)
     for idx, data in enumerate(leaderboard_data):
-        # TODO: do this
-        # if not is_top and target_idx - start_idx == idx:
-        #     print(target_idx, start_idx, target_idx - start_idx, idx)
-        #     target_row =  Image.open("./assets/target_row.png")
-        #     img_pos = data["img_position"]
-        #     final_img.paste(target_row, (img_pos[0]+60, img_pos[1]+10))
+        # TODO: fix: missing number in top 10 leaderboard
+        if target_idx - start_idx == idx and (
+            not is_top or (is_top and target_idx >= 4 and target_idx - start_idx == idx)
+        ):
+            target_row = Image.open("./assets/target_row.png").convert("RGBA")
+            img_pos = data["img_position"]
+            alpha_mask = target_row.getchannel("A")
+            final_img.paste(target_row, (img_pos[0] + 150, img_pos[1]), alpha_mask)
         text_pos = data["text_position"]
         text = data["text"]
         time_pos = data["time_position"]

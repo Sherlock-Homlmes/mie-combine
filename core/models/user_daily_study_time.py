@@ -28,6 +28,11 @@ class UserDailyStudyTimes(Document):
                 ("user_discord_id", pymongo.DESCENDING),
                 ("date", pymongo.DESCENDING),
             ],
+            pymongo.IndexModel(
+                [("user_discord_id", pymongo.DESCENDING), ("date", pymongo.DESCENDING)],
+                unique=True,
+                name="user_discord_id_date_unique_idx",
+            ),
         ]
 
     @validator("study_time")

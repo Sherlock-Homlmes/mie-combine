@@ -189,6 +189,8 @@ async def on_voice_state_update(
                             user_limit=channel_info["limit"][1],
                         )
                     except discord.errors.HTTPException as e:
+                        # TODO: remove this print
+                        print("-------------", e.code, e.text)
                         if e.code != 30003:
                             return
                         should_create_new_category = True

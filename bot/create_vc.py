@@ -189,7 +189,7 @@ async def on_voice_state_update(
                             user_limit=channel_info["limit"][1],
                         )
                     except discord.errors.HTTPException as e:
-                        if "Maximum number of pins reached for the channel (50)" != e.text:
+                        if e.code != 30003:
                             return
                         should_create_new_category = True
                         for category_id in server_info.channel_cre[str(voice_channel_after.id)][

@@ -227,6 +227,7 @@ async def on_voice_state_update(
                                 + str(len(channel_info["additional_category_ids"]) + 2)
                                 + ")———"
                             )
+                            await new_room_category.move(after=voice_channel_after.category)
                             vc_channel = await new_room_category.create_voice_channel(
                                 name=vc_name,
                                 overwrites={

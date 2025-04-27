@@ -11,7 +11,7 @@ from discord.ui import View
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from core.models import Users, VoiceChannels
+from core.models import Users, VoiceChannels, ErrandData
 from utils.discord_bot.channel_name import (
     check_avaiable_name,
     rewrite_create_voice_channel_name,
@@ -73,6 +73,7 @@ async def on_ready():
     await fix_room()
 
 
+# TODO: fix room include remove additional_category_ids
 async def fix_room():
     global all_created_vc_id, guild
 
@@ -95,6 +96,13 @@ async def fix_room():
     print("fix voice channel done")
 
 
+def get_additional_category_id_channel_cre_id(category_id: int):
+    for channel_cre_id, channel_cre in server_info.channel_cre.items():
+        if category_id in channel_cre["additional_category_ids"]:
+            return channel_cre_id
+    return None
+
+
 @bot.listen()
 async def on_voice_state_update(
     member: discord.Member,
@@ -114,10 +122,37 @@ async def on_voice_state_update(
                 await asyncio.sleep(5)
                 vc = await VoiceChannels.find_one(VoiceChannels.vc_id == voice_channel_before.id)
 
+                # TODO: refactor
                 if not len(voice_channel_before.members):
+                    category_before_id = voice_channel_before.category.id
+                    additional_category_channel_cre_id = get_additional_category_id_channel_cre_id(
+                        category_before_id
+                    )
+                    category_channel_del = (
+                        voice_channel_before.category
+                        if additional_category_channel_cre_id
+                        and len(voice_channel_before.category.channels) <= 1
+                        else None
+                    )
                     vc_channel_del = guild.get_channel(vc.vc_id)
-                    await asyncio.gather(*[x.delete() for x in [vc_channel_del, vc] if x])
+                    del_list = [vc_channel_del, vc]
+                    if category_channel_del:
+                        del_list.append(category_channel_del)
+                    await asyncio.gather(*[x.delete() for x in del_list if x])
                     all_created_vc_id.remove(voice_channel_before.id)
+                    if category_channel_del:
+                        server_info_data = await ErrandData.find_one(
+                            ErrandData.name == "server_info"
+                        )
+                        server_info.channel_cre[additional_category_channel_cre_id][
+                            "additional_category_ids"
+                        ].remove(category_before_id)
+                        server_info_data.value["channel_cre"][additional_category_channel_cre_id][
+                            "additional_category_ids"
+                        ] = server_info.channel_cre[additional_category_channel_cre_id][
+                            "additional_category_ids"
+                        ]
+                        await server_info_data.save()
 
         # member in
         if voice_channel_after is not None:
@@ -139,17 +174,84 @@ async def on_voice_state_update(
 
                     feature_bot_role = server_info.guild.get_role(server_info.role_ids.feature_bot)
                     vc_channel: discord.VoiceChannel
-                    vc_channel = await voice_channel_after.category.create_voice_channel(
-                        name=vc_name,
-                        overwrites={
-                            server_info.guild.default_role: PermissionOverwrite(
-                                view_channel=True, connect=False
-                            ),
-                            member: PermissionOverwrite(view_channel=True, connect=True),
-                            feature_bot_role: PermissionOverwrite(view_channel=True, connect=True),
-                        },
-                        user_limit=channel_info["limit"][1],
-                    )
+                    try:
+                        vc_channel = await voice_channel_after.category.create_voice_channel(
+                            name=vc_name,
+                            overwrites={
+                                server_info.guild.default_role: PermissionOverwrite(
+                                    view_channel=True, connect=False
+                                ),
+                                member: PermissionOverwrite(view_channel=True, connect=True),
+                                feature_bot_role: PermissionOverwrite(
+                                    view_channel=True, connect=True
+                                ),
+                            },
+                            user_limit=channel_info["limit"][1],
+                        )
+                    except discord.errors.HTTPException as e:
+                        if "Maximum number of pins reached for the channel (50)" != e.text:
+                            return
+                        should_create_new_category = True
+                        for category_id in server_info.channel_cre[str(voice_channel_after.id)][
+                            "additional_category_ids"
+                        ]:
+                            try:
+                                category = await server_info.guild.fetch_channel(category_id)
+                                vc_channel = await category.create_voice_channel(
+                                    name=vc_name,
+                                    overwrites={
+                                        server_info.guild.default_role: PermissionOverwrite(
+                                            view_channel=True, connect=False
+                                        ),
+                                        member: PermissionOverwrite(
+                                            view_channel=True, connect=True
+                                        ),
+                                        feature_bot_role: PermissionOverwrite(
+                                            view_channel=True, connect=True
+                                        ),
+                                    },
+                                    user_limit=channel_info["limit"][1],
+                                )
+                                should_create_new_category = False
+                            except discord.errors.NotFound as e:
+                                pass
+                            except discord.errors.HTTPException:
+                                pass
+                        if should_create_new_category:
+                            # TODO: refactor room create
+                            # TODO: refactor errand data update
+                            # TODO: update to f-string when update python version
+                            new_room_category = await server_info.guild.create_category(
+                                "———("
+                                + channel_info["locate"]
+                                + str(len(channel_info["additional_category_ids"]) + 2)
+                                + ")———"
+                            )
+                            vc_channel = await new_room_category.create_voice_channel(
+                                name=vc_name,
+                                overwrites={
+                                    server_info.guild.default_role: PermissionOverwrite(
+                                        view_channel=True, connect=False
+                                    ),
+                                    member: PermissionOverwrite(view_channel=True, connect=True),
+                                    feature_bot_role: PermissionOverwrite(
+                                        view_channel=True, connect=True
+                                    ),
+                                },
+                                user_limit=channel_info["limit"][1],
+                            )
+                            server_info.channel_cre[str(voice_channel_after.id)][
+                                "additional_category_ids"
+                            ].append(new_room_category.id)
+                            server_info_data = await ErrandData.find_one(
+                                ErrandData.name == "server_info"
+                            )
+                            server_info_data.value["channel_cre"][str(voice_channel_after.id)][
+                                "additional_category_ids"
+                            ] = server_info.channel_cre[str(voice_channel_after.id)][
+                                "additional_category_ids"
+                            ]
+                            await server_info_data.save()
                     all_created_vc_id.append(vc_channel.id)
 
                     data_voice_channel = VoiceChannels(

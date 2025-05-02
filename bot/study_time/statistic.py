@@ -433,8 +433,10 @@ def generate_leaderboard_image(
     final_img.paste(foreground_img, (0, 0), foreground_img)
     for idx, data in enumerate(leaderboard_data):
         # TODO: fix: missing number in top 10 leaderboard
-        if target_idx - start_idx == idx and (
-            not is_top or (is_top and target_idx >= 4 and target_idx - start_idx == idx)
+        if (
+            target_idx
+            and target_idx - start_idx == idx
+            and (not is_top or (is_top and target_idx >= 4 and target_idx - start_idx == idx))
         ):
             target_row = Image.open("./assets/target_row.png").convert("RGBA")
             img_pos = data["img_position"]

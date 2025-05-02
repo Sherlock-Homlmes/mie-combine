@@ -7,14 +7,14 @@ import discord
 from discord.ext import tasks
 
 # local
+from bot.study_time.statistic import generate_leaderboard_info
 from core.conf.bot.conf import bot, server_info
 from utils.time_modules import Now
-from bot.study_time.statistic import generate_leaderboard_info
 
 
 @tasks.loop(hours=720)
 async def leaderboard_monthly():
-    leaderboard_info = await generate_leaderboard_info("Tháng này")
+    leaderboard_info = await generate_leaderboard_info("Tháng trước")
     with open(leaderboard_info.img_path, "rb") as f:
 
         def mention(member_id) -> str:
@@ -55,7 +55,9 @@ async def before_leaderboard_monthly():
     await bot.wait_until_ready()
     time_module = Now()
     now = time_module.now
-    first_day_of_next_month = time_module.first_day_of_next_month() - datetime.timedelta(minutes=30)
+    first_day_of_next_month = time_module.first_day_of_next_month() + datetime.timedelta(
+        days=3, minutes=30
+    )
     delta = (first_day_of_next_month - now).total_seconds()
     print("before_leaderboard_monthly: ", delta, " seconds")
     await asyncio.sleep(delta)

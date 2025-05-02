@@ -1,26 +1,26 @@
 # default
 import asyncio
-import math
-from typing import Optional, List
-import random
 import copy
 import json
+import math
+import random
+from typing import List, Optional
 from urllib.parse import urlencode
 
 # lib
 import discord
-from discord import app_commands
 import pymongo
+from cache import AsyncTTL
+from discord import app_commands
 from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel
-from cache import AsyncTTL
 from quickchart import QuickChart
 
 # local
 from core.conf.bot.conf import bot
 from core.models import UserDailyStudyTimes, Users
-from utils.time_modules import Now, generate_date_strings
 from utils.image_handle import save_image
+from utils.time_modules import Now, generate_date_strings
 
 
 @bot.tree.command(name="member_study_time")
@@ -494,6 +494,19 @@ async def generate_leaderboard_info(
         content = f"Leaderboard tháng {time_module.now.month}/{time_module.now.year}"
         month_start = time_module.first_day_of_month()
         month_end = time_module.last_day_of_month()
+        img_name = "month.png"
+        pipeline.insert(
+            0,
+            {
+                "$match": {
+                    "date": {"$gte": month_start, "$lte": month_end},
+                }
+            },
+        )
+    elif time_range == "Tháng trước":
+        month_start = time_module.first_day_of_last_month()
+        month_end = time_module.last_day_of_last_month()
+        content = f"Leaderboard tháng {month_start.month}/{month_start.year}"
         img_name = "month.png"
         pipeline.insert(
             0,

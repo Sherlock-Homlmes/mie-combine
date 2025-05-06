@@ -191,7 +191,7 @@ async def on_voice_state_update(
                     except discord.errors.HTTPException as e:
                         # TODO: remove this print
                         print("-------------", e.code, e.text)
-                        if e.code != 30003:
+                        if e.code != 50035:
                             return
                         should_create_new_category = True
                         for category_id in server_info.channel_cre[str(voice_channel_after.id)][

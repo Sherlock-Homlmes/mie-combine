@@ -29,7 +29,7 @@ async def on_message(message):
             )
             message_without_mention = (
                 re.sub(r"<@.*?>", "\n", message.content)
-                + "\n Answer in Vietnamese except there are request to answer in other language above. The answer must be 1800 characters(include space) or fewer in length. No yapping"
+                + "\n Answer in Vietnamese except there are request to answer in other language above. The answer must be shorter than 1500 letters(include space). REMEMBER shorter than 1500 letters, not words. If the answer longer then shorten the answer. No yapping"
             )
             # message.channel.parent is currently error
             # if message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập":

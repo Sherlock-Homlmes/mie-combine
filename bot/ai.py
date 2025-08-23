@@ -8,7 +8,7 @@ from core.models import Content, FileData, UserAIChatHistory
 from utils.image_handle import delete_image, save_image
 
 genai.configure(api_key=env.GEMINI_AI_API_KEY)
-model_type = "gemini-2.5-flash-preview-04-17"
+model_type = "gemini-2.5-flash"
 model = genai.GenerativeModel(model_type)
 
 

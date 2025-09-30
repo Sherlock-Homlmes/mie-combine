@@ -2,8 +2,15 @@
 import datetime
 from typing import Optional
 
-# lib
 from beanie import Document
+
+# lib
+from pydantic import BaseModel
+
+
+class UserMetadata(BaseModel):
+    bank_account: str
+    bank_code: str
 
 
 class Users(Document):
@@ -13,6 +20,8 @@ class Users(Document):
     avatar: str
     is_in_server: bool = True
     is_bot: bool = False
+
+    metadata: Optional[UserMetadata] = None
 
     created_at: datetime.datetime
     joined_at: datetime.datetime

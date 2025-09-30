@@ -9,12 +9,38 @@ from discord.ext import tasks
 # local
 from bot.study_time.statistic import generate_leaderboard_info
 from core.conf.bot.conf import bot, server_info
+from core.models.transactions import CurrencyUnitEnum, Transactions
 from utils.time_modules import Now
 
 
 @tasks.loop(hours=720)
 async def leaderboard_monthly():
     leaderboard_info = await generate_leaderboard_info("Tháng trước")
+    from_discord_user_id = 883974628136087562  # Mie bot
+    transactions_to_insert = []
+    transactions_time = Now().now
+
+    for i, member_id in enumerate(leaderboard_info.member_ids):
+        if i == 0:
+            amount = 55555
+        elif i == 1:
+            amount = 33333
+        elif i == 2:
+            amount = 11111
+        else:
+            amount = 5555  # Top 4-10
+
+        transactions_to_insert.append(
+            Transactions(
+                from_user_id=from_discord_user_id,
+                to_user_id=member_id,
+                amount=amount,
+                currency_unit=CurrencyUnitEnum.VND,
+                created_at=transactions_time,
+            )
+        )
+    tasks.append(Transactions.insert_many(transactions_to_insert))
+
     with open(leaderboard_info.img_path, "rb") as f:
 
         def mention(member_id) -> str:
@@ -30,6 +56,8 @@ async def leaderboard_monthly():
         await server_info.channels.leaderboard.send(
             content=f"{leaderboard_info.content}\n{user_mention_content}", file=discord.File(f)
         )
+
+    await asyncio.gather(*tasks)
 
 
 @tasks.loop(hours=720)

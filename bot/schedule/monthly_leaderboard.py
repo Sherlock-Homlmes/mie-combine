@@ -39,7 +39,6 @@ async def leaderboard_monthly():
                 created_at=transactions_time,
             )
         )
-    tasks.append(Transactions.insert_many(transactions_to_insert))
 
     with open(leaderboard_info.img_path, "rb") as f:
 
@@ -53,11 +52,15 @@ async def leaderboard_monthly():
             [mention(member_id) for member_id in leaderboard_info.member_ids[3:]]
         )
         user_mention_content += f"Top 10: {top10_mention}"
-        await server_info.channels.leaderboard.send(
-            content=f"{leaderboard_info.content}\n{user_mention_content}", file=discord.File(f)
+        await asyncio.gather(
+            *[
+                Transactions.insert_many(transactions_to_insert),
+                server_info.channels.leaderboard.send(
+                    content=f"{leaderboard_info.content}\n{user_mention_content}",
+                    file=discord.File(f),
+                ),
+            ]
         )
-
-    await asyncio.gather(*tasks)
 
 
 @tasks.loop(hours=720)
@@ -83,7 +86,7 @@ async def before_leaderboard_monthly():
     await bot.wait_until_ready()
     time_module = Now()
     now = time_module.now
-    first_day_of_next_month = time_module.first_day_of_next_month() + datetime.timedelta(minutes=15)
+    first_day_of_next_month = time_module.first_day_of_next_month() + datetime.timedelta(minutes=35)
     delta = (first_day_of_next_month - now).total_seconds()
     print("before_leaderboard_monthly: ", delta, " seconds")
     await asyncio.sleep(delta)

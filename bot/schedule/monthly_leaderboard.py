@@ -86,7 +86,7 @@ async def before_leaderboard_monthly():
     await bot.wait_until_ready()
     time_module = Now()
     now = time_module.now
-    first_day_of_next_month = time_module.first_day_of_next_month() + datetime.timedelta(minutes=39)
+    first_day_of_next_month = time_module.first_day_of_next_month() + datetime.timedelta(hours=6)
     delta = (first_day_of_next_month - now).total_seconds()
     print("before_leaderboard_monthly: ", delta, " seconds")
     await asyncio.sleep(delta)

@@ -1,6 +1,7 @@
 # default
 import datetime
 from enum import Enum
+from typing import Optional
 
 import pymongo
 
@@ -27,5 +28,6 @@ class Transactions(Document):
 
     amount: float
     currency_unit: CurrencyUnitEnum
+    message: Optional[str] = None
 
     created_at: Indexed(datetime.datetime, index_type=pymongo.DESCENDING)

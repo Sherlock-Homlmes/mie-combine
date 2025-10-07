@@ -11,7 +11,7 @@ from discord.ui import View
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from core.models import Users, VoiceChannels, ErrandData
+from core.models import ErrandData, Users, VoiceChannels
 from utils.discord_bot.channel_name import (
     check_avaiable_name,
     rewrite_create_voice_channel_name,
@@ -351,7 +351,7 @@ async def room_permission(
                     )
 
             if limit:
-                category_id = interaction.channel.category.id
+                category_id = current_channel.category.id
                 for _, value in server_info.channel_cre.items():
                     if value["category_id"] == category_id:
                         if value["limit"][0] == value["limit"][1]:

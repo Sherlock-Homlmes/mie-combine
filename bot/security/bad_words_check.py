@@ -223,7 +223,6 @@ async def punish(user_id: int, message_content: str, mem_name: str):
     # counter <= 4: warn
     # counter <= 11: mute
     # counter > 11: ban
-    print(mem_name, counter)
     if counter <= 4:
         form = BanFormEnum.WARN.value
         hours = 0

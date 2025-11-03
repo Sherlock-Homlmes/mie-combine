@@ -51,7 +51,6 @@ async def on_message(message):
                     # for file in files:
                     delete_image(file)
 
-            print(contents)
             response = await chat.send_message_async(contents)
             await message.channel.send(response.text, reference=message)
 

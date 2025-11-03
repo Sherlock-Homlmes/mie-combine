@@ -33,7 +33,16 @@ class UserAIChatHistory(Document):
         ).to_list()
 
         # TODO: refactor
-        histories = []
+        histories = [
+            protos.Content(
+                parts=[
+                    {
+                        "text": "Answer in Vietnamese except there are request to answer in other language above. The answer must be shorter than 1500 letters(include space). REMEMBER shorter than 1500 letters, not words. If the answer longer then shorten the answer. No yapping"
+                    }
+                ],
+                role="system",
+            )
+        ]
         for history in model_histories:
             contents = []
             for content in history.contents:

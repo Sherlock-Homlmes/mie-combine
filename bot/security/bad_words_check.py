@@ -19,6 +19,7 @@ exact_bad_words = [
     "đĩ",
     "đụ",
     "cock",
+    "duma",
     "vl",
     "cl",
     "dm",
@@ -192,7 +193,7 @@ def check_bad_words(content: str) -> bool:
     return True
 
 
-async def remove_exprired_bad_user(user_id: str):
+async def remove_exprired_bad_user(user_id: int):
     delete_bad_users = await BadUsers.find(
         BadUsers.user.discord_id == user_id, fetch_links=True
     ).to_list()
@@ -202,19 +203,18 @@ async def remove_exprired_bad_user(user_id: str):
             await bad_user.delete()
 
 
-async def punish(mem_id: int, message_content: str, mem_name: str):
-    mem_id = str(mem_id)
-    await remove_exprired_bad_user(mem_id)
+async def punish(user_id: int, message_content: str, mem_name: str):
+    await remove_exprired_bad_user(user_id)
 
     model = await BadUsers(
-        user=await Users.find_one(Users.discord_id == mem_id),
+        user=await Users.find_one(Users.discord_id == user_id),
         bad_content=message_content,
         created_at=Now().now,
     ).insert()
 
     # number of mistake in recent 1 month
     counter = len(
-        await BadUsers.find(BadUsers.user.discord_id == mem_id, fetch_links=True).to_list()
+        await BadUsers.find(BadUsers.user.discord_id == user_id, fetch_links=True).to_list()
     )
 
     # counter <= 4: warn

@@ -18,7 +18,9 @@ async def leaderboard_monthly():
     leaderboard_info = await generate_leaderboard_info("Tháng trước")
     from_discord_user_id = 883974628136087562  # Mie bot
     transactions_to_insert = []
-    transactions_time = Now().now
+    time_module = Now()
+    transactions_time = time_module.now
+    last_month = time_module.first_day_of_next_month()
 
     for i, member_id in enumerate(leaderboard_info.member_ids):
         if i == 0:
@@ -35,6 +37,7 @@ async def leaderboard_monthly():
                 from_user_id=from_discord_user_id,
                 to_user_id=member_id,
                 amount=amount,
+                message=f"Betterme trao thưởng tháng {last_month.month}/{last_month.year}",
                 currency_unit=CurrencyUnitEnum.VND,
                 created_at=transactions_time,
             )

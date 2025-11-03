@@ -33,6 +33,10 @@ exact_bad_words = [
 included_bad_words = [
     # vn
     "dkm",
+    "cai l",
+    "chem chép",
+    "chem chep",
+    "vai l",
     "cặc",
     "cặk",
     "cẹc",
@@ -88,6 +92,7 @@ included_bad_words = [
     "ham cak",
     # en
     "wtf",
+    "nigg",
 ]
 
 # level 3
@@ -190,7 +195,7 @@ async def remove_exprired_bad_user(user_id: str):
             await bad_user.delete()
 
 
-async def punish(mem_id: int, message_content: str):
+async def punish(mem_id: int, message_content: str, mem_name: str):
     mem_id = str(mem_id)
     await remove_exprired_bad_user(mem_id)
 
@@ -208,6 +213,7 @@ async def punish(mem_id: int, message_content: str):
     # counter <= 4: warn
     # counter <= 11: mute
     # counter > 11: ban
+    print(mem_name, counter)
     if counter <= 4:
         form = BanFormEnum.WARN.value
         hours = 0
@@ -250,7 +256,9 @@ async def on_message(message: discord.Message):
         print("Bad word error: Not found message")
 
     # process mute time
-    form, hours, penalize, colour, model = await punish(message.author.id, message.content)
+    form, hours, penalize, colour, model = await punish(
+        message.author.id, message.content, message.author.name
+    )
     reason = "Ngôn từ không phù hợp"
     if form == BanFormEnum.BAN.value:
         await message.author.ban(reason=reason)

@@ -20,8 +20,11 @@ exact_bad_words = [
     "đụ",
     "cock",
     "vl",
+    "cl",
+    "dm",
     "lìn",
     "cmn",
+    "cmm",
     # eng
     "fuk",
     "cuming",
@@ -81,7 +84,10 @@ included_bad_words = [
     "dau cac",
     "sục cu",
     "sục ku",
+    "cục su",
+    "kục su",
     "hãm lon",
+    "hỗn làm",
     "ham~ lon",
     "ham lon",
     "hãm cac",
@@ -93,6 +99,7 @@ included_bad_words = [
     # en
     "wtf",
     "nigg",
+    "niger",
 ]
 
 # level 3

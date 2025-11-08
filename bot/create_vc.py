@@ -454,7 +454,10 @@ async def hide(interaction: Interaction):
 @bot.tree.command(name="rename", description="Đặt giới hạn phòng")
 @app_commands.describe(name="Đặt lại tên phòng")
 async def rename(interaction: Interaction, name: str):
-    await room_permission(interaction, name=name)
+    # await room_permission(interaction, name=name)
+    await interaction.response.send_message(
+        "Tính năng hiện tại không khả dụng. Chúng tôi sẽ thông báo khi tính năng được khôi phục."
+    )
 
 
 @bot.tree.command(name="limit", description="Đặt giới hạn phòng")

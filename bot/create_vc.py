@@ -150,13 +150,15 @@ async def on_voice_state_update(
         if voice_channel_before is not None:
             if voice_channel_before.id in all_created_vc_id:
                 await asyncio.sleep(5)
-                vc = await VoiceChannels.find_one(VoiceChannels.vc_id == voice_channel_before.id)
+                vc = await VoiceChannels.find_one(
+                    VoiceChannels.vc_id == voice_channel_before.id
+                )
 
                 # TODO: refactor
                 if not len(voice_channel_before.members):
                     category_before_id = voice_channel_before.category.id
-                    additional_category_channel_cre_id = get_additional_category_id_channel_cre_id(
-                        category_before_id
+                    additional_category_channel_cre_id = (
+                        get_additional_category_id_channel_cre_id(category_before_id)
                     )
                     category_channel_del = (
                         voice_channel_before.category
@@ -179,11 +181,11 @@ async def on_voice_state_update(
                         server_info.channel_cre[additional_category_channel_cre_id][
                             "additional_category_ids"
                         ].remove(category_before_id)
-                        server_info_data.value["channel_cre"][additional_category_channel_cre_id][
-                            "additional_category_ids"
-                        ] = server_info.channel_cre[additional_category_channel_cre_id][
-                            "additional_category_ids"
-                        ]
+                        server_info_data.value["channel_cre"][
+                            additional_category_channel_cre_id
+                        ]["additional_category_ids"] = server_info.channel_cre[
+                            additional_category_channel_cre_id
+                        ]["additional_category_ids"]
                         await server_info_data.save()
 
         # member in
@@ -205,21 +207,27 @@ async def on_voice_state_update(
                     room.get_new_room_number()
                     # create
                     vc_name = f"#room {room.number}"
-                    feature_bot_role = server_info.guild.get_role(server_info.role_ids.feature_bot)
+                    feature_bot_role = server_info.guild.get_role(
+                        server_info.role_ids.feature_bot
+                    )
                     vc_channel: discord.VoiceChannel
                     try:
-                        vc_channel = await voice_channel_after.category.create_voice_channel(
-                            name=vc_name,
-                            overwrites={
-                                server_info.guild.default_role: PermissionOverwrite(
-                                    view_channel=True, connect=False
-                                ),
-                                member: PermissionOverwrite(view_channel=True, connect=True),
-                                feature_bot_role: PermissionOverwrite(
-                                    view_channel=True, connect=True
-                                ),
-                            },
-                            user_limit=channel_info["limit"][1],
+                        vc_channel = (
+                            await voice_channel_after.category.create_voice_channel(
+                                name=vc_name,
+                                overwrites={
+                                    server_info.guild.default_role: PermissionOverwrite(
+                                        view_channel=True, connect=False
+                                    ),
+                                    member: PermissionOverwrite(
+                                        view_channel=True, connect=True
+                                    ),
+                                    feature_bot_role: PermissionOverwrite(
+                                        view_channel=True, connect=True
+                                    ),
+                                },
+                                user_limit=channel_info["limit"][1],
+                            )
                         )
                     except discord.errors.HTTPException as e:
                         # TODO: remove this print
@@ -227,11 +235,13 @@ async def on_voice_state_update(
                         if e.code != 50035:
                             return
                         should_create_new_category = True
-                        for category_id in server_info.channel_cre[str(voice_channel_after.id)][
-                            "additional_category_ids"
-                        ]:
+                        for category_id in server_info.channel_cre[
+                            str(voice_channel_after.id)
+                        ]["additional_category_ids"]:
                             try:
-                                category = await server_info.guild.fetch_channel(category_id)
+                                category = await server_info.guild.fetch_channel(
+                                    category_id
+                                )
                                 vc_channel = await category.create_voice_channel(
                                     name=vc_name,
                                     overwrites={
@@ -262,14 +272,18 @@ async def on_voice_state_update(
                                 + str(len(channel_info["additional_category_ids"]) + 2)
                                 + ")———"
                             )
-                            await new_room_category.move(after=voice_channel_after.category)
+                            await new_room_category.move(
+                                after=voice_channel_after.category
+                            )
                             vc_channel = await new_room_category.create_voice_channel(
                                 name=vc_name,
                                 overwrites={
                                     server_info.guild.default_role: PermissionOverwrite(
                                         view_channel=True, connect=False
                                     ),
-                                    member: PermissionOverwrite(view_channel=True, connect=True),
+                                    member: PermissionOverwrite(
+                                        view_channel=True, connect=True
+                                    ),
                                     feature_bot_role: PermissionOverwrite(
                                         view_channel=True, connect=True
                                     ),
@@ -282,11 +296,11 @@ async def on_voice_state_update(
                             server_info_data = await ErrandData.find_one(
                                 ErrandData.name == "server_info"
                             )
-                            server_info_data.value["channel_cre"][str(voice_channel_after.id)][
-                                "additional_category_ids"
-                            ] = server_info.channel_cre[str(voice_channel_after.id)][
-                                "additional_category_ids"
-                            ]
+                            server_info_data.value["channel_cre"][
+                                str(voice_channel_after.id)
+                            ]["additional_category_ids"] = server_info.channel_cre[
+                                str(voice_channel_after.id)
+                            ]["additional_category_ids"]
                             await server_info_data.save()
                     all_created_vc_id.append(vc_channel.id)
                     vc_id_name_map[vc_channel.id] = room.number
@@ -390,7 +404,9 @@ async def room_permission(
                 for _, value in server_info.channel_cre.items():
                     if value["category_id"] == category_id:
                         if value["limit"][0] == value["limit"][1]:
-                            await send("Bạn không thể đặt limit cho phòng " + value["locate"])
+                            await send(
+                                "Bạn không thể đặt limit cho phòng " + value["locate"]
+                            )
                         elif limit >= value["limit"][0] and limit <= value["limit"][1]:
                             await current_channel.edit(user_limit=limit)
                             await send(f"**Đã đặt limit cho phòng:** {limit}")
@@ -455,6 +471,7 @@ async def hide(interaction: Interaction):
 @app_commands.describe(name="Đặt lại tên phòng")
 async def rename(interaction: Interaction, name: str):
     # await room_permission(interaction, name=name)
+    print("rename room")
     await interaction.response.send_message(
         "Tính năng hiện tại không khả dụng. Chúng tôi sẽ thông báo khi tính năng được khôi phục."
     )
@@ -486,7 +503,10 @@ async def invite(interaction: Interaction):
         overwrite.view_channel = True
         overwrite.connect = True
         await asyncio.gather(
-            *[current_channel.set_permissions(member, overwrite=overwrite) for member in members]
+            *[
+                current_channel.set_permissions(member, overwrite=overwrite)
+                for member in members
+            ]
         )
         invite_link = await current_channel.create_invite(max_uses=1, unique=True)
 
@@ -508,7 +528,9 @@ async def invite(interaction: Interaction):
 
         # send message to channel
         await callback_interaction.response.send_message(
-            "Đã mời " + ",".join([f"<@{member.id}>" for member in members]) + " vào phòng"
+            "Đã mời "
+            + ",".join([f"<@{member.id}>" for member in members])
+            + " vào phòng"
         )
 
     user_select.callback = user_select_callback
@@ -538,12 +560,17 @@ async def allow(interaction: Interaction):
         overwrite.view_channel = True
         overwrite.connect = True
         await asyncio.gather(
-            *[current_channel.set_permissions(member, overwrite=overwrite) for member in members]
+            *[
+                current_channel.set_permissions(member, overwrite=overwrite)
+                for member in members
+            ]
         )
 
         # send message to channel
         await callback_interaction.response.send_message(
-            "Đã cấp quyền cho " + ",".join([f"<@{member.id}>" for member in members]) + " vào phòng"
+            "Đã cấp quyền cho "
+            + ",".join([f"<@{member.id}>" for member in members])
+            + " vào phòng"
         )
 
     user_select.callback = user_select_callback

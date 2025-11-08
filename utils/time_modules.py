@@ -8,7 +8,9 @@ from cachetools.func import ttl_cache
 def vn_now() -> datetime.datetime:
     utc_now = pytz.utc.localize(datetime.datetime.utcnow())
     pst_now = utc_now.astimezone(pytz.timezone("Asia/Ho_Chi_Minh"))
-    now = datetime.datetime(pst_now.year, pst_now.month, pst_now.day, pst_now.hour, pst_now.minute)
+    now = datetime.datetime(
+        pst_now.year, pst_now.month, pst_now.day, pst_now.hour, pst_now.minute
+    )
     return now
 
 
@@ -96,7 +98,9 @@ class Now:
         The first day of last month.
         """
         last_day_of_last_month = self.last_day_of_last_month()
-        return datetime.datetime(last_day_of_last_month.year, last_day_of_last_month.month, 1)
+        return datetime.datetime(
+            last_day_of_last_month.year, last_day_of_last_month.month, 1
+        )
 
     def last_day_of_last_month(self) -> datetime.datetime:
         """
@@ -106,7 +110,9 @@ class Now:
 
 
 def generate_date_strings(
-    start_date: datetime.datetime, end_date: datetime.datetime, format_type: Optional[str] = "%d/%m"
+    start_date: datetime.datetime,
+    end_date: datetime.datetime,
+    format_type: Optional[str] = "%d/%m",
 ) -> datetime.datetime:
     """
     Generate a list of string from date to date with custom format

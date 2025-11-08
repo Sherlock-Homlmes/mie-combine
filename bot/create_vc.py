@@ -60,7 +60,7 @@ is_ready = False
 
 class Room:
     def __init__(self):
-        self.number = None
+        self.number: int | None = None
 
     def get_new_room_number(self):
         self.number = find_first_missing_number(vc_id_name_map.values())
@@ -97,7 +97,7 @@ async def on_ready():
 
 # TODO: fix room include remove additional_category_ids
 async def fix_room():
-    global all_created_vc_id, guild
+    global all_created_vc_id, vc_id_name_map, guild
 
     all_vc = [x.vc_id for x in await VoiceChannels.find({}).to_list()]
     all_vc.extend(all_created_vc_id)
@@ -113,9 +113,9 @@ async def fix_room():
                 await vc.delete()
             else:
                 room = Room()
-                if room.get_room_number_from_room_name(vc_channel.name) is not None:
+                room.get_room_number_from_room_name(vc_channel.name)
+                if room.number is not None:
                     vc_id_name_map[vc_id] = room.number
-
         else:
             vc = await VoiceChannels.find_one(VoiceChannels.vc_id == vc_id)
             await vc.delete()
@@ -136,7 +136,7 @@ async def on_voice_state_update(
     member_before: discord.VoiceState,
     member_after: discord.VoiceState,
 ):
-    global all_created_vc_id, guild, is_ready
+    global all_created_vc_id, vc_id_name_map, guild, is_ready
 
     if not is_ready:
         return
@@ -471,7 +471,6 @@ async def hide(interaction: Interaction):
 @app_commands.describe(name="Đặt lại tên phòng")
 async def rename(interaction: Interaction, name: str):
     # await room_permission(interaction, name=name)
-    print("rename room. do it soon")
     await interaction.response.send_message(
         "Tính năng hiện tại không khả dụng. Chúng tôi sẽ thông báo khi tính năng được khôi phục."
     )

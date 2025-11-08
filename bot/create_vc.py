@@ -14,7 +14,6 @@ from core.conf.bot.conf import bot, guild_id, server_info
 from core.models import ErrandData, Users, VoiceChannels
 from utils.discord_bot.channel_name import (
     check_avaiable_name,
-    rewrite_create_voice_channel_name,
 )
 from utils.time_modules import Now
 
@@ -54,23 +53,46 @@ command_mess = """
 
 # ----------START-----------
 all_created_vc_id = []
+vc_id_name_map = {}
 guild: discord.Guild = None
+is_ready = False
+
+
+class Room:
+    def __init__(self):
+        self.number = None
+
+    def get_new_room_number(self):
+        self.number = find_first_missing_number(vc_id_name_map.values())
+
+    def get_room_number_from_room_name(self, room_name: str):
+        try:
+            self.number = int(room_name.replace("#room ", ""))
+        except ValueError:
+            self.number = None
+
+
+def find_first_missing_number(lst):
+    num_set = set(lst)
+    i = 1
+    while i in num_set:
+        i += 1
+    return i
 
 
 @bot.listen()
 async def on_ready():
-    global all_created_vc_id, guild
+    global all_created_vc_id, guild, is_ready
 
     print("6.Create voice channel ready")
     await asyncio.sleep(10)
     # get all created voice channel
     guild = bot.get_guild(guild_id)
-    all_created_vc_id = [
-        voice_channel.vc_id for voice_channel in await VoiceChannels.find({}).to_list()
-    ]
+    all_created_vc_id = [vc.vc_id for vc in await VoiceChannels.find({}).to_list()]
 
     # delete empty voice channel
     await fix_room()
+    is_ready = True
 
 
 # TODO: fix room include remove additional_category_ids
@@ -89,6 +111,11 @@ async def fix_room():
                 await vc_channel.delete()
                 vc = await VoiceChannels.find_one(VoiceChannels.vc_id == vc_id)
                 await vc.delete()
+            else:
+                room = Room()
+                if room.get_room_number_from_room_name(vc_channel.name) is not None:
+                    vc_id_name_map[vc_id] = room.number
+
         else:
             vc = await VoiceChannels.find_one(VoiceChannels.vc_id == vc_id)
             await vc.delete()
@@ -109,7 +136,10 @@ async def on_voice_state_update(
     member_before: discord.VoiceState,
     member_after: discord.VoiceState,
 ):
-    global all_created_vc_id, guild
+    global all_created_vc_id, guild, is_ready
+
+    if not is_ready:
+        return
 
     voice_channel_before = member_before.channel
     voice_channel_after = member_after.channel
@@ -140,6 +170,8 @@ async def on_voice_state_update(
                         del_list.append(category_channel_del)
                     await asyncio.gather(*[x.delete() for x in del_list if x])
                     all_created_vc_id.remove(voice_channel_before.id)
+                    if vc_id_name_map.get(voice_channel_before.id):
+                        del vc_id_name_map[voice_channel_before.id]
                     if category_channel_del:
                         server_info_data = await ErrandData.find_one(
                             ErrandData.name == "server_info"
@@ -169,9 +201,10 @@ async def on_voice_state_update(
                     )
                 else:
                     channel_info = server_info.channel_cre[str(voice_channel_after.id)]
+                    room = Room()
+                    room.get_new_room_number()
                     # create
-                    vc_name = f"#{rewrite_create_voice_channel_name(member.name)}'s room"
-
+                    vc_name = f"#room {room.number}"
                     feature_bot_role = server_info.guild.get_role(server_info.role_ids.feature_bot)
                     vc_channel: discord.VoiceChannel
                     try:
@@ -256,6 +289,7 @@ async def on_voice_state_update(
                             ]
                             await server_info_data.save()
                     all_created_vc_id.append(vc_channel.id)
+                    vc_id_name_map[vc_channel.id] = room.number
 
                     data_voice_channel = VoiceChannels(
                         owner=await Users.find_one(Users.discord_id == member.id),
@@ -273,6 +307,7 @@ async def on_voice_state_update(
                             *[x.delete() for x in [vc_channel, data_voice_channel]]
                         )
                         all_created_vc_id.remove(vc_channel.id)
+                        del vc_id_name_map[vc_channel.id]
 
 
 room_permission_effect = {

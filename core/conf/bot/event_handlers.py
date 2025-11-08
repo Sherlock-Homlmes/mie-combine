@@ -72,6 +72,14 @@ async def get_server_info():
     server_info.confession_dropdown_id = server_info_data["confession_dropdown_id"]
     # create voice channel
     server_info.channel_cre = server_info_data["channel_cre"]
+    # server_info.channel_cre = {
+    #     "1253362589304619060": {
+    #         "category_id": 917405878217490482,
+    #         "locate": "SG",
+    #         "limit": [3, 15],
+    #         "additional_category_ids": [],
+    #     }
+    # }
 
     # errands
     server_info.color_roles = server_info_data["color_roles"]

@@ -1,6 +1,7 @@
 # REFACTOR
 # default
 import asyncio
+import datetime
 from typing import Optional, Union
 
 # lib
@@ -387,7 +388,21 @@ async def room_permission(
                 await send(message)
 
             if name:
-                if check_avaiable_name(name):
+                member_role_names = [role.name for role in interaction.user.roles]
+                is_server_booster = "Server Booster" in member_role_names
+                channel_data = await VoiceChannels.find_one(
+                    VoiceChannels.vc_id == current_channel.id,
+                )
+                now = Now().now
+                is_server_created_more_than_week = (
+                    channel_data.created_at - datetime.timedelta(days=7)
+                ) < now
+                print(is_server_booster, is_server_created_more_than_week)
+                if not is_server_booster and not is_server_created_more_than_week:
+                    await interaction.response.send_message(
+                        "Nâng cấp lên server booster hoặc giữ phòng trên 1 tuần để đổi tên nhé 😁"
+                    )
+                elif check_avaiable_name(name):
                     new_name = name
                     if len(new_name) > 50:
                         await send("Tên quá dài")
@@ -470,11 +485,7 @@ async def hide(interaction: Interaction):
 @bot.tree.command(name="rename", description="Đặt giới hạn phòng")
 @app_commands.describe(name="Đặt lại tên phòng")
 async def rename(interaction: Interaction, name: str):
-    # await room_permission(interaction, name=name)
-    print("Rename command called with name:", name)
-    await interaction.response.send_message(
-        "Tính năng hiện tại không khả dụng. Chúng tôi sẽ thông báo khi tính năng được khôi phục."
-    )
+    await room_permission(interaction, name=name)
 
 
 @bot.tree.command(name="limit", description="Đặt giới hạn phòng")

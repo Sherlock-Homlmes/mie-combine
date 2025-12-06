@@ -11,6 +11,8 @@ genai.configure(api_key=env.GEMINI_AI_API_KEY)
 model_type = "gemini-2.5-flash"
 model = genai.GenerativeModel(model_type)
 
+DISCORD_MAX_LENGTH_MESSAGE = 2000
+
 
 @bot.listen()
 async def on_message(message):
@@ -52,7 +54,16 @@ async def on_message(message):
                     delete_image(file)
 
             response = await chat.send_message_async(contents)
-            await message.channel.send(response.text, reference=message)
+            text = response.text
+
+            if len(text) > DISCORD_MAX_LENGTH_MESSAGE:
+                first_part = text[:DISCORD_MAX_LENGTH_MESSAGE]
+                second_part = text[DISCORD_MAX_LENGTH_MESSAGE:]
+
+                await message.channel.send(first_part, reference=message)
+                await message.channel.send(second_part)
+            else:
+                await message.channel.send(text, reference=message)
 
             # TODO: refactor
             model_contents = []

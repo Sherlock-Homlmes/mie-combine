@@ -397,7 +397,6 @@ async def room_permission(
                 is_server_created_more_than_week = (
                     channel_data.created_at - datetime.timedelta(days=7)
                 ) < now
-                print(is_server_booster, is_server_created_more_than_week)
                 if not is_server_booster and not is_server_created_more_than_week:
                     await interaction.response.send_message(
                         "Nâng cấp lên server booster hoặc giữ phòng trên 1 tuần để đổi tên nhé 😁"

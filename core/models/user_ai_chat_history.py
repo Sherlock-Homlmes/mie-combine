@@ -1,10 +1,10 @@
 # default
-from typing import Optional, List
+from typing import List, Optional
 
 # lib
 from beanie import Document
-from pydantic import BaseModel
 from google.generativeai import protos
+from pydantic import BaseModel
 
 
 class FileData(BaseModel):
@@ -27,7 +27,9 @@ class UserAIChatHistory(Document):
     response: str
 
     @staticmethod
-    async def get_history(user_id: int, channel_id: int, limit=20):
+    async def get_history(
+        user_id: int, channel_id: int, limit=20, without_files: List[str] = []
+    ):
         model_histories = await UserAIChatHistory.find(
             {"created_by": user_id, "channel_id": channel_id}, limit=limit
         ).to_list()
@@ -49,17 +51,22 @@ class UserAIChatHistory(Document):
                 if content.text:
                     contents.append({"text": content.text})
                 elif content.file_data:
+                    file_uri = content.file_data.file_uri
+                    if any(part in file_uri for part in without_files):
+                        continue
                     contents.append(
                         {
                             "file_data": {
                                 "mime_type": content.file_data.mime_type,
-                                "file_uri": content.file_data.file_uri,
+                                "file_uri": file_uri,
                             }
                         }
                     )
 
                 histories.append(protos.Content(parts=contents, role="user"))
 
-            histories.append(protos.Content(parts=[{"text": history.response}], role="model"))
+            histories.append(
+                protos.Content(parts=[{"text": history.response}], role="model")
+            )
 
         return histories

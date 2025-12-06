@@ -1,6 +1,7 @@
 import re
 
 import google.generativeai as genai
+from google.api_core.exceptions import PermissionDenied
 
 from core.conf.bot.conf import bot
 from core.env import env
@@ -53,8 +54,32 @@ async def on_message(message):
                     # for file in files:
                     delete_image(file)
 
-            response = await chat.send_message_async(contents)
-            text = response.text
+            async def try_call_ai(without_files=[]):
+                try:
+                    chat.history = await UserAIChatHistory.get_history(
+                        message.author.id,
+                        message.channel.id,
+                        without_files=without_files,
+                    )
+                    response = await chat.send_message_async(contents)
+                    return response.text
+                except PermissionDenied as e:
+                    pattern = r"File (\w+) or"
+                    match = re.search(pattern, str(e))
+                    file_id = match.group(1)
+                    print("AI files removed: ", file_id)
+                    without_files.append(file_id)
+                    return await try_call_ai(without_files)
+
+            sucess = True
+            try:
+                text = await try_call_ai()
+            except Exception as e:
+                print("AI error: ", e)
+                text = (
+                    "Xảy ra lỗi trong quá trình xử lý. Liên hệ Admin để được trợ giúp"
+                )
+                sucess = False
 
             if len(text) > DISCORD_MAX_LENGTH_MESSAGE:
                 first_part = text[:DISCORD_MAX_LENGTH_MESSAGE]
@@ -64,6 +89,10 @@ async def on_message(message):
                 await message.channel.send(second_part)
             else:
                 await message.channel.send(text, reference=message)
+
+            if not sucess:
+                return
+            return
 
             # TODO: refactor
             model_contents = []

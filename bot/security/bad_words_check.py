@@ -15,6 +15,7 @@ from utils.time_modules import Now
 exact_bad_words = [
     # vn
     "lồn",
+    "lồn",
     "conmemay",
     "đĩ",
     "đụ",
@@ -304,3 +305,4 @@ async def on_message(message: discord.Message):
     )
     model.diary_message_id = diary_message.id
     await model.save()
+

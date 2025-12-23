@@ -165,7 +165,7 @@ class RemoveFalseBadWordButton(ui.View):
 
 def check_bad_words(content: str) -> bool:
     content = content.lower()
-    content = re.sub(r'\s+', '', content)
+    content = re.sub(r'\s+', ' ', content)
     content_words = content.split(" ")
     tempo_content = []
 
@@ -306,5 +306,6 @@ async def on_message(message: discord.Message):
     )
     model.diary_message_id = diary_message.id
     await model.save()
+
 
 

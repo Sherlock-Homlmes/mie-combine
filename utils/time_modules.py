@@ -9,11 +9,16 @@ from cachetools.func import ttl_cache
 
 @ttl_cache(maxsize=1, ttl=60)
 def vn_now() -> datetime.datetime:
+
+    utc_now = pytz.utc.localize(datetime.datetime.utcnow())
+    dt_object_vn = utc_now.astimezone(pytz.timezone("Asia/Ho_Chi_Minh"))
+    return dt_object_vn
+    
     """
-    Get current time in VietNam (Asia/Ho_Chi_Minh).
-    - Try get from API first.
-    - If no result (after 1.5s) or error, calculate time locally.
-    - Result will be cached in 60 secs.
+        Get current time in VietNam (Asia/Ho_Chi_Minh).
+        - Try get from API first.
+        - If no result (after 1.5s) or error, calculate time locally.
+        - Result will be cached in 60 secs.
     """
     url = "https://time-api.betterme.study"
     start_time = time.perf_counter()
@@ -54,7 +59,7 @@ def str_to_time(s: str) -> datetime.datetime:
 class Now:
     def __init__(self):
         now: datetime.datetime = vn_now()
-        self.now: datetime.datetime = now.replace(second=0, microsecond=0)
+        self.now: datetime.datetime = now.replace(tzinfo=None)
         self.today: datetime.datetime = datetime.datetime(now.year, now.month, now.day)
 
     def some_day_before(self, days: int) -> datetime.datetime:

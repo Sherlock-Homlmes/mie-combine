@@ -7,11 +7,12 @@ import requests
 from cachetools.func import ttl_cache
 
 
-@ttl_cache(maxsize=1, ttl=60)
+@ttl_cache(maxsize=1, ttl=20)
 def vn_now() -> datetime.datetime:
 
     utc_now = pytz.utc.localize(datetime.datetime.utcnow())
     dt_object_vn = utc_now.astimezone(pytz.timezone("Asia/Ho_Chi_Minh"))
+    print("⏱️ Time debugger", dt_object_vn)
     return dt_object_vn
     
     """

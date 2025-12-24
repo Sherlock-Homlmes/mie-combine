@@ -29,9 +29,7 @@ def vn_now() -> datetime.datetime:
         if not local_time_string:
             raise ValueError("Time API response does not contain 'local_time'.")
 
-        dt_object_naive = datetime.datetime.fromisoformat(local_time_string)
-        vn_timezone = pytz.timezone("Asia/Ho_Chi_Minh")
-        dt_object_vn = vn_timezone.localize(dt_object_naive)
+        dt_object_vn = datetime.datetime.fromisoformat(local_time_string)
         return dt_object_vn
 
     except (requests.exceptions.RequestException, ValueError) as e:
@@ -56,7 +54,7 @@ def str_to_time(s: str) -> datetime.datetime:
 class Now:
     def __init__(self):
         now: datetime.datetime = vn_now()
-        self.now: datetime.datetime = now
+        self.now: datetime.datetime = now.replace(second=0, microsecond=0)
         self.today: datetime.datetime = datetime.datetime(now.year, now.month, now.day)
 
     def some_day_before(self, days: int) -> datetime.datetime:

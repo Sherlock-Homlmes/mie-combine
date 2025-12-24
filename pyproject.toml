@@ -1,0 +1,3 @@
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["E402", "F401", "F403", "F405"]
+"main.py" = ["F403"]

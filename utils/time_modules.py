@@ -42,7 +42,7 @@ def vn_now() -> datetime.datetime:
     finally:
         end_time = time.perf_counter()
         duration_ms = (end_time - start_time) * 1000
-        print(f"⏱️ Time API call {duration_ms:.2f} ms")
+        print(f"⏱️ Time API call {duration_ms:.2f} ms", dt_object_vn)
 
 
 def time_to_str(t: datetime.datetime) -> str:

@@ -9,8 +9,9 @@ from pydantic import BaseModel
 
 
 class UserMetadata(BaseModel):
-    bank_account: str
-    bank_code: str
+    bank_account: Optional[str] = None
+    bank_code: Optional[str] = None
+    disable_achievement_role: Optional[bool] = False
 
 
 class Users(Document):
@@ -26,3 +27,9 @@ class Users(Document):
     created_at: datetime.datetime
     joined_at: datetime.datetime
     leaved_at: Optional[datetime.datetime] = None
+
+    def update_metadata(self, data: dict):
+        if self.metadata:
+            self.metadata = self.metadata.model_copy(update=data)
+        else:
+            self.metadata = UserMetadata(**data)

@@ -66,95 +66,91 @@ async def on_voice_state_update(
             print("Study time Error:", e)
         if member.id in updating_members:
             updating_members.remove(member.id)
+        # TODO: cache this
+        member_db = await Users.find_one({"discord_id": member.id})
+        if member_db.metadata and member_db.metadata.disable_achievement_role:
+            return
 
         # UPDATE ROLE
-        member_role_ids = [role.id for role in member.roles]
-        # Add positive student role
-        if server_info.role_ids.positive_student not in member_role_ids:
-            user_study_stats = await UserDailyStudyTimes.get_user_study_time_stats(member.id)
-            if user_study_stats.total >= 200 * 60:
+        await update_user_monthly_role(member)
+
+
+async def update_user_monthly_role(
+    member: discord.Member,
+):
+    member_role_ids = [role.id for role in member.roles]
+    time_module = Now()
+    user_study_stats = await UserDailyStudyTimes.get_user_study_time_stats(
+        member.id, time_module.first_day_of_month(), time_module.last_day_of_month()
+    )
+    if user_study_stats.total >= 60:
+        monthly_role_study_times = [
+            {
+                "time": 120 * 60,
+                "role": server_info.roles.challenger,
+                "role_id": server_info.role_ids.challenger,
+                "name": "Challenger",
+            },
+            {
+                "time": 90 * 60,
+                "role": server_info.roles.master,
+                "role_id": server_info.role_ids.master,
+                "name": "Master",
+            },
+            {
+                "time": 60 * 60,
+                "role": server_info.roles.diamond,
+                "role_id": server_info.role_ids.diamond,
+                "name": "Diamond",
+            },
+            {
+                "time": 30 * 60,
+                "role": server_info.roles.gold,
+                "role_id": server_info.role_ids.gold,
+                "name": "Gold",
+            },
+            {
+                "time": 10 * 60,
+                "role": server_info.roles.silver,
+                "role_id": server_info.role_ids.silver,
+                "name": "Silver",
+            },
+            {
+                "time": 3 * 60,
+                "role": server_info.roles.bronze,
+                "role_id": server_info.role_ids.bronze,
+                "name": "Bronze",
+            },
+            {
+                "time": 1 * 60,
+                "role": server_info.roles.iron,
+                "role_id": server_info.role_ids.iron,
+                "name": "Iron",
+            },
+        ]
+        all_roles = [
+            monthly_role_study_time["role"]
+            for monthly_role_study_time in monthly_role_study_times
+        ]
+        for monthly_role_study_time in monthly_role_study_times:
+            if monthly_role_study_time["role_id"] in member_role_ids:
+                break
+            if user_study_stats.total >= monthly_role_study_time["time"]:
                 embed = discord.Embed(
                     title="**Chúc mừng**",
-                    description="Bạn đã học hơn 200h và đạt được danh hiệu học sinh tích cực. Giờ đây bạn có thể đổi màu tên của bạn bất kì lúc nào bạn muốn bằng lệnh `/color`",
+                    description=f"Bạn đã đạt được hạng **{monthly_role_study_time['name']}** trong tháng này.",
                     colour=discord.Colour.gold(),
                 )
-                await member.add_roles(server_info.roles.positive_student)
-                await member.send(embed=embed)
-
-        # TODO: refactor this
-        # Add monthly rank role
-        time_module = Now()
-        user_study_stats = await UserDailyStudyTimes.get_user_study_time_stats(
-            member.id, time_module.first_day_of_month(), time_module.last_day_of_month()
-        )
-        if user_study_stats.total >= 60:
-            monthly_role_study_times = [
-                {
-                    "time": 120 * 60,
-                    "role": server_info.roles.challenger,
-                    "role_id": server_info.role_ids.challenger,
-                    "name": "Challenger",
-                },
-                {
-                    "time": 90 * 60,
-                    "role": server_info.roles.master,
-                    "role_id": server_info.role_ids.master,
-                    "name": "Master",
-                },
-                {
-                    "time": 60 * 60,
-                    "role": server_info.roles.diamond,
-                    "role_id": server_info.role_ids.diamond,
-                    "name": "Diamond",
-                },
-                {
-                    "time": 30 * 60,
-                    "role": server_info.roles.gold,
-                    "role_id": server_info.role_ids.gold,
-                    "name": "Gold",
-                },
-                {
-                    "time": 10 * 60,
-                    "role": server_info.roles.silver,
-                    "role_id": server_info.role_ids.silver,
-                    "name": "Silver",
-                },
-                {
-                    "time": 3 * 60,
-                    "role": server_info.roles.bronze,
-                    "role_id": server_info.role_ids.bronze,
-                    "name": "Bronze",
-                },
-                {
-                    "time": 1 * 60,
-                    "role": server_info.roles.iron,
-                    "role_id": server_info.role_ids.iron,
-                    "name": "Iron",
-                },
-            ]
-            all_roles = [
-                monthly_role_study_time["role"]
-                for monthly_role_study_time in monthly_role_study_times
-            ]
-            for monthly_role_study_time in monthly_role_study_times:
-                if monthly_role_study_time["role_id"] in member_role_ids:
-                    break
-                if user_study_stats.total >= monthly_role_study_time["time"]:
-                    embed = discord.Embed(
-                        title="**Chúc mừng**",
-                        description=f"Bạn đã đạt được hạng **{monthly_role_study_time['name']}** trong tháng này.",
-                        colour=discord.Colour.gold(),
-                    )
-                    icon_rank_img = discord.File(
-                        f"./assets/rank_icon/{monthly_role_study_time['name'].lower()}.png",
-                        filename=f"{monthly_role_study_time['name'].lower()}.png",
-                    )
-                    embed.set_thumbnail(
-                        url=f"attachment://{monthly_role_study_time['name'].lower()}.png"
-                    )
-                    for role in all_roles:
-                        if role.id in member_role_ids:
-                            await member.remove_roles(role)
-                    await member.add_roles(monthly_role_study_time["role"])
-                    await member.send(file=icon_rank_img, embed=embed)
-                    break
+                icon_rank_img = discord.File(
+                    f"./assets/rank_icon/{monthly_role_study_time['name'].lower()}.png",
+                    filename=f"{monthly_role_study_time['name'].lower()}.png",
+                )
+                embed.set_thumbnail(
+                    url=f"attachment://{monthly_role_study_time['name'].lower()}.png"
+                )
+                for role in all_roles:
+                    if role.id in member_role_ids:
+                        await member.remove_roles(role)
+                await member.add_roles(monthly_role_study_time["role"])
+                await member.send(file=icon_rank_img, embed=embed)
+                break

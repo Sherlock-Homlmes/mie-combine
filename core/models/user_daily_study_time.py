@@ -2,15 +2,15 @@
 import datetime
 from typing import List, Optional
 
-import pymongo
-
 # lib
 from beanie import Document, Indexed
 from pydantic import validator
+import pymongo
 from cache import AsyncTTL
 
 # local
 from api.schemas import UserStatsGetResponse, DataUserDailyStudyTime
+from utils.time_modules import Now
 
 
 class UserDailyStudyTimes(Document):
@@ -61,6 +61,21 @@ class UserDailyStudyTimes(Document):
         from_date: Optional[datetime.datetime] = None,
         to_date: Optional[datetime.datetime] = None,
     ) -> UserStatsGetResponse:
+        # Update section to live
+        # TODO: optimize this part
+        from .user_study_sections import UserStudySection
+
+        user_study_section = await UserStudySection.find_one(
+            UserStudySection.user.discord_id == user_discord_id, fetch_links=True
+        )
+        if user_study_section:
+            try:
+                await user_study_section.update_user_study_time()
+                user_study_section.start_study_time = Now().now
+                await user_study_section.save()
+            except Exception as e:
+                print("Study time error when query:", e)
+
         queries = {"user_discord_id": user_discord_id}
         date_queries = {}
         if from_date:
@@ -70,7 +85,9 @@ class UserDailyStudyTimes(Document):
         if len(date_queries.keys()):
             queries["date"] = date_queries
         user_daily_study_time = (
-            await UserDailyStudyTimes.find(queries).project(DataUserDailyStudyTime).to_list()
+            await UserDailyStudyTimes.find(queries)
+            .project(DataUserDailyStudyTime)
+            .to_list()
         )
         total_time = sum([sum(x.study_time) for x in user_daily_study_time])
         if not total_time:

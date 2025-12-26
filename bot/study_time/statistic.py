@@ -105,7 +105,9 @@ async def generate_member_study_time_image(
         for label in labels2:
             data2.append(sum(study_time_date_data.get(label, [])) / 60)
             total_past_time += sum(study_time_date_data.get(label, []))
-        chart_legend_label2 = f"Tháng trước: {total_past_time//60} giờ {total_past_time%60} phút"
+        chart_legend_label2 = (
+            f"Tháng trước: {total_past_time//60} giờ {total_past_time%60} phút"
+        )
 
     elif time_range == "Tuần này":
         file_path += f"{member_id}-week.png"
@@ -117,7 +119,9 @@ async def generate_member_study_time_image(
         last_day_of_this_week = end_date
         study_time_date_data = study_time_stats.daily_study_time_to_object()
 
-        sub_labels = generate_date_strings(first_day_of_this_week, last_day_of_this_week)
+        sub_labels = generate_date_strings(
+            first_day_of_this_week, last_day_of_this_week
+        )
         for label in sub_labels:
             data.append(sum(study_time_date_data.get(label, [])) / 60)
             total_time += sum(study_time_date_data.get(label, []))
@@ -127,7 +131,9 @@ async def generate_member_study_time_image(
         for label in labels2:
             data2.append(sum(study_time_date_data.get(label, [])) / 60)
             total_past_time += sum(study_time_date_data.get(label, []))
-        chart_legend_label2 = f"Tuần trước: {total_past_time//60} giờ {total_past_time%60} phút"
+        chart_legend_label2 = (
+            f"Tuần trước: {total_past_time//60} giờ {total_past_time%60} phút"
+        )
     elif time_range == "Hôm nay":
         file_path += f"{member_id}-today.png"
         max_value = 60
@@ -135,13 +141,17 @@ async def generate_member_study_time_image(
 
         study_time_date_data = study_time_stats.daily_study_time_to_object()
 
-        date_strings = generate_date_strings(time_module.some_day_before(1), time_module.today)
+        date_strings = generate_date_strings(
+            time_module.some_day_before(1), time_module.today
+        )
         data = study_time_date_data.get(date_strings[1], [])
         data2 = study_time_date_data.get(date_strings[0], [])
         total_time = sum(data)
         total_past_time = sum(data2)
         chart_legend_label = f"Hôm nay: {total_time//60} giờ {total_time%60} phút"
-        chart_legend_label2 = f"Hôm qua: {total_past_time//60} giờ {total_past_time%60} phút"
+        chart_legend_label2 = (
+            f"Hôm qua: {total_past_time//60} giờ {total_past_time%60} phút"
+        )
 
     max_data_value = max(data)
     step_size = max_data_value // 5
@@ -194,7 +204,9 @@ async def generate_member_study_time_image(
                         "tickBorderDash": [10],
                     },
                     "min": 0,
-                    "max": max_value if max_data_value - step_size > max_value * 4 / 5 else None,
+                    "max": max_value
+                    if max_data_value - step_size > max_value * 4 / 5
+                    else None,
                     "ticks": {
                         "color": "rgba(255, 255, 255, 1)",
                         "stepSize": step_size,
@@ -251,7 +263,9 @@ async def generate_member_study_time_image(
         app_commands.Choice(name="Hôm nay", value=4),
     ]
 )
-async def study_time(interaction: discord.Interaction, time_range: app_commands.Choice[int]):
+async def study_time(
+    interaction: discord.Interaction, time_range: app_commands.Choice[int]
+):
     await interaction.response.defer()
 
     try:
@@ -261,7 +275,9 @@ async def study_time(interaction: discord.Interaction, time_range: app_commands.
         with open(statistic_path, "rb") as f:
             await interaction.followup.send(file=discord.File(f))
     except ValueError:
-        await interaction.followup.send(content="Bạn chưa học trong khoảng thời gian này")
+        await interaction.followup.send(
+            content="Bạn chưa học trong khoảng thời gian này"
+        )
 
 
 data_format_infos_top = [
@@ -383,7 +399,9 @@ data_format_info = {
 }
 
 
-def convert_text(text: str, text_font: int, max_width: Optional[int] = None) -> tuple[int, int]:
+def convert_text(
+    text: str, text_font: int, max_width: Optional[int] = None
+) -> tuple[int, int]:
     if not max_width:
         return text
     text_count = len(text)
@@ -436,7 +454,10 @@ def generate_leaderboard_image(
         if (
             target_idx
             and target_idx - start_idx == idx
-            and (not is_top or (is_top and target_idx >= 4 and target_idx - start_idx == idx))
+            and (
+                not is_top
+                or (is_top and target_idx >= 4 and target_idx - start_idx == idx)
+            )
         ):
             target_row = Image.open("./assets/target_row.png").convert("RGBA")
             img_pos = data["img_position"]
@@ -475,6 +496,7 @@ class LeaderboardInfo(BaseModel):
 async def generate_leaderboard_info(
     time_range: Optional[str] = "Tất cả", member_id: Optional[int] = None
 ) -> LeaderboardInfo:
+    # TODO: leaderboard real time
     # Aggregation pipeline to calculate total study time per user for the current month
     pipeline = [
         {
@@ -549,7 +571,9 @@ async def generate_leaderboard_info(
     start_idx = 0
     if member_id:
         try:
-            target_idx = next(i for i, item in enumerate(results) if item["_id"] == member_id)
+            target_idx = next(
+                i for i, item in enumerate(results) if item["_id"] == member_id
+            )
         except StopIteration:
             raise ValueError("No data")
         start_idx = target_idx // 10 * 10
@@ -565,7 +589,9 @@ async def generate_leaderboard_info(
     users_avatar = await asyncio.gather(
         *[
             save_image(
-                user.avatar, target_path=f"./assets/cache/{user.discord_id}.png", use_cache=True
+                user.avatar,
+                target_path=f"./assets/cache/{user.discord_id}.png",
+                use_cache=True,
             )
             for user in users
         ]
@@ -586,7 +612,9 @@ async def generate_leaderboard_info(
         total_study_time = f'{total_time_hour}:{total_time_min if total_time_min >= 10 else "0" + str(total_time_min)}'
 
         result["_id"] = str(result["_id"])
-        result["img"] = users_avatar[idx] if users_avatar[idx] else "./assets/default_avatar.png"
+        result["img"] = (
+            users_avatar[idx] if users_avatar[idx] else "./assets/default_avatar.png"
+        )
         result["img_position"] = data_info["img_position"]
         result["img_size"] = data_info["img_size"]
 
@@ -598,7 +626,9 @@ async def generate_leaderboard_info(
                 data_info["text_font_size"],
             )
             result["text"] = convert_text(
-                users[idx].name, data_info["text_font_size"], data_info["text_max_width"]
+                users[idx].name,
+                data_info["text_font_size"],
+                data_info["text_max_width"],
             )
         else:
             result["text_position"] = data_info["text_position"]
@@ -621,11 +651,16 @@ async def generate_leaderboard_info(
 
     img_path = f"./assets/cache/{img_name}"
     generate_leaderboard_image(
-        leaderboard_data=results, start_idx=start_idx, target_idx=target_idx, img_path=img_path
+        leaderboard_data=results,
+        start_idx=start_idx,
+        target_idx=target_idx,
+        img_path=img_path,
     )
 
     return LeaderboardInfo(
-        content=content, img_path=img_path, member_ids=[user.discord_id for user in users]
+        content=content,
+        img_path=img_path,
+        member_ids=[user.discord_id for user in users],
     )
 
 
@@ -639,7 +674,9 @@ async def generate_leaderboard_info(
         app_commands.Choice(name="Hôm nay", value=4),
     ]
 )
-async def leaderboard(interaction: discord.Interaction, time_range: app_commands.Choice[int]):
+async def leaderboard(
+    interaction: discord.Interaction, time_range: app_commands.Choice[int]
+):
     await interaction.response.defer()
     # BUG: last one in list
     try:
@@ -647,6 +684,10 @@ async def leaderboard(interaction: discord.Interaction, time_range: app_commands
             time_range.name, member_id=interaction.user.id
         )
         with open(leaderboard_info.img_path, "rb") as f:
-            await interaction.followup.send(content=leaderboard_info.content, file=discord.File(f))
+            await interaction.followup.send(
+                content=leaderboard_info.content, file=discord.File(f)
+            )
     except ValueError:
-        await interaction.followup.send(content="Bạn chưa học trong khoảng thời gian này")
+        await interaction.followup.send(
+            content="Bạn chưa học trong khoảng thời gian này"
+        )

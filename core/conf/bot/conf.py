@@ -52,6 +52,7 @@ class Bot(commands.Bot):
 
     async def on_ready(self):
         global is_app_running
+        await self.wait_until_ready()
 
         if is_dev_env and not env.BOT_ONLY:
             # Stop bot when reload

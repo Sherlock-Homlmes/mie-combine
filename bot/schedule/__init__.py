@@ -12,8 +12,7 @@ from .monthly_leaderboard import auto_reset_role_monthly, leaderboard_monthly
 
 @bot.listen()
 async def on_ready():
-    print("1. Schedule included")
-    await asyncio.sleep(20)
+    await bot._fully_ready.wait()
     restart_bot.start()
     scan_user_name.start()
     static_channels.start()

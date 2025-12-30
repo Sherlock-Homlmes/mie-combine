@@ -60,7 +60,10 @@ async def get_server_info():
         server_info.channels.leaderboard,
         server_info.channels.general_chat,
     ) = await asyncio.gather(
-        *[get_channel(server_info.guild, server_info_data[channel]) for channel in channels]
+        *[
+            get_channel(server_info.guild, server_info_data[channel])
+            for channel in channels
+        ]
     )
     # set value
 
@@ -84,7 +87,9 @@ async def get_server_info():
     # errands
     server_info.color_roles = server_info_data["color_roles"]
     server_info.game_roles = server_info_data["game_roles"]
-    server_info.game_center_interaction_id = server_info_data["game_center_interaction_id"]
+    server_info.game_center_interaction_id = server_info_data[
+        "game_center_interaction_id"
+    ]
 
     # monthly role
 
@@ -103,7 +108,9 @@ async def get_server_info():
     server_info.roles.gold = server_info.guild.get_role(server_info.role_ids.gold)
     server_info.roles.diamond = server_info.guild.get_role(server_info.role_ids.diamond)
     server_info.roles.master = server_info.guild.get_role(server_info.role_ids.master)
-    server_info.roles.challenger = server_info.guild.get_role(server_info.role_ids.challenger)
+    server_info.roles.challenger = server_info.guild.get_role(
+        server_info.role_ids.challenger
+    )
 
     server_info.role_ids.positive_student = server_info_data["positive_student_role_id"]
     server_info.roles.positive_student = server_info.guild.get_role(

@@ -13,7 +13,12 @@ from bot.security.bad_words_check import check_bad_words
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from core.models import CloseConfessions, ConfessionReply, ConfessionTypeEnum, OpenConfessions
+from core.models import (
+    CloseConfessions,
+    ConfessionReply,
+    ConfessionTypeEnum,
+    OpenConfessions,
+)
 from utils.discord_bot.channel_name import rewrite_confession_channel_name
 from utils.image_handle import delete_image, save_image
 from utils.time_modules import Now
@@ -82,13 +87,17 @@ class ConfessionCreateButton(ui.View):
         channel = await interaction.channel.category.create_text_channel(
             chanel_name,
             overwrites={
-                interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                interaction.guild.default_role: discord.PermissionOverwrite(
+                    view_channel=False
+                ),
                 member: discord.PermissionOverwrite(view_channel=True),
             },
             reason=None,
         )
 
-        confession = Confession(channel=channel, member=member, cfs_type=self.cfs_type, files=[])
+        confession = Confession(
+            channel=channel, member=member, cfs_type=self.cfs_type, files=[]
+        )
         await confession.set_confession()
         await confession.end_confession()
 
@@ -131,7 +140,9 @@ class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
             )
             return
 
-        cfs = await CloseConfessions.find_one(CloseConfessions.message_id == interaction.message.id)
+        cfs = await CloseConfessions.find_one(
+            CloseConfessions.message_id == interaction.message.id
+        )
         if interaction.user.id == cfs.created_by:
             member_index = 0
         else:
@@ -171,15 +182,17 @@ class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
                 manage_thread.send(
                     f"**Từ: Người ẩn danh {member_index}** <@{interaction.user.id}>\n{self.content}",
                 ),
-                interaction.response.send_message("Đã gửi tin nhắn ẩn danh", ephemeral=True),
+                interaction.response.send_message(
+                    "Đã gửi tin nhắn ẩn danh", ephemeral=True
+                ),
             ]
         )
 
 
 @bot.listen()
 async def on_ready():
+    await bot._fully_ready.wait()
     print("5.Confession ready")
-    await asyncio.sleep(10)
     await fix_confession()
 
 
@@ -235,7 +248,9 @@ class Confession:
         # wait 30 minutes
         await asyncio.sleep(1800)
 
-        if await OpenConfessions.find_one(OpenConfessions.channel_id == self.channel.id):
+        if await OpenConfessions.find_one(
+            OpenConfessions.channel_id == self.channel.id
+        ):
             await self.channel.send(
                 self.member.mention
                 + "**Những lời tâm tư ngàn lời không nói hết. Nếu bạn muốn tiếp tục tâm sự hãy tạo 1 kênh mới. Kênh này sẽ biến mất sau 2 phút nữa. **"  # noqa: E501
@@ -268,7 +283,9 @@ class Confession:
         return files_to_send
 
     async def end_confession(self):
-        confession = await OpenConfessions.find_one(OpenConfessions.channel_id == self.channel.id)
+        confession = await OpenConfessions.find_one(
+            OpenConfessions.channel_id == self.channel.id
+        )
         if confession:
             await self.text_process()
             try:
@@ -293,7 +310,9 @@ class Confession:
                 )
 
     async def send_confession(self):
-        confession_count = await CloseConfessions.find_all().max(CloseConfessions.index) or 0
+        confession_count = (
+            await CloseConfessions.find_all().max(CloseConfessions.index) or 0
+        )
         confession_count += 1
         files = await self.send_files()
 
@@ -305,15 +324,26 @@ class Confession:
         )
         embed.set_footer(text="""BetterMe - Better everyday""")
         if self.model.type == ConfessionTypeEnum.PUBLIC:
-            embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-            embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
+            embed.add_field(
+                name="**Id**", value=f"||{self.member.mention}||", inline=False
+            )
+            embed.set_thumbnail(
+                url=self.member.avatar or self.member.default_avatar.url
+            )
         message = await server_info.confession_channel.send(
-            content=content, embed=embed, files=files, view=ConfessionPrivateReplyButton()
+            content=content,
+            embed=embed,
+            files=files,
+            view=ConfessionPrivateReplyButton(),
         )
         thread = await message.create_thread(name="Rep confession ở đây nè!!!")
         if self.model.type == ConfessionTypeEnum.PRIVATE:
-            embed.add_field(name="**Id**", value=f"||{self.member.mention}||", inline=False)
-            embed.set_thumbnail(url=self.member.avatar or self.member.default_avatar.url)
+            embed.add_field(
+                name="**Id**", value=f"||{self.member.mention}||", inline=False
+            )
+            embed.set_thumbnail(
+                url=self.member.avatar or self.member.default_avatar.url
+            )
         manage_message = await server_info.manage_confession_channel.send(
             content=content, embed=embed, files=files
         )
@@ -358,5 +388,8 @@ async def fix_confession():
 
 @bot.listen()
 async def on_message_delete(message):
+    await bot._fully_ready.wait()
     if message.channel.id == server_info.confession_channel.id:
-        await CloseConfessions.find_one(CloseConfessions.message_id == message.id).delete()
+        await CloseConfessions.find_one(
+            CloseConfessions.message_id == message.id
+        ).delete()

@@ -11,6 +11,7 @@ from core.conf.bot.conf import bot, server_info, guild_id
 
 @bot.listen()
 async def on_interaction(interaction: Interaction):
+    await bot._fully_ready.wait()
     if interaction.message:
         if (
             interaction.message.id == server_info.game_center_interaction_id
@@ -47,7 +48,9 @@ async def on_interaction(interaction: Interaction):
                 await interaction.user.remove_roles(kvc_role)
 
                 for key in values:
-                    role = discord.utils.get(interaction.guild.roles, id=game_roles[key])
+                    role = discord.utils.get(
+                        interaction.guild.roles, id=game_roles[key]
+                    )
                     await interaction.user.add_roles(role)
                 game = ",".join(values)
 

@@ -11,6 +11,8 @@ from bot.ai import model
 # TODO: refactor this. duplicate with on_member_join
 @bot.listen()
 async def on_member_update(member_before: discord.Member, member_after: discord.Member):
+    await bot._fully_ready.wait()
+
     if not member_after.avatar:
         avatar = member_after.default_avatar.url
     else:
@@ -36,7 +38,9 @@ async def on_member_update(member_before: discord.Member, member_after: discord.
         ),
     )
 
-    if "Server Booster" in member_after.roles and "Server Booster" not in str(member_before.roles):
+    if "Server Booster" in member_after.roles and "Server Booster" not in str(
+        member_before.roles
+    ):
         chat = model.start_chat()
         generative_thanks = await chat.send_message_async(
             f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"

@@ -9,6 +9,8 @@ from core.models import Users
 
 @bot.listen()
 async def on_member_join(member: discord.Member):
+    await bot._fully_ready.wait()
+
     if not member.avatar:
         avatar = member.default_avatar.url
     else:

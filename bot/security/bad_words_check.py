@@ -155,7 +155,9 @@ class RemoveFalseBadWordButton(ui.View):
         model = model[0]
         embed = discord.Embed(colour=discord.Colour.green())
         embed.add_field(name="User", value=f"<@{model.user.discord_id}>", inline=True)
-        embed.add_field(name="Moderator", value=interaction.message.author.mention, inline=True)
+        embed.add_field(
+            name="Moderator", value=interaction.message.author.mention, inline=True
+        )
         embed.add_field(name="Content", value=model.bad_content, inline=True)
         await server_info.admin_false_bad_word_log_channel.send(embed=embed)
         await model.delete()
@@ -165,7 +167,7 @@ class RemoveFalseBadWordButton(ui.View):
 
 def check_bad_words(content: str) -> bool:
     content = content.lower()
-    content = re.sub(r'\s+', ' ', content)
+    content = re.sub(r"\s+", " ", content)
     content_words = content.split(" ")
     tempo_content = []
 
@@ -220,7 +222,9 @@ async def punish(user_id: int, message_content: str, mem_name: str):
 
     # number of mistake in recent 1 month
     counter = len(
-        await BadUsers.find(BadUsers.user.discord_id == user_id, fetch_links=True).to_list()
+        await BadUsers.find(
+            BadUsers.user.discord_id == user_id, fetch_links=True
+        ).to_list()
     )
 
     # counter <= 4: warn
@@ -257,6 +261,8 @@ async def punish(user_id: int, message_content: str, mem_name: str):
 
 @bot.listen()
 async def on_message(message: discord.Message):
+    await bot._fully_ready.wait()
+
     if message.author.bot:
         return
     if check_bad_words(message.content):
@@ -306,6 +312,3 @@ async def on_message(message: discord.Message):
     )
     model.diary_message_id = diary_message.id
     await model.save()
-
-
-

@@ -85,8 +85,8 @@ def find_first_missing_number(lst):
 async def on_ready():
     global all_created_vc_id, guild, is_ready
 
+    await bot._fully_ready.wait()
     print("6.Create voice channel ready")
-    await asyncio.sleep(10)
     # get all created voice channel
     guild = bot.get_guild(guild_id)
     all_created_vc_id = [vc.vc_id for vc in await VoiceChannels.find({}).to_list()]

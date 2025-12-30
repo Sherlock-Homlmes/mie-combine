@@ -1,52 +1,15 @@
 import datetime
 import pytz
 from typing import Optional
-import time
 
-import requests
 from cachetools.func import ttl_cache
 
 
 @ttl_cache(maxsize=1, ttl=20)
 def vn_now() -> datetime.datetime:
-
     utc_now = pytz.utc.localize(datetime.datetime.utcnow())
     dt_object_vn = utc_now.astimezone(pytz.timezone("Asia/Ho_Chi_Minh"))
-    print("⏱️ Time debugger", dt_object_vn)
     return dt_object_vn
-    
-    """
-        Get current time in VietNam (Asia/Ho_Chi_Minh).
-        - Try get from API first.
-        - If no result (after 1.5s) or error, calculate time locally.
-        - Result will be cached in 60 secs.
-    """
-    url = "https://time-api.betterme.study"
-    start_time = time.perf_counter()
-    try:
-        response = requests.get(url, timeout=1.5)
-        response.raise_for_status()
-        data = response.json()
-
-        if not data.get("success"):
-            raise ValueError("Time API error")
-
-        local_time_string = data.get("local_time")
-        if not local_time_string:
-            raise ValueError("Time API response does not contain 'local_time'.")
-
-        dt_object_vn = datetime.datetime.fromisoformat(local_time_string)
-        return dt_object_vn
-
-    except (requests.exceptions.RequestException, ValueError) as e:
-        print(f"Time API error: {e}). Use local time as alternative.")
-        utc_now = pytz.utc.localize(datetime.datetime.utcnow())
-        dt_object_vn = utc_now.astimezone(pytz.timezone("Asia/Ho_Chi_Minh"))
-        return dt_object_vn
-    finally:
-        end_time = time.perf_counter()
-        duration_ms = (end_time - start_time) * 1000
-        print(f"⏱️ Time API call {duration_ms:.2f} ms", dt_object_vn)
 
 
 def time_to_str(t: datetime.datetime) -> str:

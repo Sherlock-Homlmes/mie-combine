@@ -28,7 +28,9 @@ async def save_image(
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             if resp.status == 200:
-                img_name = target_path if target_path else url.split("/")[6].split("?")[0]
+                img_name = (
+                    target_path if target_path else url.split("/")[6].split("?")[0]
+                )
                 f = await aiofiles.open(img_name, mode="wb")
                 await f.write(await resp.read())
                 await f.close()

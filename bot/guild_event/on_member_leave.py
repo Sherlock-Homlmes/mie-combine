@@ -10,6 +10,8 @@ from utils.time_modules import Now
 
 @bot.listen()
 async def on_member_remove(member: discord.Member):
+    await bot._fully_ready.wait()
+
     if not member.avatar:
         avatar = member.default_avatar.url
     else:

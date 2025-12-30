@@ -85,7 +85,8 @@ def timedelta_to_daily_list(time1: datetime.datetime, time2: datetime.datetime):
         if time2.hour == 0:
             time2_hour = 24
         study_time = [
-            (lambda x: 60 if (x > time1.hour and x < time2_hour) else 0)(x) for x in range(0, 24)
+            (lambda x: 60 if (x > time1.hour and x < time2_hour) else 0)(x)
+            for x in range(0, 24)
         ]
         if time2_hour != 24:
             study_time[time2.hour] = time2.minute

@@ -29,7 +29,9 @@ async def on_message(message: discord.Message):
         ||**Trên 120 từ nhé :3**||
         """
             embed.set_thumbnail(url=message.author.avatar.url)
-            embed.add_field(name="**Một mẫu giới thiệu cơ bản**", value=basic, inline=False)
+            embed.add_field(
+                name="**Một mẫu giới thiệu cơ bản**", value=basic, inline=False
+            )
             await message.author.send(embed=embed)
 
         else:

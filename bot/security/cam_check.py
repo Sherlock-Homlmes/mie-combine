@@ -28,7 +28,9 @@ class CheckCamEmbedMessage:
     async def send(self):
         self.update_embed()
         try:
-            self.message = await self.member.send(content=self.member.mention, embed=self.embed)
+            self.message = await self.member.send(
+                content=self.member.mention, embed=self.embed
+            )
         except Exception as e:
             print("Cam check Error:", e)
 
@@ -94,7 +96,9 @@ async def on_voice_state_update(
     if current_channel is None:
         return
 
-    def get_channel_check_types(current_channel: discord.VoiceChannel) -> List[str] | None:
+    def get_channel_check_types(
+        current_channel: discord.VoiceChannel,
+    ) -> List[str] | None:
         if current_channel is None or member.id in check_cam_member_ids:
             return None
         channel_name = current_channel.name.lower()

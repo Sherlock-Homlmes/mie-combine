@@ -30,7 +30,7 @@ elif [[ ${args[0]} == "zip" ]]; then
 #             output="Compress site done"
 #             color="$green"
 #         else
-        
+
 
 else
     output="Unknow command '${args[0]}'"

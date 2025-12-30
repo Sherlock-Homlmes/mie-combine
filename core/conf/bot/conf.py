@@ -17,9 +17,10 @@ is_app_running = True
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._fully_ready = asyncio.Event()
 
-    async def on_ready(self):
-        global is_app_running
+    async def wait_until_ready(self):
+        """Override wait_until_ready để thêm logic custom"""
         from .event_handlers import get_server_info
         from bot.confession import (
             ConfessionCreateButton,
@@ -28,11 +29,15 @@ class Bot(commands.Bot):
         )
         from bot.security.bad_words_check import RemoveFalseBadWordButton
 
+        # Connect DB
         if env.BOT_ONLY:
             await connect_db()
         await get_server_info()
 
-        # persistent models
+        # Wait for bot ready
+        await super().wait_until_ready()
+
+        # Add persistent models
         for model in [
             ConfessionCreateButton,
             ConfessionEndButton,
@@ -42,7 +47,11 @@ class Bot(commands.Bot):
             view = model(timeout=None)
             self.add_view(view)
 
+        self._fully_ready.set()
         print(f"{self.user} ready")
+
+    async def on_ready(self):
+        global is_app_running
 
         if is_dev_env and not env.BOT_ONLY:
             # Stop bot when reload
@@ -141,3 +150,8 @@ guild_id = 880360143768924210
 prefix = "dump,"
 bot = Bot(command_prefix=prefix, intents=discord.Intents.all())
 server_info = ServerInfo()
+
+
+@bot.before_invoke
+async def wait_before_command(_ctx):
+    await bot._fully_ready.wait()

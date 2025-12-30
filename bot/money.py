@@ -47,7 +47,9 @@ class UpdateQRModal(ui.Modal):
         self.user_id = user_id
         self.bank_code = bank_code
 
-    account_number = ui.TextInput(label="Số tài khoản", placeholder="Nhập số tài khoản của bạn")
+    account_number = ui.TextInput(
+        label="Số tài khoản", placeholder="Nhập số tài khoản của bạn"
+    )
 
     async def on_submit(self, interaction: Interaction):
         await interaction.response.defer(ephemeral=True)
@@ -55,7 +57,9 @@ class UpdateQRModal(ui.Modal):
 
         user = await Users.find_one(Users.discord_id == self.user_id)
         if not user.metadata:
-            user.metadata = UserMetadata(bank_account=account_no, bank_code=self.bank_code)
+            user.metadata = UserMetadata(
+                bank_account=account_no, bank_code=self.bank_code
+            )
         else:
             user.metadata.bank_account = account_no
             user.metadata.bank_code = self.bank_code
@@ -66,7 +70,9 @@ class UpdateQRModal(ui.Modal):
         banks = await get_vietqr_banks()
         bank_name = "Không rõ"
         if banks:
-            bank_info = next((bank for bank in banks if bank["bin"] == self.bank_code), None)
+            bank_info = next(
+                (bank for bank in banks if bank["bin"] == self.bank_code), None
+            )
             if bank_info:
                 bank_name = bank_info["shortName"]
 
@@ -91,7 +97,8 @@ class BankSelectionView(ui.View):
 
         for i, chunk in enumerate(bank_chunks):
             options = [
-                discord.SelectOption(label=bank["shortName"], value=bank["bin"]) for bank in chunk
+                discord.SelectOption(label=bank["shortName"], value=bank["bin"])
+                for bank in chunk
             ]
             select_menu = ui.Select(
                 placeholder=f"Chọn ngân hàng... (Trang {i+1})",
@@ -112,7 +119,9 @@ class MoneyOptions(ui.View):
         super().__init__(timeout=180)
         self.user_id = user_id
 
-    @ui.button(label="Balance & Transaction", emoji="💰", style=discord.ButtonStyle.primary)
+    @ui.button(
+        label="Balance & Transaction", emoji="💰", style=discord.ButtonStyle.primary
+    )
     async def get_balance_and_transactions_button(
         self, interaction: Interaction, button: ui.Button
     ):
@@ -128,13 +137,20 @@ class MoneyOptions(ui.View):
         ).to_list()
         final_amount = sum(
             [income_transaction.amount for income_transaction in all_income_transaction]
-        ) - sum([outcome_transaction.amount for outcome_transaction in all_outcome_transaction])
+        ) - sum(
+            [
+                outcome_transaction.amount
+                for outcome_transaction in all_outcome_transaction
+            ]
+        )
 
         # Get transactions
         page = 1
         embed, has_next_page = await self._get_transaction_data(page)
 
-        balance_content = f"💰 **Số dư hiện tại: {final_amount:,.0f} {currency_unit.value}**"
+        balance_content = (
+            f"💰 **Số dư hiện tại: {final_amount:,.0f} {currency_unit.value}**"
+        )
 
         if embed is None:
             # Only show balance if no transactions
@@ -164,7 +180,8 @@ class MoneyOptions(ui.View):
             bank_name = "Không rõ"
             if banks:
                 bank_info = next(
-                    (bank for bank in banks if bank["bin"] == user.metadata.bank_code), None
+                    (bank for bank in banks if bank["bin"] == user.metadata.bank_code),
+                    None,
                 )
                 if bank_info:
                     bank_name = bank_info["shortName"]
@@ -173,7 +190,9 @@ class MoneyOptions(ui.View):
             embed = discord.Embed(title=f"Tài khoản của {user.nick or user.name}")
             embed.set_image(url=qr_url)
             embed.add_field(name="Ngân hàng", value=bank_name, inline=True)
-            embed.add_field(name="Số tài khoản", value=user.metadata.bank_account, inline=True)
+            embed.add_field(
+                name="Số tài khoản", value=user.metadata.bank_account, inline=True
+            )
             await interaction.followup.send(embed=embed)
 
     @ui.button(label="Cập nhật STK", emoji="🔄", style=discord.ButtonStyle.secondary)
@@ -182,7 +201,8 @@ class MoneyOptions(ui.View):
         banks = await get_vietqr_banks()
         if not banks:
             await interaction.followup.send(
-                content="Không thể lấy danh sách ngân hàng. Vui lòng thử lại sau.", ephemeral=True
+                content="Không thể lấy danh sách ngân hàng. Vui lòng thử lại sau.",
+                ephemeral=True,
             )
         else:
             view = BankSelectionView(self.user_id, banks)
@@ -218,8 +238,12 @@ class MoneyOptions(ui.View):
         description = ""
         for trans in display_transactions:
             description += f"**Người chuyển khoản**: <@{trans.from_user_id}> \n"
-            description += f"**Số tiền**: {trans.amount:,.0f} {trans.currency_unit.value} \n"
-            description += f"**Thời gian:** {trans.created_at.strftime('%H:%M %d/%m/%Y')} \n"
+            description += (
+                f"**Số tiền**: {trans.amount:,.0f} {trans.currency_unit.value} \n"
+            )
+            description += (
+                f"**Thời gian:** {trans.created_at.strftime('%H:%M %d/%m/%Y')} \n"
+            )
             description += f"**Nội dung:** {trans.message}\n\n"
 
         embed.description = description
@@ -259,10 +283,13 @@ class TransactionPagination(ui.View):
 
 @bot.listen()
 async def on_ready():
+    await bot._fully_ready.wait()
     print("999.Money module ready")
 
 
 @bot.tree.command(name="money", description="Kiểm tra số tài khoản hiện tại")
 async def track_money(interaction: Interaction):
     view = MoneyOptions(interaction.user.id)
-    await interaction.response.send_message("Hãy chọn 1 lựa chọn:", view=view, ephemeral=True)
+    await interaction.response.send_message(
+        "Hãy chọn 1 lựa chọn:", view=view, ephemeral=True
+    )

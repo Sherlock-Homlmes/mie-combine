@@ -6,4 +6,5 @@ from .commands import *
 
 @bot.listen()
 async def on_ready():
+    await bot._fully_ready.wait()
     print("7.Study time ready")

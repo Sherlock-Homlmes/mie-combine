@@ -15,7 +15,9 @@ from core.conf.bot.conf import server_info
 async def scan_user_name():
     warning_members = []
     for member in server_info.guild.members:
-        if not check_bad_words(member.name or "") or not check_bad_words(member.nick or ""):
+        if not check_bad_words(member.name or "") or not check_bad_words(
+            member.nick or ""
+        ):
             warning_members.append(member)
 
     for member in warning_members:

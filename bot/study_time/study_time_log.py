@@ -23,6 +23,9 @@ async def on_voice_state_update(
     # if member.bot or member.id != 880359404036317215:
     if member.bot:
         return
+
+    await bot._fully_ready.wait()
+
     # member join channel
     if not member_before.channel and member_after.channel:
         # block transaction async

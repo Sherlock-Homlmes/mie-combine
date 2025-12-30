@@ -2,10 +2,12 @@
 import asyncio
 from dataclasses import dataclass
 from typing import Dict, List
+import traceback
 
 # library
 import discord
 from discord.ext import commands
+import aiohttp
 
 # local
 from core.env import env, is_dev_env
@@ -70,8 +72,35 @@ class Bot(commands.Bot):
         await self.tree.sync()
         print(f"Synced slash commands for {self.user}.")
 
-    async def on_command_error(self, ctx, error):
-        await ctx.reply(error, ephemeral=True)
+    async def on_error(self, event, *args, **kwargs):
+        error_details = str(traceback.format_exc())
+        embed = {
+            "embeds": [
+                {
+                    "title": "⚠️EVENT ERROR",
+                    "description": error_details,
+                    "color": 16711680,
+                    "fields": [
+                        {"name": "📝 Event", "value": event, "inline": False},
+                    ],
+                    "footer": {"text": "Error Handler"},
+                }
+            ]
+        }
+        await self.send_oops(embed)
+
+    async def send_oops(self, content):
+        if is_dev_env:
+            return
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                if isinstance(content, dict):
+                    await session.post(env.OOPS_WEBHOOK_URL, json=content)
+                else:
+                    await session.post(env.OOPS_WEBHOOK_URL, json={"content": content})
+        except Exception as e:
+            print(f"Can not send webhook: {e}")
 
 
 @dataclass
@@ -154,5 +183,65 @@ server_info = ServerInfo()
 
 
 @bot.before_invoke
-async def wait_before_command(_ctx):
+async def wait_before_command(_interaction):
     await bot._fully_ready.wait()
+
+
+@bot.tree.error
+async def on_command_error(interaction, error):
+    try:
+        await interaction.response.send_message(
+            "Bot lỗi rồi. Bạn liên hệ <@890244740174467082> để được trợ giúp nhé!",
+            ephemeral=True,
+        )
+    except Exception:
+        await interaction.followup.send(
+            "Bot lỗi rồi. Bạn liên hệ <@890244740174467082> để được trợ giúp nhé!",
+            ephemeral=True,
+        )
+
+    error_details = str(traceback.format_exc())
+    embed = {
+        "embeds": [
+            {
+                "title": "⚠COMMAND ERROR",
+                "description": error_details,
+                "color": 16711680,
+                "fields": [
+                    {
+                        "name": "📝 Command",
+                        "value": f"/{interaction.command.qualified_name}",
+                        "inline": False,
+                    },
+                    {
+                        "name": "👤 User",
+                        "value": interaction.user.mention
+                        + f" (`{interaction.user.id}`)",
+                        "inline": True,
+                    },
+                    {
+                        "name": "🏠 Guild",
+                        "value": interaction.guild.name + f" (`{interaction.guild.id}`)"
+                        if interaction.guild
+                        else "DM",
+                        "inline": True,
+                    },
+                    {
+                        "name": "📍 Channel",
+                        "value": interaction.channel.mention
+                        + f" (`{interaction.channel.id}`)",
+                        "inline": True,
+                    },
+                    {
+                        "name": "🔗 Message Link",
+                        "value": interaction.message.jump_url
+                        if interaction.message
+                        else "Not found",
+                        "inline": False,
+                    },
+                ],
+                "footer": {"text": "Error Handler"},
+            }
+        ]
+    }
+    await bot.send_oops(embed)

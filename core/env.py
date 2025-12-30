@@ -13,6 +13,7 @@ class Env(BaseSettings):
     BOT_TOKEN: str
     DATABASE_URL: str
     GEMINI_AI_API_KEY: str
+    OOPS_WEBHOOK_URL: str | None = None
     ENV: ENVEnum = ENVEnum.PROD
 
     model_config = SettingsConfigDict(env_file=".env")

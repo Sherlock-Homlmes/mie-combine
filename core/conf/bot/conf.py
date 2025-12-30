@@ -19,7 +19,7 @@ class Bot(commands.Bot):
         super().__init__(*args, **kwargs)
         self._fully_ready = asyncio.Event()
 
-    async def wait_until_ready(self):
+    async def wait_until_fully_ready(self):
         """Override wait_until_ready để thêm logic custom"""
         from .event_handlers import get_server_info
         from bot.confession import (
@@ -35,7 +35,7 @@ class Bot(commands.Bot):
         await get_server_info()
 
         # Wait for bot ready
-        await super().wait_until_ready()
+        await self.wait_until_ready()
 
         # Add persistent models
         for model in [
@@ -52,7 +52,7 @@ class Bot(commands.Bot):
 
     async def on_ready(self):
         global is_app_running
-        await self.wait_until_ready()
+        await self.wait_until_fully_ready()
 
         if is_dev_env and not env.BOT_ONLY:
             # Stop bot when reload

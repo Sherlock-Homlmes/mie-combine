@@ -5,7 +5,7 @@ from typing import Optional
 from cachetools.func import ttl_cache
 
 
-@ttl_cache(maxsize=1, ttl=20)
+@ttl_cache(maxsize=1, ttl=1)
 def vn_now() -> datetime.datetime:
     utc_now = pytz.utc.localize(datetime.datetime.utcnow())
     dt_object_vn = utc_now.astimezone(pytz.timezone("Asia/Ho_Chi_Minh"))

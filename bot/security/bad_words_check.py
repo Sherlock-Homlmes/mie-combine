@@ -103,6 +103,10 @@ included_bad_words = [
     "hãm cak",
     "ham~ cak",
     "ham cak",
+    "căc.",
+    "dit.",
+    "đit.",
+    "dmm",
     # en
     "wtf",
     "nigg",
@@ -142,6 +146,12 @@ seperate = [
     "_",
 ]
 
+# level 4
+# replace alternative characters
+alternative_words = {
+    "I": "l",
+}
+
 
 class RemoveFalseBadWordButton(ui.View):
     @ui.button(label="Remove", custom_id="remove-bad-word")
@@ -167,6 +177,11 @@ class RemoveFalseBadWordButton(ui.View):
 
 
 def check_bad_words(content: str) -> Set[str | None]:
+    alternative_content = content
+    for key, value in alternative_words.items():
+        alternative_content = alternative_content.replace(key, value)
+    should_use_alternative = alternative_content != content
+
     content = content.lower()
     content = re.sub(r"\s+", " ", content)
     content_words = content.split(" ")
@@ -207,6 +222,8 @@ def check_bad_words(content: str) -> Set[str | None]:
             match_type = "Included(remove seperate)"
             return (match_bad_word, match_type)
 
+    if should_use_alternative:
+        return check_bad_words(alternative_content)
     return (None, None)
 
 

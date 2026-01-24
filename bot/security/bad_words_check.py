@@ -1,4 +1,5 @@
 # default
+from typing import Set
 from datetime import timedelta
 import re
 
@@ -165,16 +166,20 @@ class RemoveFalseBadWordButton(ui.View):
         await member.edit(timed_out_until=None)
 
 
-def check_bad_words(content: str) -> bool:
+def check_bad_words(content: str) -> Set[str | None]:
     content = content.lower()
     content = re.sub(r"\s+", " ", content)
     content_words = content.split(" ")
+    match_bad_word: str | None = None
+    match_type: str | None = None
     tempo_content = []
 
     for word in content_words:
         # check exact
         if word in exact_bad_words:
-            return False
+            match_bad_word = word
+            match_type = "Exact"
+            return (match_bad_word, match_type)
 
         # check included
         if word.startswith("http") or word.startswith(":"):
@@ -183,7 +188,9 @@ def check_bad_words(content: str) -> bool:
         else:
             for bad_word in included_bad_words:
                 if bad_word in word:
-                    return False
+                    match_bad_word = bad_word
+                    match_type = "Included"
+                    return (match_bad_word, match_type)
 
     # check space bad word
     for tempo in tempo_content:
@@ -194,11 +201,13 @@ def check_bad_words(content: str) -> bool:
     for seper in seperate:
         content = content.replace(seper, "")
 
-    for word in space_bad_words:
-        if word in content:
-            return False
+    for bad_word in space_bad_words:
+        if bad_word in content:
+            match_bad_word = bad_word
+            match_type = "Included(remove seperate)"
+            return (match_bad_word, match_type)
 
-    return True
+    return (None, None)
 
 
 async def remove_exprired_bad_user(user_id: int):
@@ -265,7 +274,8 @@ async def on_message(message: discord.Message):
 
     if message.author.bot:
         return
-    if check_bad_words(message.content):
+    match_bad_word, match_type = check_bad_words(message.content)
+    if not match_bad_word:
         return
 
     try:
@@ -301,11 +311,12 @@ async def on_message(message: discord.Message):
         icon_url=message.author.avatar.url,
     )
     embed.add_field(name="User", value=message.author.mention, inline=True)
-    embed.add_field(name="Moderator", value=bot.user.mention, inline=True)
-    embed.add_field(name="Reason", value=reason, inline=True)
-    embed.add_field(name="Channel", value=f"<#{message.channel.id}>", inline=False)
+    embed.add_field(name="Channel", value=f"<#{message.channel.id}>", inline=True)
+    embed.add_field(name="Penalize", value=penalize, inline=True)
     embed.add_field(name="Message", value=message.content, inline=False)
-    embed.add_field(name="Penalize", value=penalize, inline=False)
+    embed.add_field(
+        name="Bad word", value=f"{match_type}: {match_bad_word}", inline=False
+    )
 
     diary_message = await server_info.diary_channel.send(
         embed=embed, view=RemoveFalseBadWordButton()

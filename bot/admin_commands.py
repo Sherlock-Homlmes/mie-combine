@@ -137,10 +137,10 @@ class ConfirmPaymentModal(ui.Modal, title="Xác nhận thanh toán"):
             if bank_info:
                 bank_name = bank_info["shortName"]
 
-        # Create transaction
+        # Create transaction (user sends balance to admin)
         transaction = Transactions(
-            from_user_id=interaction.user.id,
-            to_user_id=self.target_user_id,
+            from_user_id=self.target_user_id,
+            to_user_id=interaction.user.id,
             amount=self.amount,
             currency_unit=CurrencyUnitEnum.VND,
             message=self.note.value or "Betterme chuyển khoản",

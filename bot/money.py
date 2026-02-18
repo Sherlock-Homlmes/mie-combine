@@ -287,6 +287,154 @@ async def on_ready():
     print("999.Money module ready")
 
 
+class TransactionModal(ui.Modal, title="Tạo giao dịch"):
+    amount = ui.TextInput(
+        label="Số tiền (VNĐ)",
+        placeholder="Nhập số tiền muốn chuyển",
+    )
+
+    message = ui.TextInput(
+        label="Nội dung chuyển khoản",
+        placeholder="Nhập nội dung giao dịch",
+        required=False,
+        max_length=200,
+    )
+
+    def __init__(self, target_user_id: int):
+        super().__init__()
+        self.target_user_id = target_user_id
+
+    async def on_submit(self, interaction: Interaction):
+        await interaction.response.defer(ephemeral=True)
+
+        try:
+            amount = float(self.amount.value)
+            if amount <= 0:
+                await interaction.followup.send(
+                    "❌ Số tiền phải lớn hơn 0!", ephemeral=True
+                )
+                return
+        except ValueError:
+            await interaction.followup.send("❌ Số tiền không hợp lệ!", ephemeral=True)
+            return
+
+        # Show confirmation view
+        view = TransactionConfirmView(
+            interaction.user.id,
+            self.target_user_id,
+            amount,
+            self.message.value or "Không có nội dung",
+        )
+
+        embed = discord.Embed(title="Xác nhận giao dịch")
+        embed.add_field(
+            name="Người gửi", value=f"<@{interaction.user.id}>", inline=True
+        )
+        embed.add_field(
+            name="Người nhận", value=f"<@{self.target_user_id}>", inline=True
+        )
+        embed.add_field(name="Số tiền", value=f"{amount:,.0f} VNĐ", inline=False)
+        embed.add_field(
+            name="Nội dung",
+            value=self.message.value or "Không có nội dung",
+            inline=False,
+        )
+
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
+
+class UserSelectionView(ui.View):
+    def __init__(self, from_user_id: int):
+        super().__init__(timeout=180)
+        self.from_user_id = from_user_id
+
+        # Use discord.ui.UserSelect for user selection
+        user_select = ui.UserSelect(
+            placeholder="Chọn người nhận...",
+            min_values=1,
+            max_values=1,
+        )
+        user_select.callback = self.select_callback
+        self.add_item(user_select)
+
+    async def select_callback(self, interaction: Interaction):
+        target_user = interaction.data["values"][0]
+        target_user_id = int(target_user)
+
+        # Show modal for amount and message
+        modal = TransactionModal(target_user_id)
+        await interaction.response.send_modal(modal)
+
+
+class TransactionConfirmView(ui.View):
+    def __init__(self, from_user_id: int, to_user_id: int, amount: float, message: str):
+        super().__init__(timeout=180)
+        self.from_user_id = from_user_id
+        self.to_user_id = to_user_id
+        self.amount = amount
+        self.message = message
+
+    @ui.button(label="Xác nhận", style=discord.ButtonStyle.green, emoji="✅")
+    async def confirm_button(self, interaction: Interaction, button: ui.Button):
+        await interaction.response.defer(ephemeral=True)
+
+        # Create transaction
+        transaction = Transactions(
+            from_user_id=self.from_user_id,
+            to_user_id=self.to_user_id,
+            amount=self.amount,
+            currency_unit=CurrencyUnitEnum.VND,
+            message=self.message,
+        )
+        await transaction.save()
+
+        embed = discord.Embed(
+            title="✅ Giao dịch thành công!", color=discord.Color.green()
+        )
+        embed.add_field(name="Người gửi", value=f"<@{self.from_user_id}>", inline=True)
+        embed.add_field(name="Người nhận", value=f"<@{self.to_user_id}>", inline=True)
+        embed.add_field(name="Số tiền", value=f"{self.amount:,.0f} VNĐ", inline=False)
+        embed.add_field(name="Nội dung", value=self.message, inline=False)
+        embed.add_field(
+            name="Thời gian",
+            value=datetime.datetime.now().strftime("%H:%M %d/%m/%Y"),
+            inline=False,
+        )
+
+        await interaction.followup.send(f"<@{self.to_user_id}>", embed=embed)
+        self.stop()
+
+    @ui.button(label="Hủy", style=discord.ButtonStyle.red, emoji="❌")
+    async def cancel_button(self, interaction: Interaction, button: ui.Button):
+        await interaction.response.defer(ephemeral=True)
+        await interaction.followup.send("❌ Đã hủy giao dịch!", ephemeral=True)
+        self.stop()
+
+
+@bot.tree.command(
+    name="transaction", description="Tạo giao dịch chuyển tiền (Chỉ admin)"
+)
+async def transaction_command(interaction: Interaction):
+    # Check if user is authorized
+    if interaction.user.id != 880359404036317215:
+        await interaction.response.send_message(
+            "❌ Bạn không có quyền sử dụng lệnh này!", ephemeral=True
+        )
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    # Check if in a guild
+    if not interaction.guild:
+        await interaction.followup.send(
+            "❌ Lệnh này chỉ có thể sử dụng trong server!", ephemeral=True
+        )
+        return
+
+    view = UserSelectionView(interaction.user.id)
+    await interaction.followup.send("Chọn người nhận tiền:", view=view, ephemeral=True)
+
+
 @bot.tree.command(name="money", description="Kiểm tra số tài khoản hiện tại")
 async def track_money(interaction: Interaction):
     view = MoneyOptions(interaction.user.id)

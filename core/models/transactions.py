@@ -7,6 +7,7 @@ import pymongo
 
 # lib
 from beanie import Document, Indexed
+from pydantic import Field
 
 # local
 
@@ -30,4 +31,9 @@ class Transactions(Document):
     currency_unit: CurrencyUnitEnum
     message: Optional[str] = None
 
-    created_at: Indexed(datetime.datetime, index_type=pymongo.DESCENDING)
+    created_at: Indexed(datetime.datetime, index_type=pymongo.DESCENDING) = Field(
+        default_factory=datetime.datetime.now
+    )
+
+    class Settings:
+        use_state_management = True

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mie-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mie-bot
+    restart: unless-stopped
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - DATABASE_URL=${DATABASE_URL}
+      - GEMINI_AI_API_KEY=${GEMINI_AI_API_KEY}
+      - ENV=${ENV:-DEV}
+      - BOT_ONLY=${BOT_ONLY:-false}
+    env_file:
+      - .env
+    volumes:
+      - ./assets:/app/assets
+      - ./bot:/app/bot
+      - ./core:/app/core
+      - ./utils:/app/utils
+      - ./api:/app/api
+    networks:
+      - mie-network
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+
+networks:
+  mie-network:
+    driver: bridge
+    attachable: true

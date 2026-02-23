@@ -2,17 +2,14 @@ version: '3.8'
 
 services:
   mie-bot:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: mie-bot
-    restart: unless-stopped
+    image: mie-bot:latest
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
       - DATABASE_URL=${DATABASE_URL}
       - GEMINI_AI_API_KEY=${GEMINI_AI_API_KEY}
       - ENV=${ENV:-DEV}
       - BOT_ONLY=${BOT_ONLY:-false}
+      - OOPS_WEBHOOK_URL=${OOPS_WEBHOOK_URL}
     env_file:
       - .env
     volumes:
@@ -45,5 +42,5 @@ services:
 
 networks:
   mie-network:
-    driver: bridge
+    driver: overlay
     attachable: true

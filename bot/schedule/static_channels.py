@@ -24,11 +24,11 @@ async def static_channels():
     try:
         now = Now().now
         cap3day = datetime.datetime(now.year, 6, 6)
-        thptday = datetime.datetime(now.year, 6, 26)
+        thptday = datetime.datetime(now.year, 6, 12)
         if (cap3day - now).days < 0:
             cap3day = datetime.datetime(now.year + 1, 6, 6)
         if (thptday - now).days < 0:
-            thptday = datetime.datetime(now.year + 1, 6, 26)
+            thptday = datetime.datetime(now.year + 1, 6, 12)
 
         cap3_left = cap3day - now
         thpt_left = thptday - now

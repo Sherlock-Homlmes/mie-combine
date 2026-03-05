@@ -155,9 +155,6 @@ alternative_words = {
 
 
 class ReportFalseBadWordButton(ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
-
     @ui.button(
         label="Báo cáo sai",
         style=discord.ButtonStyle.red,
@@ -193,9 +190,6 @@ class ReportFalseBadWordButton(ui.View):
 
 
 class RemoveFalseBadWordButton(ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
-
     @ui.button(label="Remove", custom_id="remove-bad-word")
     async def select_callback(self, interaction, button):
         await interaction.response.defer()

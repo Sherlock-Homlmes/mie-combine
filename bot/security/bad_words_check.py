@@ -37,6 +37,7 @@ exact_bad_words = [
 # level 2
 # check if word include
 included_bad_words = [
+    "atangtest",
     # vn
     "dkm",
     "cai l",
@@ -153,7 +154,48 @@ alternative_words = {
 }
 
 
+class ReportFalseBadWordButton(ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @ui.button(
+        label="Báo cáo sai",
+        style=discord.ButtonStyle.red,
+        custom_id="report-false-bad-word",
+    )
+    async def report_callback(
+        self, interaction: discord.Interaction, button: ui.Button
+    ):
+        await interaction.response.defer()
+        # Find the BadUsers record by user_message_id
+        model = await BadUsers.find(
+            BadUsers.user_message_id == interaction.message.id, fetch_links=True
+        ).to_list()
+        if not model:
+            await interaction.followup.send(
+                "Không tìm thấy dữ liệu báo cáo.", ephemeral=True
+            )
+            return
+        model = model[0]
+
+        # Send link to diary message in false_bad_word_report_channel
+        diary_message = await server_info.bad_word_log_channel.fetch_message(
+            model.diary_message_id
+        )
+        message_link = diary_message.jump_url
+        await server_info.false_bad_word_report_channel.send(message_link)
+
+        # Disable the button
+        button.disabled = True
+        button.label = "Đã báo cáo"
+        await interaction.message.edit(view=self)
+        await interaction.followup.send("Đã gửi báo cáo thành công!", ephemeral=True)
+
+
 class RemoveFalseBadWordButton(ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
     @ui.button(label="Remove", custom_id="remove-bad-word")
     async def select_callback(self, interaction, button):
         await interaction.response.defer()
@@ -166,14 +208,26 @@ class RemoveFalseBadWordButton(ui.View):
         model = model[0]
         embed = discord.Embed(colour=discord.Colour.green())
         embed.add_field(name="User", value=f"<@{model.user.discord_id}>", inline=True)
-        embed.add_field(
-            name="Moderator", value=interaction.message.author.mention, inline=True
-        )
+        embed.add_field(name="Moderator", value=interaction.user.mention, inline=True)
         embed.add_field(name="Content", value=model.bad_content, inline=True)
         await server_info.admin_false_bad_word_log_channel.send(embed=embed)
+
+        # Send message to user that they've been cleared
+        try:
+            user = await server_info.guild.fetch_member(model.user.discord_id)
+            await user.send("Bạn đã được gỡ bỏ cảnh báo từ hệ thống bad word.")
+        except Exception as e:
+            print(f"Cannot send DM to user: {e}")
+
         await model.delete()
         member = await server_info.guild.fetch_member(model.user.discord_id)
         await member.edit(timed_out_until=None)
+
+        # Disable the button
+        button.disabled = True
+        button.label = "Đã xóa"
+        await interaction.message.edit(view=self)
+        await interaction.followup.send("Đã xóa cảnh báo thành công!", ephemeral=True)
 
 
 def check_bad_words(content: str) -> Set[str | None]:
@@ -314,29 +368,48 @@ async def on_message(message: discord.Message):
         pass
 
     # send to channel
-    embed = discord.Embed(title=None, description=f"**Lý do:** {reason}", colour=colour)
-    embed.set_author(
+    warn_embed = discord.Embed(
+        title=None, description=f"**Lý do:** {reason}", colour=colour
+    )
+    warn_embed.set_author(
         name=f"[{form}] {message.author.name}#{message.author.discriminator}",
         icon_url=message.author.avatar.url,
     )
-    await message.channel.send(content=message.author.mention, embed=embed)
+    await message.channel.send(content=message.author.mention, embed=warn_embed)
 
     # send to diary
-    embed = discord.Embed(colour=colour)
-    embed.set_author(
+    log_embed = discord.Embed(colour=colour)
+    log_embed.set_author(
         name=f"[{form}] {message.author.name}#{message.author.discriminator}",
         icon_url=message.author.avatar.url,
     )
-    embed.add_field(name="User", value=message.author.mention, inline=True)
-    embed.add_field(name="Channel", value=f"<#{message.channel.id}>", inline=True)
-    embed.add_field(name="Penalize", value=penalize, inline=True)
-    embed.add_field(name="Message", value=message.content, inline=False)
-    embed.add_field(
+    log_embed.add_field(name="User", value=message.author.mention, inline=True)
+    log_embed.add_field(name="Channel", value=f"<#{message.channel.id}>", inline=True)
+    log_embed.add_field(name="Penalize", value=penalize, inline=True)
+    log_embed.add_field(name="Message", value=message.content, inline=False)
+    log_embed.add_field(
         name="Bad word", value=f"{match_type}: {match_bad_word}", inline=False
     )
 
-    diary_message = await server_info.diary_channel.send(
-        embed=embed, view=RemoveFalseBadWordButton()
+    diary_message = await server_info.bad_word_log_channel.send(
+        embed=log_embed, view=RemoveFalseBadWordButton()
     )
     model.diary_message_id = diary_message.id
+    await model.save()
+
+    # send to user
+    user_warn_embed = discord.Embed(
+        title=None, description=f"**Lý do:** {reason}", colour=colour
+    )
+    user_warn_embed.add_field(
+        name="Channel", value=f"<#{message.channel.id}>", inline=True
+    )
+    user_warn_embed.add_field(name="Message", value=message.content, inline=False)
+    user_warn_embed.add_field(name="Bad word", value=match_bad_word, inline=False)
+    user_warn_message = await message.author.send(
+        content='Bấm nút "Báo cáo sai" nếu từ bạn bị warn không đúng',
+        embed=user_warn_embed,
+        view=ReportFalseBadWordButton(),
+    )
+    model.user_message_id = user_warn_message.id
     await model.save()

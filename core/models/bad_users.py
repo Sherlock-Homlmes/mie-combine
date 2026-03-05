@@ -13,5 +13,6 @@ class BadUsers(Document):
     user: Link[Users]
     bad_content: str
     diary_message_id: Optional[int] = None
+    user_message_id: Optional[int] = None
 
     created_at: datetime.datetime

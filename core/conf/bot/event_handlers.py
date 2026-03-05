@@ -21,13 +21,15 @@ async def get_server_info():
     # server_info_data["confession_dropdown_id"] = 1280893469782708286
     # server_info_data["confession_channel_id"] = 1280890216504234067
     # server_info_data["manage_confession_channel_id"] = 1280891220838846544
-    # server_info_data["diary_channel_id"] = 1329116022057472021
+    # server_info_data["bad_word_log_channel_id"] = 1329116022057472021
     # server_info_data["admin_false_bad_word_log_channel_id"] = 1329116331496439911
+    # server_info_data["false_bad_word_report_channel_id"] = 1479023610260881471
 
     # get guild
     server_info.guild = bot.get_guild(guild_id)
     server_info.roles.every_one_role = server_info.guild.get_role(server_info.guild.id)
 
+    # get channels
     channels = [
         # get confession channels
         "confession_channel_id",
@@ -39,7 +41,8 @@ async def get_server_info():
         "online_mem_channel_id",
         "study_count_channel_id",
         # get security channels
-        "diary_channel_id",
+        "bad_word_log_channel_id",
+        "false_bad_word_report_channel_id",
         "admin_false_bad_word_log_channel_id",
         # errands
         "welcome_channel_id",
@@ -54,7 +57,8 @@ async def get_server_info():
         server_info.total_mem_channel,
         server_info.online_mem_channel,
         server_info.study_count_channel,
-        server_info.diary_channel,
+        server_info.bad_word_log_channel,
+        server_info.false_bad_word_report_channel,
         server_info.admin_false_bad_word_log_channel,
         server_info.welcome_channel,
         server_info.channels.leaderboard,
@@ -116,3 +120,4 @@ async def get_server_info():
     server_info.roles.positive_student = server_info.guild.get_role(
         server_info.role_ids.positive_student
     )
+    print("Server info loaded")

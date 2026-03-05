@@ -29,7 +29,10 @@ class Bot(commands.Bot):
             ConfessionEndButton,
             ConfessionPrivateReplyButton,
         )
-        from bot.security.bad_words_check import RemoveFalseBadWordButton
+        from bot.security.bad_words_check import (
+            RemoveFalseBadWordButton,
+            ReportFalseBadWordButton,
+        )
 
         # Connect DB
         if env.BOT_ONLY:
@@ -45,6 +48,7 @@ class Bot(commands.Bot):
             ConfessionEndButton,
             ConfessionPrivateReplyButton,
             RemoveFalseBadWordButton,
+            ReportFalseBadWordButton,
         ]:
             view = model(timeout=None)
             self.add_view(view)
@@ -164,7 +168,8 @@ class ServerInfo:
     online_mem_channel: discord.TextChannel = None
     study_count_channel: discord.TextChannel = None
     # security
-    diary_channel: discord.TextChannel = None
+    bad_word_log_channel: discord.TextChannel = None
+    false_bad_word_report_channel: discord.TextChannel = None
     admin_false_bad_word_log_channel: discord.TextChannel = None
     # create voice channel
     channel_cre: Dict = None

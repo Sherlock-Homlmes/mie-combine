@@ -6,6 +6,8 @@ from beanie import Document
 from google.generativeai import protos
 from pydantic import BaseModel
 
+AI_SYSTEM_CONTEXT = "Answer in Vietnamese except there are request to answer in other language above. The answer must be shorter than 1500 letters(include space). REMEMBER shorter than 1500 letters, not words. If the answer longer then shorten the answer. No swear and example any swear word. No yapping"
+
 
 class FileData(BaseModel):
     mime_type: str
@@ -37,11 +39,7 @@ class UserAIChatHistory(Document):
         # TODO: refactor
         histories = [
             protos.Content(
-                parts=[
-                    {
-                        "text": "Answer in Vietnamese except there are request to answer in other language above. The answer must be shorter than 1500 letters(include space). REMEMBER shorter than 1500 letters, not words. If the answer longer then shorten the answer. No yapping"
-                    }
-                ],
+                parts=[{"text": AI_SYSTEM_CONTEXT}],
                 role="user",
             )
         ]

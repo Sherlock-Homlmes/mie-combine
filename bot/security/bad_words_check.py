@@ -37,7 +37,7 @@ exact_bad_words = [
 # level 2
 # check if word include
 included_bad_words = [
-    "atangtest",
+    # "atangtest",
     # vn
     "dkm",
     "cai l",

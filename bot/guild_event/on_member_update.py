@@ -38,8 +38,7 @@ async def on_member_update(member_before: discord.Member, member_after: discord.
         ),
     )
 
-    print("role", member_after.roles, str(member_before.roles))
-    if "Server Booster" in member_after.roles and "Server Booster" not in str(
+    if "Server Booster" in str(member_after.roles) and "Server Booster" not in str(
         member_before.roles
     ):
         chat = model.start_chat()

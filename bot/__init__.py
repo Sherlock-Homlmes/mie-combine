@@ -1,6 +1,7 @@
 # Event and schedule
 from .admin_commands import *
-from .ai import *
+
+# from .ai import *
 from .confession import *
 from .create_vc import *
 from .errands import *

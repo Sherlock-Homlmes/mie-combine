@@ -5,7 +5,7 @@ from beanie.odm.operators.update.general import Set
 # local
 from core.conf.bot.conf import bot, server_info
 from core.models import Users
-from bot.ai import model
+from utils.ai_coversation import model
 
 
 # TODO: refactor this. duplicate with on_member_join
@@ -38,6 +38,7 @@ async def on_member_update(member_before: discord.Member, member_after: discord.
         ),
     )
 
+    print("role", member_after.roles, member_before.roles)
     if "Server Booster" in member_after.roles and "Server Booster" not in str(
         member_before.roles
     ):

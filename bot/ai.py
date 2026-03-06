@@ -4,13 +4,10 @@ import google.generativeai as genai
 from google.api_core.exceptions import PermissionDenied
 
 from core.conf.bot.conf import bot
-from core.env import env
 from core.models import UserAIChatHistory
 from utils.image_handle import delete_image, save_image
+from utils.ai_coversation import model
 
-genai.configure(api_key=env.GEMINI_AI_API_KEY)
-model_type = "gemini-2.5-flash"
-model = genai.GenerativeModel(model_type)
 
 DISCORD_MAX_LENGTH_MESSAGE = 2000
 

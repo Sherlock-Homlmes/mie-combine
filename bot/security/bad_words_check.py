@@ -9,7 +9,7 @@ from discord import ui
 
 # local
 from core.conf.bot.conf import bot, server_info
-from core.models import BadUsers, BanFormEnum, Users
+from models import BadUsers, BanFormEnum, Users
 from utils.time_modules import Now
 
 # level 1

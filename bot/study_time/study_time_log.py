@@ -7,7 +7,7 @@ import discord
 # local
 from core.conf.bot.conf import bot, server_info
 from bot.guild_event.on_member_join import on_member_join
-from core.models import Users, UserStudySection, UserDailyStudyTimes
+from models import Users, UserStudySection, UserDailyStudyTimes
 from utils.time_modules import Now
 
 

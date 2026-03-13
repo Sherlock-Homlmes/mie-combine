@@ -6,7 +6,7 @@ from bot.money import get_vietqr_banks
 
 # local
 from core.conf.bot.conf import bot, server_info
-from core.models import CurrencyUnitEnum, Transactions, Users
+from models import CurrencyUnitEnum, Transactions, Users
 
 
 class BalanceCheckView(ui.View):

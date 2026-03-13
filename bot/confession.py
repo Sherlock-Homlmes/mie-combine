@@ -13,7 +13,7 @@ from bot.security.bad_words_check import check_bad_words
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from core.models import (
+from models import (
     CloseConfessions,
     ConfessionReply,
     ConfessionTypeEnum,

@@ -9,7 +9,7 @@ from discord.ext import tasks
 # local
 from bot.study_time.statistic import generate_leaderboard_info
 from core.conf.bot.conf import bot, server_info
-from core.models.transactions import CurrencyUnitEnum, Transactions
+from models.transactions import CurrencyUnitEnum, Transactions
 from utils.time_modules import Now
 
 

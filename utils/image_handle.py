@@ -1,6 +1,7 @@
+import errno
 import os
 from typing import Optional, Union
-from pathlib import Path, _ignore_error as pathlib_ignore_error
+from pathlib import Path
 
 # lib
 import aiohttp
@@ -12,7 +13,7 @@ async def path_exists(path: Union[Path, str]) -> bool:
     try:
         await aiofiles.os.stat(str(path))
     except OSError as e:
-        if not pathlib_ignore_error(e):
+        if e.errno not in (errno.ENOENT, errno.ENOTDIR, errno.EBADF, errno.EACCES):
             raise
         return False
     except ValueError:

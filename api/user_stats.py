@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 # local
-from core.models import UserDailyStudyTimes
+from models import UserDailyStudyTimes
 from api.schemas import UserStatsGetQuery, UserStatsGetResponse
 
 router = APIRouter()

@@ -14,7 +14,15 @@ from .confessions import (
 from .enums import *
 from .errand_data import ErrandData
 from .transactions import CurrencyUnitEnum, Transactions
-from .user_ai_chat_history import Content, FileData, UserAIChatHistory
+
+# from .user_ai_chat_history import Content, FileData, UserAIChatHistory
+from .conversation_history import (
+    ConversationHistory,
+    MessageEntry,
+    Role as AIMessageAuthor,
+)
+from .user_facts import UserFacts
+from .extract_file_records import ExtractFileRecords
 from .user_daily_study_time import UserDailyStudyTimes
 from .user_study_sections import UserStudySection
 from .users import Users
@@ -30,7 +38,10 @@ document_models = [
     VoiceChannels,
     UserStudySection,
     UserDailyStudyTimes,
-    UserAIChatHistory,
+    # UserAIChatHistory,
+    ConversationHistory,
+    UserFacts,
+    ExtractFileRecords,
     Transactions,
 ]
 

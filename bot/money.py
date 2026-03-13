@@ -7,8 +7,8 @@ from discord import Interaction, ui
 
 # local
 from core.conf.bot.conf import bot
-from core.models import CurrencyUnitEnum, Transactions, Users
-from core.models.users import UserMetadata
+from models import CurrencyUnitEnum, Transactions, Users
+from models.users import UserMetadata
 
 # Global cache for bank list
 bank_list_cache = {

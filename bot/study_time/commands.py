@@ -6,7 +6,7 @@ import discord
 
 # local
 from core.conf.bot.conf import bot, server_info
-from core.models import Users
+from models import Users
 from .study_time_log import update_user_monthly_role
 
 

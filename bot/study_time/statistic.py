@@ -18,7 +18,7 @@ from quickchart import QuickChart
 
 # local
 from core.conf.bot.conf import bot
-from core.models import UserDailyStudyTimes, Users
+from models import UserDailyStudyTimes, Users
 from utils.image_handle import save_image
 from utils.time_modules import Now, generate_date_strings
 

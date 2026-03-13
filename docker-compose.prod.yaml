@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  mie-bot:
+    image: mie-bot:latest
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - DATABASE_URL=${DATABASE_URL}
+      - GEMINI_AI_API_KEY=${GEMINI_AI_API_KEY}
+      - ENV=${ENV:-PROD}
+      - BOT_ONLY=${BOT_ONLY:-true}
+      - OOPS_WEBHOOK_URL=${OOPS_WEBHOOK_URL}
+      - PYTHONUNBUFFERED=1
+      - PYTHONFAULTHANDLER=1
+    volumes:
+      - .:/app/
+    networks:
+      - mie-network
+    entrypoint: ["uv", "run"]
+    command: ["python", "main.py"]
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+
+networks:
+  mie-network:
+    driver: overlay
+    attachable: true

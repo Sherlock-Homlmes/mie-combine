@@ -1,6 +1,6 @@
 import asyncio
 
-from core.models import CurrencyUnitEnum, Transactions, connect_db
+from models import CurrencyUnitEnum, Transactions, connect_db
 from utils.time_modules import Now
 
 # T3

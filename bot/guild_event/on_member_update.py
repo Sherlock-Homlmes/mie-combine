@@ -4,8 +4,8 @@ from beanie.odm.operators.update.general import Set
 
 # local
 from core.conf.bot.conf import bot, server_info
-from core.models import Users
-from utils.ai_coversation import model
+from models import Users
+from utils.ai_coversation import aclient, ai_model
 
 
 # TODO: refactor this. duplicate with on_member_join
@@ -41,10 +41,12 @@ async def on_member_update(member_before: discord.Member, member_after: discord.
     if "Server Booster" in str(member_after.roles) and "Server Booster" not in str(
         member_before.roles
     ):
-        chat = model.start_chat()
-        generative_thanks = await chat.send_message_async(
-            f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"
+        response = await aclient.aio.models.generate_content(
+            model=ai_model,
+            contents=[
+                f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"
+            ],
         )
         await server_info.channels.general_chat.send(
-            content=f"{generative_thanks}<@{member_after.id}>",
+            content=f"<@{member_after.id}> {response.text}",
         )

@@ -11,7 +11,7 @@ import aiohttp
 
 # local
 from core.env import env, is_dev_env
-from core.models import connect_db
+from models import connect_db
 
 is_app_running = True
 
@@ -63,7 +63,7 @@ class Bot(commands.Bot):
         if is_dev_env and not env.BOT_ONLY:
             # Stop bot when reload
             while is_app_running:
-                from core.event_handler import running
+                from core.conf.api.event_handler import running
 
                 if running:
                     await asyncio.sleep(1)

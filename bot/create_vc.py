@@ -12,7 +12,7 @@ from discord.ui import View
 
 # local
 from core.conf.bot.conf import bot, guild_id, server_info
-from core.models import ErrandData, Users, VoiceChannels
+from models import ErrandData, Users, VoiceChannels
 from utils.discord_bot.channel_name import (
     check_avaiable_name,
 )

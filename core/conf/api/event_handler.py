@@ -3,7 +3,7 @@ import signal
 
 from core.conf.bot.conf import bot
 from core.env import env
-from core.models import connect_db
+from models import connect_db
 
 # local
 from .conf import app

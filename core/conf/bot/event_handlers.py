@@ -1,7 +1,7 @@
 # default
 import asyncio
 
-from core.models import ErrandData
+from models import ErrandData
 from utils.discord_bot.get_object import get_channel
 
 # lib

@@ -6,7 +6,7 @@ from discord import Interaction
 
 # local
 from core.conf.bot.conf import bot
-from core.models import ErrandData, TopicEnum
+from models import ErrandData, TopicEnum
 
 
 async def get_topic(interaction: Interaction, topic: TopicEnum):

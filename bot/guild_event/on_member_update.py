@@ -46,5 +46,5 @@ async def on_member_update(member_before: discord.Member, member_after: discord.
             f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"
         )
         await server_info.channels.general_chat.send(
-            content=f"{generative_thanks}<@{member_after.id}>",
+            content=f"{generative_thanks.text}<@{member_after.id}>",
         )

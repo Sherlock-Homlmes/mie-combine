@@ -60,19 +60,23 @@ class RoomPermission:
         self._use_return = send_func is None
 
     @classmethod
-    def from_interaction(cls, interaction: Interaction):
+    def from_interaction(cls, interaction: Interaction, *args, **kwargs):
         return cls(
             channel=interaction.user.voice.channel if interaction.user.voice else None,
             user=interaction.user,
-            send_func=interaction.response.send_message,
+            send_func=kwargs.pop("send_func", interaction.response.send_message),
+            *args,
+            **kwargs,
         )
 
     @classmethod
-    def from_message(cls, message: discord.Message):
+    def from_message(cls, message: discord.Message, *args, **kwargs):
         return cls(
             channel=message.author.voice.channel if message.author.voice else None,
             user=message.author,
-            send_func=None,  # return string instead
+            send_func=None,
+            *args,
+            **kwargs,
         )
 
     async def _send(self, message: str):
@@ -285,9 +289,9 @@ async def invite(interaction: Interaction):
             ]
         )
 
-        room_perm = RoomPermission.from_interaction(interaction)
-        result = await room_perm.invite(members)
-        await callback_interaction.response.send_message(result)
+        await RoomPermission.from_interaction(
+            interaction, send_func=callback_interaction.response.send_message
+        ).invite(members)
 
     user_select.callback = user_select_callback
     view = discord.ui.View(timeout=180)
@@ -307,10 +311,9 @@ async def allow(interaction: Interaction):
                 for member_id in callback_interaction.data["values"]
             ]
         )
-
-        room_perm = RoomPermission.from_interaction(interaction)
-        result = await room_perm.allow(members)
-        await callback_interaction.response.send_message(result)
+        await RoomPermission.from_interaction(
+            interaction, send_func=callback_interaction.response.send_message
+        ).allow(members)
 
     user_select.callback = user_select_callback
     view = discord.ui.View(timeout=180)

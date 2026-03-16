@@ -21,7 +21,10 @@ fi
 # Check if swarm is initialized
 if ! docker info | grep -q "Swarm: active"; then
     echo "🐝 Initializing Docker Swarm..."
-    docker swarm init
+    # Get the primary IP address to advertise (prefer IPv4)
+    ADVERTISE_ADDR=$(hostname -I | awk '{print $1}')
+    echo "Using IP address: $ADVERTISE_ADDR"
+    docker swarm init --advertise-addr $ADVERTISE_ADDR
     echo "✅ Docker Swarm initialized"
 else
     echo "✅ Docker Swarm already active"

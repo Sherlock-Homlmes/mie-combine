@@ -16,9 +16,9 @@ services:
       - OOPS_WEBHOOK_URL=${OOPS_WEBHOOK_URL}
       - PYTHONUNBUFFERED=1
       - PYTHONFAULTHANDLER=1
-    working_dir: /app
     env_file:
       - .env
+    working_dir: /app
     volumes:
       - .:/app/
     networks:

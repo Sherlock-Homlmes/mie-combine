@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   mie-bot:
-    image: mie-bot:latest
+    image: mie-bot:v1
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
       - DATABASE_URL=${DATABASE_URL}
@@ -12,6 +12,7 @@ services:
       - OOPS_WEBHOOK_URL=${OOPS_WEBHOOK_URL}
       - PYTHONUNBUFFERED=1
       - PYTHONFAULTHANDLER=1
+    working_dir: /app
     volumes:
       - .:/app/
     networks:

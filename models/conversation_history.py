@@ -6,7 +6,7 @@ import pymongo
 from beanie import Document, Indexed
 from pydantic import BaseModel, Field
 
-from utils.time_modules import vn_now
+from utils.time_modules import Now
 
 
 class Role(str, Enum):
@@ -17,7 +17,7 @@ class Role(str, Enum):
 class MessageEntry(BaseModel):
     role: Role
     content: str
-    created_at: datetime = Field(default_factory=vn_now)
+    created_at: datetime = Field(default_factory=lambda: Now().now)
     attachments: list[str] = Field(default_factory=list)
 
 
@@ -30,8 +30,8 @@ class ConversationHistory(Document):
 
     messages: list[MessageEntry] = Field(default_factory=list)
 
-    updated_at: datetime = Field(default_factory=vn_now)
-    created_at: datetime = Field(default_factory=vn_now)
+    updated_at: datetime = Field(default_factory=lambda: Now().now)
+    created_at: datetime = Field(default_factory=lambda: Now().now)
 
     class Settings:
         indexes = [

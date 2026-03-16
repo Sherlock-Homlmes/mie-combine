@@ -8,7 +8,7 @@ from models import AIMessageAuthor
 from utils.ai_coversation import aclient
 from utils.image_handle import delete_image, save_image
 
-from . import gemini_service, history_service, memory_service
+from . import gemini_service, history_service, memory_service, rate_limit_service
 
 DISCORD_MAX_LENGTH_MESSAGE = 2000
 
@@ -30,6 +30,16 @@ async def on_message(message):
         # )
     ):
         return
+    # Check rate limit
+    allowed, _ = await rate_limit_service.check_rate_limit(message.author)
+    if not allowed:
+        limit = rate_limit_service.get_limit(message.author)
+        await message.reply(
+            f"⛔ Bạn đã dùng hết limit {limit} lần ngày hôm nay rồi. Mai bạn thử lại hoặc nâng cấp lên Server Booster để có thêm limit nhé!"
+        )
+        return
+
+    # Handle attachments and messages
     try:
         # if message.attachments:
         # await handle_attachments(message)

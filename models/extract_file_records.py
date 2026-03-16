@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 from beanie import Document, Indexed
 from pydantic import Field
 
-from utils.time_modules import vn_now
+from utils.time_modules import Now
 
 
 class ExtractFileRecords(Document):
@@ -18,4 +18,4 @@ class ExtractFileRecords(Document):
     s3_key: str  # e.g. {uuid}.pdf
     file_content: str = None
 
-    uploaded_at: datetime = Field(default_factory=vn_now)
+    uploaded_at: datetime = Field(default_factory=lambda: Now().now)

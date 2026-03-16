@@ -13,7 +13,7 @@ from bot.create_vc.funcs import RoomPermission, get_list_members
 # from loguru import logger
 from core.env import env
 from utils.ai_coversation import aclient
-from utils.time_modules import vn_now
+from utils.time_modules import Now
 
 # ─── Tool definitions ──────────────────────────────────────────────────────────
 SAFETY_SETTINGS = [
@@ -171,7 +171,7 @@ async def _execute_tool(
     try:
         match tool_name:
             case "get_current_datetime":
-                now = vn_now()
+                now = Now().now
                 return f"Bây giờ là {now.strftime('%A')} {now.strftime('%Y-%m-%d %H:%M:%S')} theo giờ Việt Nam"
             # elif tool_name == "get_weather":
             #     city = tool_args.get("city", "")

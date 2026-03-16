@@ -1,7 +1,7 @@
 import datetime
-import pytz
 from typing import Optional
 
+import pytz
 from cachetools.func import ttl_cache
 
 
@@ -24,7 +24,9 @@ class Now:
     def __init__(self):
         now: datetime.datetime = vn_now()
         self.now: datetime.datetime = now.replace(tzinfo=None)
-        self.today: datetime.datetime = datetime.datetime(now.year, now.month, now.day)
+        self.today: datetime.datetime = now.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
 
     def some_day_before(self, days: int) -> datetime.datetime:
         that_day = self.now - datetime.timedelta(days=days)

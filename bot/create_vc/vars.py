@@ -73,6 +73,5 @@ async def on_ready():
     )
 
     # delete empty voice channel
-    print("out start fixing")
     await fix_room()
     is_ready = True

@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, TypeAdapter
 from core.env import env
 from models import FactSourceEnum, UserFactCategoryEnum, UserFactHistory, UserFacts
 from utils.ai_coversation import aclient
-from utils.time_modules import vn_now
+from utils.time_modules import Now
 
 CONFIDENCE_UPDATE_THRESHOLD = 0.7
 CONFIDENCE_FETCH_THRESHOLD = 0.4
@@ -109,7 +109,7 @@ async def upsert_facts(
             UserFacts.category == fact.category,
             UserFacts.key == fact.key,
         )
-        updated_at = vn_now()
+        updated_at = Now().now
         new_fact_history = UserFactHistory(
             value=fact.value, original_message=original_message, timestamp=updated_at
         )

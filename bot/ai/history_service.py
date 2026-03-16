@@ -1,5 +1,5 @@
 from models import ConversationHistory, MessageEntry
-from utils.time_modules import vn_now
+from utils.time_modules import Now
 
 
 async def get_history(
@@ -34,7 +34,7 @@ async def add_message(
         attachments=attachments or [],
     )
     conv.messages.append(entry)
-    conv.updated_at = vn_now()
+    conv.updated_at = Now().now
     await conv.save()
     return conv
 

@@ -5,13 +5,13 @@ from typing import Annotated
 from beanie import Document, Indexed
 from pydantic import BaseModel, Field
 
-from utils.time_modules import vn_now
+from utils.time_modules import Now
 
 
 class UserFactHistory(BaseModel):
     value: str
     original_message: str
-    timestamp: datetime = Field(default_factory=vn_now)
+    timestamp: datetime = Field(default_factory=lambda: Now().now)
 
 
 class FactSourceEnum(str, Enum):
@@ -38,6 +38,6 @@ class UserFacts(Document):
     confidence: float
     source: FactSourceEnum
     value: str
-    created_at: datetime = Field(default_factory=vn_now)
-    updated_at: datetime = Field(default_factory=vn_now)
+    created_at: datetime = Field(default_factory=lambda: Now().now)
+    updated_at: datetime = Field(default_factory=lambda: Now().now)
     history: list[UserFactHistory] = Field(default_factory=list)

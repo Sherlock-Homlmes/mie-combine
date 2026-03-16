@@ -5,10 +5,16 @@ from utils.time_modules import Now
 
 LIMIT_NORMAL = 30
 LIMIT_BOOSTER = 150
+LIMIT_AD = 200
 
 
 def get_limit(member: discord.Member) -> int:
-    return LIMIT_BOOSTER if "Server Booster" in str(member.roles) else LIMIT_NORMAL
+    member_roles = str(member.roles)
+    if "AD Carry" in member_roles:
+        return LIMIT_AD
+    if "Server Booster" in member_roles:
+        return LIMIT_BOOSTER
+    return LIMIT_NORMAL
 
 
 async def check_rate_limit(

@@ -45,7 +45,7 @@ async def on_member_update(member_before: discord.Member, member_after: discord.
         response = await aclient.aio.models.generate_content(
             model=env.GEMINI_MODEL,
             contents=[
-                f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"
+                f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server Betterme. Viết trực tiếp, no yapping"
             ],
         )
         await server_info.channels.general_chat.send(

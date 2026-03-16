@@ -139,14 +139,6 @@ async def upsert_facts(
             if not should_update:
                 continue
 
-            existing.history.append(
-                UserFactHistory(
-                    value=existing.value,
-                    source=existing.source,
-                    confidence=existing.confidence,
-                    recorded_at=existing.updated_at,
-                )
-            )
             existing.value = fact.value
             existing.source = fact.source
             existing.confidence = fact.confidence

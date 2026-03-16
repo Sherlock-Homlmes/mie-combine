@@ -13,6 +13,8 @@ class Env(BaseSettings):
     BOT_TOKEN: str
     DATABASE_URL: str
     GEMINI_AI_API_KEY: str
+    GEMINI_MODEL: str = "gemini-flash-latest"
+    GEMINI_LITE_MODEL: str = "gemini-flash-lite-latest"
     # ZAI_AI_API_KEY: str
     OOPS_WEBHOOK_URL: str | None = None
     ENV: ENVEnum = ENVEnum.PROD

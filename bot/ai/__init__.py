@@ -2,16 +2,13 @@ import re
 import traceback
 
 import discord
-import google.generativeai as genai
-from google.api_core.exceptions import PermissionDenied
 
 from core.conf.bot.conf import bot
 from models import AIMessageAuthor
-from utils.image_handle import delete_image, save_image
 from utils.ai_coversation import aclient
+from utils.image_handle import delete_image, save_image
 
 from . import gemini_service, history_service, memory_service
-
 
 DISCORD_MAX_LENGTH_MESSAGE = 2000
 
@@ -20,16 +17,17 @@ DISCORD_MAX_LENGTH_MESSAGE = 2000
 async def on_message(message):
     await bot._fully_ready.wait()
 
-    if message.author.bot or (
-        (
+    if (
+        message.author.bot
+        or (
             not bot.user.mentioned_in(message)
             or isinstance(message.channel, discord.DMChannel)
         )
-        and not (
-            message.position == 0
-            and message.channel.parent
-            and message.channel.parent.name == "giúp-đỡ-học-tập"
-        )
+        # and not (
+        #     message.position == 0
+        #     and message.channel.parent
+        #     and message.channel.parent.name == "giúp-đỡ-học-tập"
+        # )
     ):
         return
     try:
@@ -177,11 +175,12 @@ async def on_message(message):
 
 
 async def handle_chat(message: discord.Message, override_content: str = None):
-    user_id = str(message.author.id)
-    guild_id = str(message.guild.id) if message.guild else "dm"
-    channel_id = str(message.channel.id)
+    user_discord_id = message.author.id
+    guild_id = message.guild.id
+    channel_id = message.channel.id
     content = (
-        override_content or message.content.replace(f"<@{bot.user.id}>", "").strip()
+        override_content
+        or message.content.replace(f"<@{bot.user.id}>", "").replace("  ", " ").strip()
     )
 
     if not content:
@@ -189,31 +188,41 @@ async def handle_chat(message: discord.Message, override_content: str = None):
 
     async with message.channel.typing():
         try:
-            history = await history_service.get_recent_messages(user_id, channel_id)
-            facts = await memory_service.get_user_facts(user_id)
+            history = await history_service.get_recent_messages(
+                user_discord_id, channel_id, guild_id, limit=10
+            )
+            facts = await memory_service.get_user_facts(
+                user_discord_id, only_strong_fact=True
+            )
 
             response = await gemini_service.generate_response(
+                discord_message=message,
                 user_message=content,
                 history=history,
                 user_facts=facts,
-                user_id=user_id,
-                guild_id=guild_id,
+                user_id=user_discord_id,
                 username=message.author.display_name,
             )
+            if response.startswith("[TOOLS USE]:"):
+                response = response.replace("[TOOLS USE]:", "", 1).strip()
+            else:
+                await history_service.add_message(
+                    user_discord_id, channel_id, guild_id, AIMessageAuthor.USER, content
+                )
+                await history_service.add_message(
+                    user_discord_id,
+                    channel_id,
+                    guild_id,
+                    AIMessageAuthor.ASSISTANT,
+                    response,
+                )
 
-            await history_service.add_message(
-                user_id, channel_id, guild_id, AIMessageAuthor.USER, content
-            )
-            await history_service.add_message(
-                user_id, channel_id, guild_id, AIMessageAuthor.ASSISTANT, response
-            )
-
-            updated_history = await history_service.get_recent_messages(
-                user_id, channel_id, limit=6
-            )
-            await memory_service.extract_and_store_facts(
-                user_id, guild_id, updated_history
-            )
+                updated_history = await history_service.get_recent_messages(
+                    user_discord_id, channel_id, guild_id, limit=6
+                )
+                await memory_service.extract_and_store_facts(
+                    user_discord_id, updated_history
+                )
 
             # Send (split nếu quá 1900 ký tự)
             parts = [response[i : i + 1900] for i in range(0, len(response), 1900)]
@@ -223,6 +232,6 @@ async def handle_chat(message: discord.Message, override_content: str = None):
                 else:
                     await message.channel.send(part)
 
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
-            await message.reply(f"⚠️ Lỗi: `{type(e).__name__}: {e}`")
+            await message.reply("Bot đang lỗi rồi bạn sửa lại sau nhé")

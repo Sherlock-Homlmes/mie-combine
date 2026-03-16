@@ -1,11 +1,12 @@
-from typing import Annotated
-from enum import Enum
-
-from beanie import Document, Indexed
-from pydantic import Field, BaseModel
 from datetime import datetime
-from typing import Optional
+from enum import Enum
+from typing import Annotated
+
 import pymongo
+from beanie import Document, Indexed
+from pydantic import BaseModel, Field
+
+from utils.time_modules import vn_now
 
 
 class Role(str, Enum):
@@ -16,7 +17,7 @@ class Role(str, Enum):
 class MessageEntry(BaseModel):
     role: Role
     content: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=vn_now)
     attachments: list[str] = Field(default_factory=list)
 
 
@@ -24,16 +25,15 @@ class ConversationHistory(Document):
     """Stores last N messages per user per channel."""
 
     user_discord_id: Annotated[int, Indexed()]
-    guild_id: Optional[str] = None
     channel_id: Annotated[int, Indexed()]
+    guild_id: int | None = None
 
     messages: list[MessageEntry] = Field(default_factory=list)
 
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=vn_now)
+    created_at: datetime = Field(default_factory=vn_now)
 
     class Settings:
-        name = "conversation_history"
         indexes = [
             pymongo.IndexModel(
                 [

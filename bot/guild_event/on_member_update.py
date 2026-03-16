@@ -4,8 +4,9 @@ from beanie.odm.operators.update.general import Set
 
 # local
 from core.conf.bot.conf import bot, server_info
+from core.env import env
 from models import Users
-from utils.ai_coversation import aclient, ai_model
+from utils.ai_coversation import aclient
 
 
 # TODO: refactor this. duplicate with on_member_join
@@ -42,7 +43,7 @@ async def on_member_update(member_before: discord.Member, member_after: discord.
         member_before.roles
     ):
         response = await aclient.aio.models.generate_content(
-            model=ai_model,
+            model=env.GEMINI_MODEL,
             contents=[
                 f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"
             ],

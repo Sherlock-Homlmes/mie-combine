@@ -11,19 +11,21 @@ from .confessions import (
     ConfessionTypeEnum,
     OpenConfessions,
 )
-from .enums import *
-from .errand_data import ErrandData
-from .transactions import CurrencyUnitEnum, Transactions
 
 # from .user_ai_chat_history import Content, FileData, UserAIChatHistory
 from .conversation_history import (
     ConversationHistory,
     MessageEntry,
+)
+from .conversation_history import (
     Role as AIMessageAuthor,
 )
-from .user_facts import UserFacts
+from .enums import *
+from .errand_data import ErrandData
 from .extract_file_records import ExtractFileRecords
+from .transactions import CurrencyUnitEnum, Transactions
 from .user_daily_study_time import UserDailyStudyTimes
+from .user_facts import FactSourceEnum, UserFactCategoryEnum, UserFactHistory, UserFacts
 from .user_study_sections import UserStudySection
 from .users import Users
 from .voice_channels import VoiceChannels

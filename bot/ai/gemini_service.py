@@ -3,21 +3,44 @@ Gemini chat service with async client + function calling.
 """
 
 import asyncio
-import json
-from datetime import datetime
-from loguru import logger
-from google.genai import types
-from utils.ai_coversation import aclient, ai_model
+import traceback
 
+import discord
+from google.genai import types
+
+from bot.create_vc.funcs import RoomPermission, get_list_members
+
+# from loguru import logger
+from core.env import env
+from utils.ai_coversation import aclient
+from utils.time_modules import vn_now
 
 # ─── Tool definitions ──────────────────────────────────────────────────────────
+SAFETY_SETTINGS = [
+    types.SafetySetting(
+        category="HARM_CATEGORY_HARASSMENT",
+        threshold="BLOCK_NONE",
+    ),
+    types.SafetySetting(
+        category="HARM_CATEGORY_HATE_SPEECH",
+        threshold="BLOCK_NONE",
+    ),
+    types.SafetySetting(
+        category="HARM_CATEGORY_DANGEROUS_CONTENT",
+        threshold="BLOCK_NONE",
+    ),
+    types.SafetySetting(
+        category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        threshold="BLOCK_NONE",
+    ),
+]
 
 TOOLS = [
     types.Tool(
         function_declarations=[
             types.FunctionDeclaration(
                 name="get_current_datetime",
-                description="Get the current date and time",
+                description="Lấy thời gian/ngày/giờ hiện tại",
                 parameters=types.Schema(type=types.Type.STRING, properties={}),
             ),
             # types.FunctionDeclaration(
@@ -33,54 +56,190 @@ TOOLS = [
             #         required=["city"],
             #     ),
             # ),
+            types.FunctionDeclaration(
+                name="room_public",
+                description="Cho phép mọi người vào phòng",
+                parameters=types.Schema(type=types.Type.OBJECT, properties={}),
+            ),
+            types.FunctionDeclaration(
+                name="room_private",
+                description="Không cho phép mọi người vào phòng",
+                parameters=types.Schema(type=types.Type.OBJECT, properties={}),
+            ),
+            types.FunctionDeclaration(
+                name="room_show",
+                description="Phòng đang bị ẩn. Hiển thị phòng cho mọi người thấy",
+                parameters=types.Schema(type=types.Type.OBJECT, properties={}),
+            ),
+            types.FunctionDeclaration(
+                name="room_hide",
+                description="Ẩn phòng không cho mọi người thấy",
+                parameters=types.Schema(type=types.Type.OBJECT, properties={}),
+            ),
+            types.FunctionDeclaration(
+                name="room_mute",
+                description="Tắt âm phòng",
+                parameters=types.Schema(type=types.Type.OBJECT, properties={}),
+            ),
+            types.FunctionDeclaration(
+                name="room_unmute",
+                description="Bật âm thanh phòng",
+                parameters=types.Schema(type=types.Type.OBJECT, properties={}),
+            ),
+            types.FunctionDeclaration(
+                name="room_rename",
+                description="Đổi tên phòng",
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
+                    properties={
+                        "name": types.Schema(
+                            type=types.Type.STRING, description="Tên mới của phòng"
+                        )
+                    },
+                    required=["name"],
+                ),
+            ),
+            types.FunctionDeclaration(
+                name="room_limit",
+                description="Đặt giới hạn số người trong phòng",
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
+                    properties={
+                        "limit": types.Schema(
+                            type=types.Type.INTEGER, description="Số người tối đa"
+                        )
+                    },
+                    required=["limit"],
+                ),
+            ),
+            types.FunctionDeclaration(
+                name="room_remove_member",
+                description="Thu hồi quyền truy cập phòng của thành viên",
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
+                    properties={
+                        "user_ids": types.Schema(
+                            type=types.Type.ARRAY,
+                            items=types.Schema(type=types.Type.STRING),
+                            description="Danh sách user ID cần xóa khỏi phòng",
+                        )
+                    },
+                    required=["user_ids"],
+                ),
+            ),
+            types.FunctionDeclaration(
+                name="room_allow",
+                description="Cho phép thành viên vào phòng",
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
+                    properties={
+                        "user_ids": types.Schema(
+                            type=types.Type.ARRAY,
+                            items=types.Schema(type=types.Type.STRING),
+                            description="Danh sách user ID cần cho phép",
+                        )
+                    },
+                    required=["user_ids"],
+                ),
+            ),
+            types.FunctionDeclaration(
+                name="room_invite",
+                description="Mời thành viên vào phòng và gửi link invite qua DM",
+                parameters=types.Schema(
+                    type=types.Type.OBJECT,
+                    properties={
+                        "user_ids": types.Schema(
+                            type=types.Type.ARRAY,
+                            items=types.Schema(type=types.Type.STRING),
+                            description="Danh sách user ID cần mời",
+                        )
+                    },
+                    required=["user_ids"],
+                ),
+            ),
         ]
     )
 ]
 
 
 async def _execute_tool(
-    tool_name: str, tool_args: dict, user_id: str, guild_id: str, aclient
+    tool_name: str, tool_args: dict, discord_message: discord.Message
 ) -> str:
     """Execute a tool call and return result as string."""
+    room = RoomPermission.from_message(discord_message)
+
     try:
-        if tool_name == "get_current_datetime":
-            now = datetime.now()
-            return f"Bây giờ là {now.strftime('%A')} {now.strftime('%Y-%m-%d %H:%M:%S')} UTC"
+        match tool_name:
+            case "get_current_datetime":
+                now = vn_now()
+                return f"Bây giờ là {now.strftime('%A')} {now.strftime('%Y-%m-%d %H:%M:%S')} theo giờ Việt Nam"
+            # elif tool_name == "get_weather":
+            #     city = tool_args.get("city", "")
+            #     return json.dumps(
+            #         {
+            #             "city": city,
+            #             "temperature": "25°C",
+            #             "condition": "Partly Cloudy",
+            #             "humidity": "65%",
+            #             "note": "Mock data. Integrate a real weather API for production.",
+            #         }
+            #     )
+            case "room_public":
+                return await room.set_status("public")
+            case "room_private":
+                return await room.set_status("private")
+            case "room_show":
+                return await room.set_status("show")
+            case "room_hide":
+                return await room.set_status("hide")
+            case "room_mute":
+                return await room.set_status("mute")
+            case "room_unmute":
+                return await room.set_status("unmute")
+            case "room_rename":
+                return await room.rename(tool_args["name"])
+            case "room_limit":
+                return await room.set_limit(tool_args["limit"])
+            case "room_remove_member":
+                members = await get_list_members(tool_args["user_ids"])
+                return await room.kick(members)
+            case "room_allow":
+                members = await get_list_members(tool_args["user_ids"])
+                return await room.allow(members)
+            case "room_invite":
+                members = await get_list_members(tool_args["user_ids"])
+                print(members)
+                return await room.invite(members)
 
-        elif tool_name == "get_weather":
-            city = tool_args.get("city", "")
-            return json.dumps(
-                {
-                    "city": city,
-                    "temperature": "25°C",
-                    "condition": "Partly Cloudy",
-                    "humidity": "65%",
-                    "note": "Mock data. Integrate a real weather API for production.",
-                }
-            )
+            case _:
+                return f"Unknown function: {tool_name}"
 
-        else:
-            return json.dumps({"error": f"Unknown tool: {tool_name}"})
+        return "Không tìm thấy tool thích hợp: {tool_name}"
 
-    except Exception as e:
-        logger.error(f"Tool execution error ({tool_name}): {e}")
-        return json.dumps({"error": str(e)})
+    except Exception:
+        traceback.print_exc()
+        return f"Có lỗi xảy ra khi thực hiện ({tool_name})"
 
 
 async def generate_response(
+    discord_message: discord.Message,
     user_message: str,
     history: list[dict],
     user_facts: list[str],
-    user_id: str,
-    guild_id: str,
+    user_id: int,
     username: str = "User",
 ) -> str:
     """Generate a response using async Gemini client with tool calling."""
 
     facts_text = (
-        "\n".join(f"- {f}" for f in user_facts) if user_facts else "None stored yet."
+        "\n".join(
+            f"[{f.category}] {f.key} = {f.value} (confidence: {f.confidence})"
+            for f in user_facts
+        )
+        if user_facts
+        else "None stored yet."
     )
-    system_prompt = f"""You are a helpful, friendly Discord bot assistant.
+    system_prompt = f"""You are a helpful, friendly Discord bot assistant to help user learning and get more knowledge.
 You have memory of this user and can use tools when needed.
 
 User: {username} (ID: {user_id})
@@ -103,12 +262,13 @@ Facts you know about this user:
 
 ## Tools use guidelines:
 - Only use tools when truly necessary (data lookup, executing specific actions). For general questions, respond directly without calling any tools.
+- If user use tools, do not care about chat history, just execute the tool and return the result without extra commentary
 - Use the search_files tool when users ask about their uploaded documents
 """
 
     # Build message history for Gemini
     gemini_contents = []
-    for msg in history[-10:]:
+    for msg in history:
         role = "user" if msg["role"] == "user" else "model"
         gemini_contents.append(
             types.Content(role=role, parts=[types.Part(text=msg["content"])])
@@ -120,7 +280,7 @@ Facts you know about this user:
 
     # Async client + agentic tool loop
     response = await aclient.models.generate_content(
-        model=ai_model,
+        model=env.GEMINI_MODEL,
         contents=gemini_contents,
         config=types.GenerateContentConfig(
             system_instruction=system_prompt,
@@ -129,6 +289,7 @@ Facts you know about this user:
             tool_config=types.ToolConfig(
                 function_calling_config=types.FunctionCallingConfig(mode="AUTO")
             ),
+            safety_settings=SAFETY_SETTINGS,
             temperature=0.7,
         ),
     )
@@ -136,22 +297,17 @@ Facts you know about this user:
     function_calls = response.function_calls
 
     if not function_calls:
-        return (
-            response.text
-            or "I processed your request but couldn't formulate a final response."
-        )
+        return response.text
 
     # Execute all tool calls concurrently
     tool_results = await asyncio.gather(
         *[
-            _execute_tool(
-                func.name,
-                dict(func.args),
-                user_id,
-                guild_id,
-                aclient,
-            )
+            _execute_tool(func.name, dict(func.args), discord_message)
             for func in function_calls
         ]
     )
-    return str(tool_results)
+    if len(tool_results) == 1:
+        return_text = tool_results[0]
+    else:
+        return_text = "\n".join(f"- {r}" for r in tool_results)
+    return "[TOOLS USE]:" + return_text

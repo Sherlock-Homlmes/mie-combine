@@ -16,8 +16,6 @@ services:
       - .:/app/
     networks:
       - mie-network
-    entrypoint: ["uv", "run"]
-    command: ["python", "main.py"]
     deploy:
       mode: replicated
       replicas: 1

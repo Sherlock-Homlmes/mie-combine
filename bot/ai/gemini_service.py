@@ -40,7 +40,7 @@ TOOLS = [
         function_declarations=[
             types.FunctionDeclaration(
                 name="get_current_datetime",
-                description="Lấy thời gian/ngày/giờ hiện tại",
+                description="Lấy thời gian hiện tại. Chỉ gọi khi chắc chắn người ta muốn xem thời gian hiện tại, không cần thiết phải trả lời các câu hỏi liên quan đến thời gian bằng tool này",
                 parameters=types.Schema(type=types.Type.STRING, properties={}),
             ),
             # types.FunctionDeclaration(

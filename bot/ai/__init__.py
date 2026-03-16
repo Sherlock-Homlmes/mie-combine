@@ -216,6 +216,7 @@ async def handle_chat(message: discord.Message, override_content: str = None):
             if response.startswith("[TOOLS USE]:"):
                 response = response.replace("[TOOLS USE]:", "", 1).strip()
             else:
+                response = handle_response_message(response)
                 await history_service.add_message(
                     user_discord_id, channel_id, guild_id, AIMessageAuthor.USER, content
                 )
@@ -245,3 +246,8 @@ async def handle_chat(message: discord.Message, override_content: str = None):
         except Exception:
             traceback.print_exc()
             await message.reply("Bot đang lỗi rồi bạn sửa lại sau nhé")
+
+
+def handle_response_message(message: str):
+    result = message.replace("@everyone", " everyone")
+    return result

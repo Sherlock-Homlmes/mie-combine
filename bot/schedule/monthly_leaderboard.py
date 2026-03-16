@@ -80,8 +80,7 @@ async def auto_reset_role_monthly():
     for role_id in all_role_ids:
         role = server_info.guild.get_role(role_id)
         for member in role.members:
-            if member.id == 880359404036317215:
-                await member.remove_roles(role)
+            await member.remove_roles(role)
 
 
 @leaderboard_monthly.before_loop
@@ -89,9 +88,10 @@ async def before_leaderboard_monthly():
     await bot.wait_until_ready()
     time_module = Now()
     now = time_module.now
-    first_day_of_next_month = (
-        time_module.first_day_of_next_month() + datetime.timedelta(minutes=30)
-    )
+    # first_day_of_next_month = (
+    #     time_module.first_day_of_next_month() + datetime.timedelta(minutes=30)
+    # )
+    first_day_of_next_month = now + datetime.timedelta(minutes=1)
     delta = (first_day_of_next_month - now).total_seconds()
     print("before_leaderboard_monthly: ", delta, " seconds")
     await asyncio.sleep(delta)

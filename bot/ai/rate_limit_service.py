@@ -8,8 +8,6 @@ LIMIT_BOOSTER = 150
 
 
 def get_limit(member: discord.Member) -> int:
-    if member.id == 880359404036317215:
-        return 3
     return LIMIT_BOOSTER if "Server Booster" in str(member.roles) else LIMIT_NORMAL
 
 

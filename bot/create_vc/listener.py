@@ -14,7 +14,7 @@ from utils.discord_bot.channel_name import (
 from utils.time_modules import Now
 
 from . import vars
-from .vars import Room, all_created_vc_id
+from .vars import Room, all_created_vc_id, vc_id_name_map
 
 command_mess = """
 **Các lệnh:**
@@ -64,11 +64,8 @@ async def on_voice_state_update(
     member_before: discord.VoiceState,
     member_after: discord.VoiceState,
 ):
-    global vc_id_name_map, guild, is_ready
-
-    # if not vars.is_ready:
-    #     return
-    print(11111, vars.is_ready)
+    if not vars.is_ready:
+        return
 
     voice_channel_before = member_before.channel
     voice_channel_after = member_after.channel
@@ -95,7 +92,7 @@ async def on_voice_state_update(
                         and len(voice_channel_before.category.channels) <= 1
                         else None
                     )
-                    vc_channel_del = guild.get_channel(vc.vc_id)
+                    vc_channel_del = vars.guild.get_channel(vc.vc_id)
                     del_list = [vc_channel_del, vc]
                     if category_channel_del:
                         del_list.append(category_channel_del)

@@ -17,7 +17,7 @@ else
 fi
 
 echo "🚀 Deploying to Docker Swarm..."
-docker stack deploy -c docker-compose.yaml mie-bot
+docker stack deploy -c docker-compose.prod.yaml mie-bot
 
 echo "🔄 Forcing service restart to apply code changes..."
 docker service update --force mie-bot_mie-bot

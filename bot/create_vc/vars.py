@@ -35,19 +35,15 @@ class Room:
 async def fix_room():
     global vc_id_name_map, guild
 
-    print("in start fixing")
     all_vc = [x.vc_id for x in await VoiceChannels.find({}).to_list()]
-    all_vc.extend(vars.all_created_vc_id)
+    all_vc.extend(all_created_vc_id)
     all_vc = set(all_vc)
 
-    print("start fixing")
     for vc_id in all_vc:
         vc_channel = guild.get_channel(vc_id)
 
         if vc_channel:
             if vc_channel.members == []:
-                print(11111111, vc_channel)
-                return
                 await vc_channel.delete()
                 vc = await VoiceChannels.find_one(VoiceChannels.vc_id == vc_id)
                 await vc.delete()

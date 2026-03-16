@@ -23,6 +23,8 @@ services:
       - .:/app/
     networks:
       - mie-network
+    entrypoint: ["uv", "run"]
+    command: ["python", "main.py"]
 
   mongodb:
     image: mongo:7.0

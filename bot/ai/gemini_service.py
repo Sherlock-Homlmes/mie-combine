@@ -294,8 +294,10 @@ Facts you know about this user:
         selected_model,
         ". Context: ",
         user_message,
-        "Sys prompt:",
-        system_prompt,
+        ". User name: ",
+        username,
+        ". Fact:",
+        facts_text,
     )
 
     # Async client + agentic tool loop

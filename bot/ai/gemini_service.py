@@ -36,8 +36,8 @@ SAFETY_SETTINGS = [
 ]
 
 TOOLS = [
-    types.Tool(url_context=types.UrlContext()),
-    types.Tool(googleSearch=types.GoogleSearch()),
+    # types.Tool(url_context=types.UrlContext()),
+    # types.Tool(googleSearch=types.GoogleSearch()),
     types.Tool(
         function_declarations=[
             # types.FunctionDeclaration(

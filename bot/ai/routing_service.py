@@ -117,13 +117,11 @@ Chỉ trả về "SIMPLE" hoặc "COMPLEX", không giải thích gì thêm. Nế
                 json=payload,
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
-                print(
-                    1111, url, response.status, await response.json(), message_content
-                )
                 if response.status == 200:
                     data = await response.json()
                     if data.get("success") and data.get("result"):
                         result_text = data["result"].get("response", "").strip().upper()
+                        print(1111, result_text, message_content)
                         if "COMPLEX" in result_text:
                             return COMPLEX
                         elif "SIMPLE" in result_text:

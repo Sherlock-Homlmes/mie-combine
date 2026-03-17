@@ -312,7 +312,7 @@ Facts you know about this user:
             ),
             safety_settings=SAFETY_SETTINGS,
             temperature=1,
-            max_token=8192,
+            max_output_tokens=8192,
         ),
     )
 

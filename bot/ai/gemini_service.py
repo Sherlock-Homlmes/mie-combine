@@ -228,6 +228,7 @@ async def generate_response(
     user_facts: list[str],
     user_id: int,
     username: str = "User",
+    model_type: str = "COMPLEX",
 ) -> str:
     """Generate a response using async Gemini client with tool calling."""
 
@@ -279,9 +280,14 @@ Facts you know about this user:
         types.Content(role="user", parts=[types.Part(text=user_message)])
     )
 
+    # Select model based on routing
+    selected_model = (
+        env.GEMINI_LITE_MODEL if model_type == "SIMPLE" else env.GEMINI_MODEL
+    )
+
     # Async client + agentic tool loop
     response = await aclient.models.generate_content(
-        model=env.GEMINI_MODEL,
+        model=selected_model,
         contents=gemini_contents,
         config=types.GenerateContentConfig(
             system_instruction=system_prompt,

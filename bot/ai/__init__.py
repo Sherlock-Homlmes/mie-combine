@@ -8,7 +8,13 @@ from models import AIMessageAuthor
 from utils.ai_coversation import aclient
 from utils.image_handle import delete_image, save_image
 
-from . import gemini_service, history_service, memory_service, rate_limit_service
+from . import (
+    gemini_service,
+    history_service,
+    memory_service,
+    rate_limit_service,
+    routing_service,
+)
 
 DISCORD_MAX_LENGTH_MESSAGE = 2000
 
@@ -198,6 +204,16 @@ async def handle_chat(message: discord.Message, override_content: str = None):
 
     async with message.channel.typing():
         try:
+            # Route message to appropriate model
+            try:
+                has_attachments = len(message.attachments) > 0
+                model_type = await routing_service.classify_message_complexity(
+                    content, has_attachments
+                )
+            except Exception:
+                traceback.print_exc()
+                model_type = routing_service.COMPLEX
+
             history = await history_service.get_recent_messages(
                 user_discord_id, channel_id, guild_id, limit=10
             )
@@ -212,6 +228,7 @@ async def handle_chat(message: discord.Message, override_content: str = None):
                 user_facts=facts,
                 user_id=user_discord_id,
                 username=message.author.display_name,
+                model_type=model_type,
             )
             if response.startswith("[TOOLS USE]:"):
                 response = response.replace("[TOOLS USE]:", "", 1).strip()

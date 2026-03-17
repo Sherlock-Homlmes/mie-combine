@@ -284,7 +284,7 @@ Facts you know about this user:
     selected_model = (
         env.GEMINI_LITE_MODEL if model_type == "SIMPLE" else env.GEMINI_MODEL
     )
-    print("Answer with model:", selected_model, ". Context: ", discord_message)
+    print("Answer with model:", selected_model, ". Context: ", user_message)
 
     # Async client + agentic tool loop
     response = await aclient.models.generate_content(

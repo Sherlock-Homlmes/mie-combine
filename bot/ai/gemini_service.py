@@ -250,7 +250,7 @@ Facts you know about this user:
 
 ## Response style:
 - Default language is Vietnamese. Answer in Vietnamese except there are request to answer in other language
-- Maintain a friendly tone, dont be formal. Or if they ask you to match their tone—whatever they call you, call them right back.
+- If they ask you to match their tone—whatever they call you, call them right back. Else maintain a friendly tone, no need to be formal
 - Be honest when you don't know something
 - Keep responses under 2000 characters to fit Discord limits
 - No swear and example any swear word
@@ -286,7 +286,14 @@ Facts you know about this user:
     selected_model = (
         env.GEMINI_LITE_MODEL if model_type == "SIMPLE" else env.GEMINI_MODEL
     )
-    print("Answer with model:", selected_model, ". Context: ", user_message)
+    print(
+        "Answer with model:",
+        selected_model,
+        ". Context: ",
+        user_message,
+        "Sys prompt:",
+        system_prompt,
+    )
 
     # Async client + agentic tool loop
     response = await aclient.models.generate_content(

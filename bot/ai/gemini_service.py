@@ -36,13 +36,15 @@ SAFETY_SETTINGS = [
 ]
 
 TOOLS = [
+    types.Tool(url_context=types.UrlContext()),
+    types.Tool(googleSearch=types.GoogleSearch()),
     types.Tool(
         function_declarations=[
-            types.FunctionDeclaration(
-                name="get_current_datetime",
-                description="Lấy thời gian hiện tại. Chỉ gọi khi chắc chắn người ta muốn xem thời gian hiện tại, không cần thiết phải trả lời các câu hỏi liên quan đến thời gian bằng tool này",
-                parameters=types.Schema(type=types.Type.STRING, properties={}),
-            ),
+            # types.FunctionDeclaration(
+            #     name="get_current_datetime",
+            #     description="Lấy thời gian hiện tại. Chỉ gọi khi chắc chắn người ta muốn xem thời gian hiện tại, không cần thiết phải trả lời các câu hỏi liên quan đến thời gian bằng tool này",
+            #     parameters=types.Schema(type=types.Type.STRING, properties={}),
+            # ),
             # types.FunctionDeclaration(
             #     name="get_weather",
             #     description="Get current weather for a city (placeholder - returns mock data)",
@@ -158,7 +160,7 @@ TOOLS = [
                 ),
             ),
         ]
-    )
+    ),
 ]
 
 

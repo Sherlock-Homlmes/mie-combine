@@ -296,8 +296,6 @@ Facts you know about this user:
         user_message,
         ". User name: ",
         username,
-        ". Fact:",
-        facts_text,
     )
 
     # Async client + agentic tool loop

@@ -200,5 +200,5 @@ async def handle_chat(message: discord.Message, override_content: str = None):
 
 
 def handle_response_message(message: str):
-    result = message.replace("@everyone", " everyone")
+    result = message.replace("@everyone", " everyone").replace("@here", " here")
     return result

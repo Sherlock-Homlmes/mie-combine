@@ -1,14 +1,15 @@
-import re
+import asyncio
 import traceback
 
 import discord
+from pydantic import BaseModel
 
 from core.conf.bot.conf import bot
 from models import AIMessageAuthor
-from utils.ai_coversation import aclient
-from utils.image_handle import delete_image, save_image
+from utils.image_handle import delete_image, random_filename_from_url, save_image
 
 from . import (
+    file_service,
     gemini_service,
     history_service,
     memory_service,
@@ -47,147 +48,80 @@ async def on_message(message):
 
     # Handle attachments and messages
     try:
-        # if message.attachments:
-        # await handle_attachments(message)
+        # attachment_handler = await handle_attachments(message)
+        # if not attachment_handler.success:
+        #     await message.reply(attachment_handler.reason)
+        #     return
         await handle_chat(message)
         await bot.process_commands(message)
     except Exception:
         await message.reply("Mie đang lỗi rồi bạn thử lại sau nhé!")
         traceback.print_exc()
 
-    # if bot.user.mentioned_in(message) or (
-    #     message.position == 0
-    #     and message.channel.parent
-    #     and message.channel.parent.name == "giúp-đỡ-học-tập"
-    # ):
-    #     async with message.channel.typing():
-    #         chat.history = await UserAIChatHistory.get_history(
-    #             message.author.id, message.channel.id
-    #         )
-    #         message_without_mention = re.sub(r"<@.*?>", "\n", message.content)
-    #         # message.channel.parent is currently error
-    #         # if message.channel.parent and message.channel.parent.name == "giúp-đỡ-học-tập":
-    #         #     message_without_mention = f"{message.channel.name}\n{message_without_mention}"
-    #         contents = [
-    #             message_without_mention,
-    #         ]
-    #         if len(message.attachments):
-    #             try:
-    #                 file = await save_image(message.attachments[0].url)
-    #                 f = genai.upload_file(file)
-    #                 contents.append(f)
-    #                 # files = [await save_image(f) for f in message.attachments]
-    #                 # fs = [genai.upload_file(f) for f in files]
-    #                 # contents.extend(fs)
-    #             except Exception:
-    #                 await message.channel.send(
-    #                     "Xảy ra lỗi trong quá trình xử lý", reference=message
-    #                 )
-    #                 return
-    #             finally:
-    #                 # for file in files:
-    #                 delete_image(file)
 
-    #         async def try_call_ai(without_files=[]):
-    #             try:
-    #                 chat.history = await UserAIChatHistory.get_history(
-    #                     message.author.id,
-    #                     message.channel.id,
-    #                     without_files=without_files,
-    #                 )
-    #                 response = await chat.send_message_async(contents)
-    #                 return response.text
-    #             except PermissionDenied as e:
-    #                 pattern = r"File (\w+) or"
-    #                 match = re.search(pattern, str(e))
-    #                 file_id = match.group(1)
-    #                 print("AI files removed: ", file_id)
-    #                 without_files.append(file_id)
-    #                 return await try_call_ai(without_files)
-
-    #         sucess = True
-    #         try:
-    #             text = await try_call_ai()
-    #         except Exception as e:
-    #             print("AI error: ", e)
-    #             text = (
-    #                 "Xảy ra lỗi trong quá trình xử lý. Liên hệ Admin để được trợ giúp"
-    #             )
-    #             sucess = False
-
-    #         if len(text) > DISCORD_MAX_LENGTH_MESSAGE:
-    #             first_part = text[:DISCORD_MAX_LENGTH_MESSAGE]
-    #             second_part = text[DISCORD_MAX_LENGTH_MESSAGE:]
-
-    #             await message.channel.send(first_part, reference=message)
-    #             await message.channel.send(second_part)
-    #         else:
-    #             await message.channel.send(text, reference=message)
-
-    #         if not sucess:
-    #             return
-    #         return
-
-    #         # TODO: refactor
-    #         # model_contents = []
-    #         # if chat.history[-2].role != "user":
-    #         #     return
-    #         # ai_model_contents = chat.history[-2].parts
-    #         # for content in ai_model_contents:
-    #         #     if content.text:
-    #         #         model_contents.append(Content(text=content.text))
-    #         #     elif content.file_data:
-    #         #         model_contents.append(
-    #         #             Content(
-    #         #                 file_data=FileData(
-    #         #                     mime_type=content.file_data.mime_type,
-    #         #                     file_uri=content.file_data.file_uri,
-    #         #                 )
-    #         #             )
-    #         #         )
-    #         # # insert content
-    #         # await UserAIChatHistory(
-    #         #     model_type=model_type,
-    #         #     created_by=message.author.id,
-    #         #     channel_id=message.channel.id,
-    #         #     contents=model_contents,
-    #         #     response=response.text,
-    #         # ).insert()
+class AttachmentHandler(BaseModel):
+    success: bool
+    reason: str | None = None
 
 
-# async def handle_attachments(message: discord.Message):
-#     user_id = str(message.author.id)
-#     guild_id = str(message.guild.id) if message.guild else "dm"
-#     channel_id = str(message.channel.id)
-#     cache_file_folder_path = "assets/cache/"
+async def handle_attachments(message: discord.Message) -> AttachmentHandler:
+    if not message.attachments:
+        return AttachmentHandler(success=True)
 
-#     async with message.channel.typing():
-#         for attachment in message.attachments:
-#             if attachment.size > settings.max_file_size_bytes:
-#                 await message.reply(
-#                     f"❌ `{attachment.filename}` quá lớn "
-#                     f"({attachment.size / 1024 / 1024:.1f}MB). "
-#                     f"Max: {settings.max_file_size_mb}MB"
-#                 )
-#                 continue
-#             file_name = random_filename_from_url(attachment.url)
-#             file_path = await save_image(
-#                 attachment.url, cache_file_folder_path + file_name
-#             )
-#             if not file_path:
-#                 raise Exception("Can not download file")
-#             mime = attachment.content_type or "application/octet-stream"
+    user_id = message.author.id
+    guild_id = message.guild.id
+    channel_id = message.channel.id
+    cache_file_folder_path = "assets/cache/"
 
-#             # Nếu là ảnh thì extract text bằng Gemini Vision trước
-#             extracted = None
-#             if mime.startswith("image/"):
-#                 extracted = await file_service.extract_image_text(file_path)
-#                 await history_service.add_message(
-#                     user_id, channel_id, guild_id, "user", extracted
-#                 )
-#             else:
-#                 await message.reply("Hiện tại Mie chưa hỗ trợ định dạng file này")
-#                 return
+    try:
+        file_service.check_file_validation(message.attachments)
+    except Exception as e:
+        return AttachmentHandler(success=False, reason=str(e))
+
+    async with message.channel.typing():
+        for attachment in message.attachments:
+            file_name = random_filename_from_url(attachment.url)
+            file_path = await save_image(
+                attachment.url, cache_file_folder_path + file_name
+            )
+            if not file_path:
+                raise Exception("Can not download file")
+            mime = attachment.content_type or "application/octet-stream"
+
+            # Image
+            extracted: file_service.OCRResponse | None = None
+            if mime.startswith("image/"):
+                extracted = await file_service.extract_image_to_text(file_path)
+                print(extracted)
+                if (
+                    extracted.confidence
+                    < file_service.IMAGE_EXTRACT_CONFIDENCE_THRESHOLD
+                ):
+                    return AttachmentHandler(
+                        success=False,
+                        reason="Bot không thể lấy được nội dung từ ảnh của bạn. Bạn có thể thử  chụp lại với ảnh khác hoặc gửi dưới dạng văn bản nhé!",
+                    )
+                else:
+                    await asyncio.gather(
+                        file_service.add_file_record(
+                            user_id,
+                            channel_id,
+                            guild_id,
+                            file_path,
+                            attachment.filename,
+                            extracted.confidence,
+                            extracted.value,
+                        ),
+                        history_service.add_message(
+                            user_id, channel_id, guild_id, "user", extracted.value
+                        ),
+                    )
+                    return AttachmentHandler(success=True)
+            # Other file type
+            else:
+                return AttachmentHandler(
+                    success=False, reason="Hiện tại Mie chưa hỗ trợ định dạng file này"
+                )
 
 
 async def handle_chat(message: discord.Message, override_content: str = None):

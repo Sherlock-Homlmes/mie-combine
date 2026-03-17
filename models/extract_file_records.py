@@ -11,11 +11,12 @@ class ExtractFileRecords(Document):
     """Tracks uploaded files in R2 and their embed status."""
 
     user_discord_id: Annotated[int, Indexed()]
-    guild_id: Optional[int] = None
     channel_id: int
+    guild_id: Optional[int] = None
 
     original_filename: str
-    s3_key: str  # e.g. {uuid}.pdf
-    file_content: str = None
+    s3_key: str
+    file_content: str | None = None
+    confidence: float
 
     uploaded_at: datetime = Field(default_factory=lambda: Now().now)

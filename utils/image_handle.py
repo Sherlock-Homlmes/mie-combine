@@ -1,12 +1,15 @@
 import errno
 import os
-from typing import Optional, Union
 from pathlib import Path
+from typing import Optional, Union
+from urllib.parse import urlparse
+
+import aiofiles
+import aiofiles.os
 
 # lib
 import aiohttp
-import aiofiles
-import aiofiles.os
+from fastuuid import uuid4
 
 
 async def path_exists(path: Union[Path, str]) -> bool:
@@ -19,6 +22,12 @@ async def path_exists(path: Union[Path, str]) -> bool:
     except ValueError:
         return False
     return True
+
+
+def random_filename_from_url(url: str) -> str:
+    """Random filename, lấy extension từ URL attachment"""
+    ext = os.path.splitext(urlparse(url).path)[1]
+    return str(uuid4()) + ext
 
 
 async def save_image(

@@ -93,7 +93,7 @@ async def _cloudflare_ai_classification(message_content: str) -> str:
 
     sys_prompt = """
 Mày là một bộ định tuyến tin nhắn (Router). Hãy đọc tin nhắn của người dùng và trả về duy nhất một từ: "SIMPLE" hoặc "COMPLEX".
-- Trả về "SIMPLE" nếu: Người dùng chào hỏi, tán gẫu, dịch liệu, hoặc yêu cầu điều khiển phòng học (mở/khóa/quản lý room), thực hiện lệnh server.
+- Trả về "SIMPLE" nếu: Người dùng chào hỏi, tán gẫu, dịch liệu, hoặc mày cảm thấy đấy là câu nói vô lí/nói nhảm, hoặc yêu cầu điều khiển phòng học (mở/khóa/quản lý room), thực hiện lệnh server.
 - Trả về "COMPLEX" nếu: Người dùng hỏi bài tập, nhờ giải toán, nhờ viết văn, hoặc yêu cầu giải thích kiến thức chuyên sâu.
 Chỉ trả về "SIMPLE" hoặc "COMPLEX", không giải thích gì thêm. Nếu không chắc thì trả về "COMPLEX".
 """

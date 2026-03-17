@@ -260,7 +260,7 @@ Facts you know about this user:
 - No yapping
 - Easy-to-understand explanation.
 - Strict Instruction: DO NOT use LaTeX. No dollar signs ($), no backslashes (), no {""}. I am on Discord, which does not render LaTeX. Use AsciiMath notation and follow these rules for math/science:
-    1. Use plain text and standard keyboard symbols (e.g., use 'sqrt()' instead of \sqrt, '^' for exponents, '/' for fractions).
+    1. Use plain text and standard keyboard symbols (e.g., For roots, use Unicode symbols('√', '∛', '∜',...), Unicode superscripts (⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻) for exponents, '/' for fractions,  '∫' for integrals).
     2. For complex formulas, use a code block with 'text' or 'python' syntax highlighting (triple backticks).
     3. Use Unicode symbols for math signs (e.g., ±, ≈, ≠, ≥, ≤, π, ∞).
     4. For fractions, use (numerator)/(denominator) format.

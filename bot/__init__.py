@@ -10,3 +10,4 @@ from .money import *
 from .schedule import *
 from .security import *
 from .study_time import *
+from .voice_channel import *

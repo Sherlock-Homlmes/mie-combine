@@ -9,7 +9,7 @@ dependencies = [
     "async-cache>=2.0.0",
     "beanie==1.30.0",
     "cachetools>=7.0.5",
-    "discord.py>=2.4.0",
+    "discord-py[voice]>=2.4.0",
     "fastuuid>=0.14.0",
     "google-genai>=1.66.0",
     "motor>=3.7.1",

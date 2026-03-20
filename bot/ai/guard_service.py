@@ -16,6 +16,8 @@ class GuardResult:
 
 async def message_guard(conversation_text: str):
     """Gọi API classify message action"""
+    if len(conversation_text.strip()) <= 5:
+        return GuardResult.ALLOWED
 
     sys_prompt = """
 You are a strict input guard. Your job is to analyze the user's message and return ONLY the word "true" or "false" — nothing else.
@@ -128,7 +130,7 @@ class GuardViolationView(ui.View):
     )
     async def disable_ai_button(self, interaction, button):
         # Verify the user has permission to disable AI
-        if not interaction.user.guild_permissions.administrator:
+        if "AD Carry" not in str(interaction.user.roles):
             await interaction.response.send_message(
                 "❌ You don't have permission to disable AI for users.", ephemeral=True
             )

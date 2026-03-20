@@ -225,7 +225,7 @@ async def handle_chat(message: discord.Message):
 
             # Layer 6: Generate content
             history = await history_service.get_recent_messages(
-                user_discord_id, channel_id, guild_id, limit=10
+                user_discord_id, channel_id, guild_id, limit=8
             )
             facts = await memory_service.get_user_facts(
                 user_discord_id, only_strong_fact=True

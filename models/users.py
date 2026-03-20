@@ -12,6 +12,7 @@ class UserMetadata(BaseModel):
     bank_account: Optional[str] = None
     bank_code: Optional[str] = None
     disable_achievement_role: Optional[bool] = False
+    disable_ai: Optional[bool] = False
 
 
 class Users(Document):

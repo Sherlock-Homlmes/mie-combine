@@ -1,13 +1,14 @@
 # default
 import asyncio
+import traceback
 from dataclasses import dataclass
 from typing import Dict, List
-import traceback
+
+import aiohttp
 
 # library
 import discord
 from discord.ext import commands
-import aiohttp
 
 # local
 from core.env import env, is_dev_env
@@ -23,7 +24,7 @@ class Bot(commands.Bot):
 
     async def wait_until_fully_ready(self):
         """Override wait_until_ready để thêm logic custom"""
-        from .event_handlers import get_server_info
+        from bot.ai.guard_service import GuardViolationView
         from bot.confession import (
             ConfessionCreateButton,
             ConfessionEndButton,
@@ -33,6 +34,8 @@ class Bot(commands.Bot):
             RemoveFalseBadWordButton,
             ReportFalseBadWordButton,
         )
+
+        from .event_handlers import get_server_info
 
         # Connect DB
         if env.BOT_ONLY:
@@ -49,6 +52,7 @@ class Bot(commands.Bot):
             ConfessionPrivateReplyButton,
             RemoveFalseBadWordButton,
             ReportFalseBadWordButton,
+            GuardViolationView,
         ]:
             view = model(timeout=None)
             self.add_view(view)
@@ -142,6 +146,7 @@ class ServerRoles:
 class ServerChannels:
     leaderboard: discord.TextChannel = None
     general_chat: discord.TextChannel = None
+    ai_logs: discord.TextChannel = None
 
 
 # TODO: change to cluster role_id, role, channel, channel_id

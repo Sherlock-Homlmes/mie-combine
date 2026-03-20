@@ -47,6 +47,7 @@ Return "true" for everything else, including:
 - Creative writing with characters or voices
 - Normal questions, tasks, translation, coding, math, etc.
 - Fictional scenarios that don't aim to extract config or break safety
+- User ask about their own information
 
 ---
 

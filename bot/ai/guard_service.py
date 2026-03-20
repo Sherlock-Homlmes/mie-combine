@@ -151,7 +151,7 @@ class GuardViolationView(ui.View):
         for field in embed.fields:
             if field.name == "👤 User":
                 # Extract ID from mention format: <@123456789> (`123456789`)
-                match = re.search(r"\(`(\d+)\)`", field.value)
+                match = re.search(r"`(\d+)`", field.value)
                 if match:
                     user_id = int(match.group(1))
                     break

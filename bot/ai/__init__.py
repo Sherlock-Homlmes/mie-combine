@@ -119,7 +119,7 @@ async def on_message(message):
     if guard_result == guard_service.GuardResult.BLOCKED:
         await send_guard_violation_log(message, content)
         await message.reply(
-            "⛔ Tin nhắn của bạn vi phạm chính sách sử dụng AI. Hãy thử lại với nội dung khác. Nếu bạn nghĩ đây là lỗi, hãy liên hệ admin."
+            "⛔ Tin nhắn của bạn có thể đang vi phạm chính sách sử dụng AI. Vui lòng thử lại. Nếu bạn nghĩ đây là lỗi, hãy liên hệ admin."
         )
         return
 

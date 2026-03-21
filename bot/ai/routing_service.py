@@ -1,209 +1,189 @@
 """
-Routing service using Cloudflare Worker AI to classify message complexity.
-Returns COMPLEX for complex queries or SIMPLE for casual chat.
+Router service - classify message complexity and purpose.
+Uses Cloudflare AI with Pydantic structured output parsing.
 """
 
-import asyncio
-import traceback
+import json
+import re
+from enum import Enum
+from typing import Optional
 
 import aiohttp
+from pydantic import BaseModel, ValidationError
 
 from core.env import env
 
-# Model routing constants
-COMPLEX = "COMPLEX"
-SIMPLE = "SIMPLE"
+# ─────────────────────────────────────────────
+# Schema
+# ─────────────────────────────────────────────
 
 
-async def classify_message_complexity(
-    message_content: str, has_attachments: bool = False
+class Complexity(str, Enum):
+    SIMPLE = "SIMPLE"
+    COMPLEX = "COMPLEX"
+
+
+class Purpose(str, Enum):
+    FUNC_CALL = "FUNC_CALL"
+    GOOGLE_SEARCH = "GOOGLE_SEARCH"
+    SEARCH_IMAGES = "SEARCH_IMAGES"
+    NORMAL = "NORMAL"
+
+
+class RoutingResult(BaseModel):
+    complexity: Complexity
+    purpose: Purpose
+
+    class Config:
+        use_enum_values = True
+
+
+# ─────────────────────────────────────────────
+# Prompt builder
+# ─────────────────────────────────────────────
+
+SYSTEM_PROMPT = """Mày là một bộ định tuyến tin nhắn (Message Router) cho hệ thống trợ lý phòng học thông minh.
+
+Đọc tin nhắn người dùng và trả về JSON với 2 trường sau. KHÔNG giải thích, KHÔNG thêm text nào khác ngoài JSON.
+
+## 1. `complexity`
+- "SIMPLE": Chào hỏi, tán gẫu, nói nhảm/vô nghĩa, dịch thuật nhanh, câu hỏi thường thức đơn giản.
+- "COMPLEX": Hỏi bài, giải toán, viết văn, giải thích kiến thức chuyên sâu.
+
+## 2. `purpose`
+Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu conflict:
+
+1. "FUNC_CALL"     → Điều khiển phòng học: mở/khóa/quản lý room, thực hiện lệnh server, hỏi thời gian, giờ là mấy giờ, thời điểm hiện tại
+2. "GOOGLE_SEARCH" → Cần tra cứu internet: thời tiết, địa điểm, quán ăn, sự kiện,...
+3. "SEARCH_IMAGES" → Người dùng đề cập đến ảnh/file đã gửi trước nhưng không thấy trong context. Dấu hiệu: "bài này", "ảnh tao gửi", "cái đó" mà không có attachment
+4. "NORMAL"        → Không cần tool nào, trả lời từ kiến thức có sẵn
+
+## Quy tắc (STRICT)
+- Nếu conflict → chọn purpose có độ ưu tiên cao nhất
+- Nếu không chắc complexity → chọn "COMPLEX"
+- Nếu không chắc purpose → chọn "NORMAL"
+
+## Output format (STRICT)
+{"complexity": "SIMPLE" | "COMPLEX", "purpose": "FUNC_CALL" | "GOOGLE_SEARCH" | "SEARCH_IMAGES" | "NORMAL"}
+
+## Ví dụ
+{"input": "mở phòng học 101"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
+{"input": "thời tiết hà nội hôm nay"} → {"complexity": "SIMPLE", "purpose": "GOOGLE_SEARCH"}
+{"input": "giải giúp tao bài trong ảnh"} → {"complexity": "COMPLEX", "purpose": "SEARCH_IMAGES"}
+{"input": "2+2 bằng mấy"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}
+{"input": "tìm quán ăn rồi mở phòng học"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
+{"input": "giải thích định lý Pythagoras"} → {"complexity": "COMPLEX", "purpose": "NORMAL"}"""
+
+
+def build_user_message(
+    conversation_text: str,
+    document_summaries: Optional[str] = None,
+    history: Optional[list[dict]] = None,
 ) -> str:
+    """Build user message, optionally inject document summaries and chat history."""
+    msg = ""
+
+    # Inject last 3 user messages from history
+    if history:
+        user_msgs = [
+            m["content"]
+            for m in history
+            if m.get("role") == "user" and m.get("content")
+        ][-3:]
+
+        if user_msgs:
+            msg += "[Lịch sử hội thoại gần đây]\n"
+            msg += "\n".join(f"user: {m}" for m in user_msgs)
+            msg += "\n\n"
+
+    msg += f"[Tin nhắn hiện tại]\nuser: {conversation_text}"
+
+    if document_summaries and document_summaries.strip():
+        msg += f"""
+
+---
+Tóm tắt tài liệu/ảnh người dùng đã gửi gần đây (dùng để quyết định có cần SEARCH_IMAGES không):
+{document_summaries.strip()}"""
+
+    return msg
+
+
+def parse_router_result(raw: str) -> RoutingResult:
     """
-    Classify message complexity using Cloudflare Worker AI.
-
-    Args:
-        message_content: The text content of the message
-        has_attachments: Whether the message contains image attachments
-
-    Returns:
-        "COMPLEX" for complex/academic queries or messages with images
-        "SIMPLE" for casual conversation or action commands
+    Parse raw model output → RouterResult.
+    Handles: clean JSON, JSON wrapped in markdown fences, JSON buried in text.
+    Raises ValueError if parsing fails.
     """
+    text = raw.strip()
 
-    # Quick check: if message has images, always use complex model
-    if has_attachments:
-        return COMPLEX
+    # Strip markdown fences if present: ```json ... ``` or ``` ... ```
+    fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
+    if fence_match:
+        text = fence_match.group(1).strip()
 
-    content_lower = message_content.lower().strip()
-
-    # Quick check: if message is very short and looks like casual chat
-    casual_patterns = [
-        "hi",
-        "hello",
-        "chào",
-        "hế lô",
-        "hey",
-        "thanks",
-        "cảm ơn",
-        "thank",
-        "tks",
-        "ok",
-        "okay",
-        "oke",
-        "được",
-        "bye",
-        "tạm biệt",
-        "bai",
-        "đâu",
-        "hả",
-        "à",
-        "ừ",
-        "ừm",
-        "😊",
-        "👍",
-        "❤️",
-        "🎉",
-    ]
-
-    for pattern in casual_patterns:
-        if content_lower == pattern or content_lower.startswith(pattern + " "):
-            return SIMPLE
-
-    # Use Cloudflare Worker AI for classification
-    try:
-        if not env.CLOUDFLARE_API_KEY or not env.CLOUDFLARE_ACCOUNT_ID:
-            # No Cloudflare API key configured, use heuristic
-            return _heuristic_classification(message_content)
-
-        result = await _cloudflare_ai_classification(message_content)
-        return result
-
-    except Exception as e:
-        print(f"Routing service error: {e}")
-        traceback.print_exc()
-        print("heuristic 2")
-        # Fallback to heuristic classification
-        return _heuristic_classification(message_content)
-
-
-async def _cloudflare_ai_classification(message_content: str) -> str:
-    """
-    Use Cloudflare Worker AI to classify message complexity.
-    """
-
-    sys_prompt = """
-Mày là một bộ định tuyến tin nhắn (Router). Hãy đọc tin nhắn của người dùng và trả về duy nhất một từ: "SIMPLE" hoặc "COMPLEX".
-- Trả về "SIMPLE" nếu: Người dùng chào hỏi, tán gẫu, dịch liệu, hoặc mày cảm thấy đấy là câu nói vô lí/nói nhảm, hoặc yêu cầu điều khiển phòng học (mở/khóa/quản lý room), thực hiện lệnh server.
-- Trả về "COMPLEX" nếu: Người dùng hỏi bài tập, nhờ giải toán, nhờ viết văn, hoặc yêu cầu giải thích kiến thức chuyên sâu.
-Chỉ trả về "SIMPLE" hoặc "COMPLEX", không giải thích gì thêm. Nếu không chắc thì trả về "COMPLEX".
-"""
+    # Try to extract JSON object if there's surrounding text
+    json_match = re.search(r"\{[^{}]+\}", text)
+    if json_match:
+        text = json_match.group(0)
 
     try:
-        async with aiohttp.ClientSession() as session:
-            url = f"https://api.cloudflare.com/client/v4/accounts/{env.CLOUDFLARE_ACCOUNT_ID}/ai/run/{env.CLOUDFLARE_ROUTING_MODEL}"
-            headers = {"Authorization": f"Bearer {env.CLOUDFLARE_API_KEY}"}
-            payload = {
-                "messages": [
-                    {"role": "system", "content": sys_prompt},
-                    {"role": "user", "content": f'Message: "{message_content}"'},
-                ],
-                "max_tokens": 10,
-                "temperature": 0.1,
-            }
+        data = json.loads(text)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Cannot parse JSON from model output: '{raw}' → {e}")
 
+    try:
+        return RoutingResult(**data)
+    except (ValidationError, TypeError) as e:
+        raise ValueError(f"Invalid router result schema: {data} → {e}")
+
+
+# ─────────────────────────────────────────────
+# API caller
+# ─────────────────────────────────────────────
+
+
+async def route_message(
+    conversation_text: str,
+    document_summaries: Optional[str] = None,
+    history: Optional[list[dict]] = None,
+) -> RoutingResult:
+    """
+    Call Cloudflare AI router model and return structured RouterResult.
+    Falls back to COMPLEX/NORMAL on any error.
+    """
+    user_msg = build_user_message(conversation_text, document_summaries, history)
+
+    async with aiohttp.ClientSession() as session:
+        url = (
+            f"https://api.cloudflare.com/client/v4/accounts/"
+            f"{env.CLOUDFLARE_ACCOUNT_ID}/ai/run/{env.CLOUDFLARE_ROUTING_MODEL}"
+        )
+        headers = {"Authorization": f"Bearer {env.CLOUDFLARE_API_KEY}"}
+        payload = {
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+            ],
+            "max_tokens": 60,  # JSON output ngắn, không cần nhiều
+            "temperature": 0.1,  # Deterministic
+            "json_schema": RoutingResult.model_json_schema(),
+        }
+
+        try:
             async with session.post(
                 url,
                 headers=headers,
                 json=payload,
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    if data.get("success") and data.get("result"):
-                        result_text = data["result"].get("response", "").strip().upper()
-                        print(1111, result_text, message_content)
-                        if "COMPLEX" in result_text:
-                            return COMPLEX
-                        elif "SIMPLE" in result_text:
-                            return SIMPLE
+                data = await response.json()
+                if response.status != 200:
+                    raise ValueError(f"HTTP {response.status}: {data}")
 
-                # If Cloudflare AI fails, fall back to heuristic
-                return _heuristic_classification(message_content)
+                raw_text = data["result"].get("response", "").strip()
+                return parse_router_result(raw_text)
 
-    except asyncio.TimeoutError:
-        print("Cloudflare AI timeout, using heuristic classification")
-        return _heuristic_classification(message_content)
-    except Exception as e:
-        print(f"Cloudflare AI error: {e}")
-        return _heuristic_classification(message_content)
-
-
-def _heuristic_classification(message_content: str) -> str:
-    """
-    Fallback heuristic classification when AI is unavailable.
-    """
-    content_lower = message_content.lower().strip()
-
-    # Academic/complex indicators
-    complex_keywords = [
-        "giải",
-        "giải thích",
-        "help",
-        "trợ giúp",
-        "hỗ trợ",
-        "làm sao",
-        "làm thế nào",
-        "how",
-        "what",
-        "why",
-        "when",
-        "where",
-        "tại sao",
-        "như thế nào",
-        "ví dụ",
-        "example",
-        "bài tập",
-        "homework",
-        "exercise",
-        "đề",
-        "test",
-        "toán",
-        "math",
-        "lí",
-        "physic",
-        "hóa",
-        "chemistry",
-        "code",
-        "lập trình",
-        "programming",
-        "function",
-        "algorithm",
-        "phân tích",
-        "analysis",
-        "so sánh",
-        "compare",
-        "tính",
-        "calculate",
-        "đạo hàm",
-        "tích phân",
-        "công thức",
-        "formula",
-        "định lý",
-        "theorem",
-    ]
-
-    # Check for complex keywords
-    for keyword in complex_keywords:
-        if keyword in content_lower:
-            return COMPLEX
-
-    # Check for question marks (indicates questions)
-    if "?" in message_content:
-        return COMPLEX
-
-    # Check message length - longer messages tend to be complex
-    if len(message_content) > 100:
-        return COMPLEX
-
-    # Default to SIMPLE for short, simple messages
-    return SIMPLE
+        except ValueError:
+            raise
+        except Exception as e:
+            raise ValueError(f"Cloudflare API error: {e}")

@@ -18,8 +18,8 @@ from models import AIMessageAuthor
 from utils.image_handle import delete_image, random_filename_from_url, save_image
 
 from . import (
+    content_generate_service,
     file_service,
-    gemini_service,
     guard_service,
     history_service,
     memory_service,
@@ -215,13 +215,13 @@ async def handle_chat(message: discord.Message):
         try:
             # Layer 5: Classify content and complexity to route to the right model
             try:
-                has_attachments = len(message.attachments) > 0
-                model_type = await routing_service.classify_message_complexity(
-                    content, has_attachments
-                )
+                routing_result = await routing_service.route_message(content)
+                model_type = routing_result.complexity
+                purpose = routing_result.purpose
+                print("------------------------")
+                print("Routing: ", routing_result)
             except Exception:
-                traceback.print_exc()
-                model_type = routing_service.COMPLEX
+                raise Exception("Phân loại tin nhắn thất bại")
 
             # Layer 6: Generate content
             history = await history_service.get_recent_messages(
@@ -231,7 +231,7 @@ async def handle_chat(message: discord.Message):
                 user_discord_id, only_strong_fact=True
             )
 
-            response = await gemini_service.generate_response(
+            response = await content_generate_service.generate_response(
                 discord_message=message,
                 user_message=content,
                 history=history,
@@ -239,10 +239,9 @@ async def handle_chat(message: discord.Message):
                 user_id=user_discord_id,
                 username=message.author.display_name,
                 model_type=model_type,
+                purpose=purpose,
             )
-            if response.startswith("[TOOLS USE]:"):
-                response = response.replace("[TOOLS USE]:", "", 1).strip()
-            else:
+            if purpose != "FUNC_CALL":
                 response = handle_response_message(response)
                 await history_service.add_message(
                     user_discord_id, channel_id, guild_id, AIMessageAuthor.USER, content

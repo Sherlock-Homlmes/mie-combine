@@ -53,7 +53,7 @@ SYSTEM_PROMPT = """Mày là một bộ định tuyến tin nhắn (Message Route
 ## 2. `purpose`
 Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu conflict:
 
-1. "FUNC_CALL"     → Điều khiển phòng học: người dùng muốn những hành động mở/khóa/quản lý room(có thê nói bóng gió kiểu đóng cửa, mở cửa, treo biển,...), thực hiện lệnh server hoặc hỏi thời gian, giờ là mấy giờ, thời điểm hiện tại
+1. "FUNC_CALL"     → Điều khiển phòng học: mở/khóa/quản lý room, thực hiện lệnh server hoặc hỏi thời gian, giờ là mấy giờ, thời điểm hiện tại
 2. "SEARCH_IMAGES" → Người dùng đề cập đến ảnh/file đã gửi trước nhưng không thấy trong context. Dấu hiệu: "bài này", "ảnh tao gửi", "cái đó" mà không có attachment
 3. "GOOGLE_SEARCH" → Cần tra cứu internet: thời tiết, địa điểm, quán ăn, sự kiện,...
 4. "NORMAL"        → Không cần tool nào, trả lời từ kiến thức có sẵn
@@ -67,7 +67,7 @@ Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu
 {"complexity": "SIMPLE" | "COMPLEX", "purpose": "FUNC_CALL" | "GOOGLE_SEARCH" | "SEARCH_IMAGES" | "NORMAL"}
 
 ## Ví dụ
-{"input": "mở cửa treo biển An Hải Đường"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
+{"input": "mở cửa treo biển thả chó"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
 {"input": "mở phòng học 101"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
 {"input": "thời tiết hà nội hôm nay"} → {"complexity": "SIMPLE", "purpose": "GOOGLE_SEARCH"}
 {"input": "giải giúp tao bài trong ảnh"} → {"complexity": "COMPLEX", "purpose": "SEARCH_IMAGES"}

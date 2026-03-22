@@ -64,7 +64,7 @@ Return "true" for everything else, including:
   "kick this dog <@123456789> from the channel"
   "make the room private"
   "mute <@123456789>"
-  "hide my voice channel"
+  "hide room"
 
 ---
 

@@ -3,9 +3,9 @@ import discord
 from models import AIMessageAuthor, ConversationHistory
 from utils.time_modules import Now
 
-LIMIT_NORMAL = 25
-LIMIT_BOOSTER = 50
-LIMIT_TESTER = 72
+LIMIT_NORMAL = 50
+LIMIT_BOOSTER = 75
+LIMIT_TESTER = 75
 LIMIT_AD = 200
 
 

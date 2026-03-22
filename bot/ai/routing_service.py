@@ -43,29 +43,22 @@ class RoutingResult(BaseModel):
 # ─────────────────────────────────────────────
 
 SYSTEM_PROMPT = """Mày là một bộ định tuyến tin nhắn (Message Router) cho hệ thống trợ lý phòng học thông minh.
-
 Đọc tin nhắn người dùng và trả về JSON với 2 trường sau. KHÔNG giải thích, KHÔNG thêm text nào khác ngoài JSON.
-
 ## 1. `complexity`
 - "SIMPLE": Chào hỏi, tán gẫu, nói nhảm/vô nghĩa, dịch thuật nhanh, câu hỏi thường thức đơn giản.
 - "COMPLEX": Hỏi bài, giải toán, viết văn, giải thích kiến thức chuyên sâu.
-
 ## 2. `purpose`
 Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu conflict:
-
-1. "FUNC_CALL"     → Điều khiển phòng học: mở/khóa/quản lý room, thực hiện lệnh server hoặc hỏi thời gian, giờ là mấy giờ, thời điểm hiện tại
-2. "SEARCH_IMAGES" → Người dùng đề cập đến ảnh/file đã gửi trước nhưng không thấy trong context. Dấu hiệu: "bài này", "ảnh tao gửi", "cái đó" mà không có attachment
+1. "FUNC_CALL"     → Điều khiển thiết bị/phòng học vật lý: mở/khóa/quản lý room, bật/tắt đèn/máy chiếu, hỏi thời gian hiện tại (giờ là mấy giờ, hôm nay ngày mấy). KHÔNG áp dụng cho câu ra lệnh thông thường về hành vi, thái độ hay lời nói.
+2. "SEARCH_IMAGES" → Người dùng đề cập đến ảnh/file đã gửi trước nhưng không thấy trong context. Dấu hiệu: "bài này", "ảnh tao gửi", "cái đó" mà không có attachment.
 3. "GOOGLE_SEARCH" → Cần tra cứu internet: thời tiết, địa điểm, quán ăn, sự kiện,...
 4. "NORMAL"        → Không cần tool nào, trả lời từ kiến thức có sẵn
-
 ## Quy tắc (STRICT)
 - Nếu conflict → chọn purpose có độ ưu tiên cao nhất
 - Nếu không chắc complexity → chọn "COMPLEX"
 - Nếu không chắc purpose → chọn "NORMAL"
-
 ## Output format (STRICT)
 {"complexity": "SIMPLE" | "COMPLEX", "purpose": "FUNC_CALL" | "GOOGLE_SEARCH" | "SEARCH_IMAGES" | "NORMAL"}
-
 ## Ví dụ
 {"input": "mở cửa treo biển thả chó"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
 {"input": "mở phòng học 101"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
@@ -73,7 +66,10 @@ Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu
 {"input": "giải giúp tao bài trong ảnh"} → {"complexity": "COMPLEX", "purpose": "SEARCH_IMAGES"}
 {"input": "2+2 bằng mấy"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}
 {"input": "tìm quán ăn rồi mở phòng học"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
-{"input": "giải thích định lý Pythagoras"} → {"complexity": "COMPLEX", "purpose": "NORMAL"}"""
+{"input": "giải thích định lý Pythagoras"} → {"complexity": "COMPLEX", "purpose": "NORMAL"}
+{"input": "xưng hô cẩn thận vào"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}
+{"input": "nói lại đi"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}
+{"input": "im đi"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}"""
 
 
 def build_user_message(

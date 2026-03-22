@@ -35,7 +35,7 @@ async def member_study_time(interaction: discord.Interaction, member: discord.Me
         total_time = 0
 
     if total_time:
-        content = f"Tổng thời gian học: {total_time//60}h {total_time%60}'"
+        content = f"Tổng thời gian học: {total_time // 60}h {total_time % 60}'"
     else:
         content = "Bạn chưa học trong BetterMe"
     await interaction.response.send_message(content)
@@ -99,14 +99,14 @@ async def generate_member_study_time_image(
         for label in labels:
             data.append(sum(study_time_date_data.get(label, [])) / 60)
             total_time += sum(study_time_date_data.get(label, []))
-        chart_legend_label = f"Tháng này: {total_time//60} giờ {total_time%60} phút"
+        chart_legend_label = f"Tháng này: {total_time // 60} giờ {total_time % 60} phút"
 
         labels2 = generate_date_strings(first_day_of_last_month, last_day_of_last_month)
         for label in labels2:
             data2.append(sum(study_time_date_data.get(label, [])) / 60)
             total_past_time += sum(study_time_date_data.get(label, []))
         chart_legend_label2 = (
-            f"Tháng trước: {total_past_time//60} giờ {total_past_time%60} phút"
+            f"Tháng trước: {total_past_time // 60} giờ {total_past_time % 60} phút"
         )
 
     elif time_range == "Tuần này":
@@ -125,14 +125,14 @@ async def generate_member_study_time_image(
         for label in sub_labels:
             data.append(sum(study_time_date_data.get(label, [])) / 60)
             total_time += sum(study_time_date_data.get(label, []))
-        chart_legend_label = f"Tuần này: {total_time//60} giờ {total_time%60} phút"
+        chart_legend_label = f"Tuần này: {total_time // 60} giờ {total_time % 60} phút"
 
         labels2 = generate_date_strings(first_day_of_last_week, last_day_of_last_week)
         for label in labels2:
             data2.append(sum(study_time_date_data.get(label, [])) / 60)
             total_past_time += sum(study_time_date_data.get(label, []))
         chart_legend_label2 = (
-            f"Tuần trước: {total_past_time//60} giờ {total_past_time%60} phút"
+            f"Tuần trước: {total_past_time // 60} giờ {total_past_time % 60} phút"
         )
     elif time_range == "Hôm nay":
         file_path += f"{member_id}-today.png"
@@ -148,9 +148,9 @@ async def generate_member_study_time_image(
         data2 = study_time_date_data.get(date_strings[0], [])
         total_time = sum(data)
         total_past_time = sum(data2)
-        chart_legend_label = f"Hôm nay: {total_time//60} giờ {total_time%60} phút"
+        chart_legend_label = f"Hôm nay: {total_time // 60} giờ {total_time % 60} phút"
         chart_legend_label2 = (
-            f"Hôm qua: {total_past_time//60} giờ {total_past_time%60} phút"
+            f"Hôm qua: {total_past_time // 60} giờ {total_past_time % 60} phút"
         )
 
     max_data_value = max(data)
@@ -579,13 +579,14 @@ async def generate_leaderboard_info(
         start_idx = target_idx // 10 * 10
         end_idx = min([len(results) - 1, start_idx + 10])
         results = results[start_idx:end_idx]
-        img_name = f"page-{start_idx//10+1}-" + img_name
+        img_name = f"page-{start_idx // 10 + 1}-" + img_name
     else:
         img_name = "page-1-" + img_name
 
     users = await asyncio.gather(
         *[Users.find_one({Users.discord_id: result["_id"]}) for result in results]
     )
+    print("-----statistic users", users)
     users_avatar = await asyncio.gather(
         *[
             save_image(
@@ -609,7 +610,7 @@ async def generate_leaderboard_info(
 
         total_time_hour = result["total_study_time"] // 60
         total_time_min = result["total_study_time"] % 60
-        total_study_time = f'{total_time_hour}:{total_time_min if total_time_min >= 10 else "0" + str(total_time_min)}'
+        total_study_time = f"{total_time_hour}:{total_time_min if total_time_min >= 10 else '0' + str(total_time_min)}"
 
         result["_id"] = str(result["_id"])
         result["img"] = (

@@ -7,13 +7,19 @@ import discord
 # local
 from core.conf.bot.conf import bot, server_info
 from models import Users
-from .study_time_log import update_user_monthly_role
+
+from .study_time_log import update_user_monthly_role, update_user_positive_student_role
 
 
 @bot.tree.command(
     name="disable_achievement_role", description="Vô hiệu hóa Achievement role"
 )
 async def disable_achievement_role(interaction: discord.Interaction):
+    if interaction.guild is None:
+        await interaction.response.send_message(
+            "Vào server mà gõ. Không gõ ở đây được."
+        )
+        return
     author = interaction.user
     all_achivement_role_ids = [
         server_info.role_ids.iron,
@@ -23,6 +29,7 @@ async def disable_achievement_role(interaction: discord.Interaction):
         server_info.role_ids.diamond,
         server_info.role_ids.master,
         server_info.role_ids.challenger,
+        server_info.role_ids.positive_student,
     ]
 
     author_db = await Users.find_one({"discord_id": author.id})
@@ -42,6 +49,11 @@ async def disable_achievement_role(interaction: discord.Interaction):
     name="enable_achievement_role", description="Kích hoạt Achievement role"
 )
 async def enable_achievement_role(interaction: discord.Interaction):
+    if interaction.guild is None:
+        await interaction.response.send_message(
+            "Vào server mà gõ. Không gõ ở đây được."
+        )
+        return
     author = interaction.user
 
     author_db = await Users.find_one({"discord_id": author.id})
@@ -50,6 +62,7 @@ async def enable_achievement_role(interaction: discord.Interaction):
     await asyncio.gather(
         *[
             author_db.save(),
+            update_user_positive_student_role(author, should_send_message=False),
             update_user_monthly_role(author),
             interaction.response.send_message("Đã kích hoạt Achievement role."),
         ]

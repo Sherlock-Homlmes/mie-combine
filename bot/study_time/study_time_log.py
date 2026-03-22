@@ -4,12 +4,12 @@ import asyncio
 # lib
 import discord
 
+from bot.guild_event.on_member_join import on_member_join
+
 # local
 from core.conf.bot.conf import bot, server_info
-from bot.guild_event.on_member_join import on_member_join
-from models import Users, UserStudySection, UserDailyStudyTimes
+from models import UserDailyStudyTimes, Users, UserStudySection
 from utils.time_modules import Now
-
 
 updating_members = []
 
@@ -70,28 +70,34 @@ async def on_voice_state_update(
         if member.id in updating_members:
             updating_members.remove(member.id)
 
-        member_role_ids = [role.id for role in member.roles]
-        # Add positive student role
-        if server_info.role_ids.positive_student not in member_role_ids:
-            user_study_stats = await UserDailyStudyTimes.get_user_study_time_stats(
-                member.id
-            )
-            if user_study_stats.total >= 200 * 60:
-                embed = discord.Embed(
-                    title="**Chúc mừng**",
-                    description="Bạn đã học hơn 200h và đạt được danh hiệu học sinh tích cực. Giờ đây bạn có thể đổi màu tên của bạn bất kì lúc nào bạn muốn bằng lệnh `/color`",
-                    colour=discord.Colour.gold(),
-                )
-                await member.add_roles(server_info.roles.positive_student)
-                await member.send(embed=embed)
-
         # TODO: cache this
         member_db = await Users.find_one({"discord_id": member.id})
         if member_db.metadata and member_db.metadata.disable_achievement_role:
             return
 
-        # UPDATE ROLE
+        # Add positive student role and update monthly role
+        await update_user_positive_student_role(member)
         await update_user_monthly_role(member)
+
+
+async def update_user_positive_student_role(
+    member: discord.Member, should_send_message: bool = True
+):
+    """Grant positive_student role if user qualifies (200h+ total study time)"""
+    member_role_ids = [role.id for role in member.roles]
+    if server_info.role_ids.positive_student not in member_role_ids:
+        user_study_stats = await UserDailyStudyTimes.get_user_study_time_stats(
+            member.id
+        )
+        if user_study_stats.total >= 200 * 60:
+            await member.add_roles(server_info.roles.positive_student)
+            if should_send_message:
+                embed = discord.Embed(
+                    title="**Chúc mừng**",
+                    description="Bạn đã học hơn 200h và đạt được danh hiệu học sinh tích cực. Giờ đây bạn có thể đổi màu tên của bạn bất kì lúc nào bạn muốn bằng lệnh `/color`",
+                    colour=discord.Colour.gold(),
+                )
+                await member.send(embed=embed)
 
 
 async def update_user_monthly_role(

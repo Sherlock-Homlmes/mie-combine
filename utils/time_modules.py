@@ -119,6 +119,9 @@ def generate_date_strings(
     """
     date_strings = []
     current_dt = start_date
+    # TODO: fix this
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
 
     if start_date > end_date:
         raise ValueError("Start date cannot be after end date.")

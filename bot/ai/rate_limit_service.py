@@ -5,7 +5,7 @@ from utils.time_modules import Now
 
 LIMIT_NORMAL = 50
 LIMIT_BOOSTER = 75
-LIMIT_TESTER = 75
+LIMIT_TESTER = 100
 LIMIT_AD = 200
 
 

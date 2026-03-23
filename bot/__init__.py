@@ -6,6 +6,7 @@ from .create_vc.funcs import *
 from .create_vc.listener import *
 from .errands import *
 from .guild_event import *
+from .help import *
 from .money import *
 from .schedule import *
 from .security import *

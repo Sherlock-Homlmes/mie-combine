@@ -49,7 +49,7 @@ SYSTEM_PROMPT = """Mày là một bộ định tuyến tin nhắn (Message Route
 - "COMPLEX": Hỏi bài, giải toán, viết văn, giải thích kiến thức chuyên sâu.
 ## 2. `purpose`
 Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu conflict:
-1. "FUNC_CALL"     → Điều khiển thiết bị/phòng học vật lý: mở/khóa/quản lý room, bật/tắt đèn/máy chiếu, hỏi thời gian hiện tại (giờ là mấy giờ, hôm nay ngày mấy). KHÔNG áp dụng cho câu ra lệnh thông thường về hành vi, thái độ hay lời nói.
+1. "FUNC_CALL"     → Điều khiển thiết bị/phòng học vật lý: mở/khóa/quản lý room, bật/tắt đèn/máy chiếu, hỏi thời gian hiện tại (giờ là mấy giờ, hôm nay ngày mấy). HOẶC xem thống kê học tập: thời gian học, bảng xếp hạng, leaderboard, ranking, top học, ai học nhiều nhất. KHÔNG áp dụng cho câu ra lệnh thông thường về hành vi, thái độ hay lời nói.
 2. "SEARCH_IMAGES" → Người dùng đề cập đến ảnh/file đã gửi trước nhưng không thấy trong context. Dấu hiệu: "bài này", "ảnh tao gửi", "cái đó" mà không có attachment.
 3. "GOOGLE_SEARCH" → Cần tra cứu internet: thời tiết, địa điểm, quán ăn, sự kiện,...
 4. "NORMAL"        → Không cần tool nào, trả lời từ kiến thức có sẵn
@@ -69,7 +69,12 @@ Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu
 {"input": "giải thích định lý Pythagoras"} → {"complexity": "COMPLEX", "purpose": "NORMAL"}
 {"input": "xưng hô cẩn thận vào"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}
 {"input": "nói lại đi"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}
-{"input": "im đi"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}"""
+{"input": "im đi"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}
+{"input": "xem thời gian học"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
+{"input": "tháng này tao học bao nhiêu giờ"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
+{"input": "ai học nhiều nhất tuần này"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
+{"input": "xem leaderboard"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
+{"input": "top học hôm nay"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}"""
 
 
 def build_user_message(

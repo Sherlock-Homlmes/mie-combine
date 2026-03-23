@@ -14,7 +14,7 @@ from core.env import env
 from utils.ai_coversation import aclient
 from utils.time_modules import Now
 
-from .func_call import call_room_function
+from .func_call import call_function
 
 # ─── Tool definitions ──────────────────────────────────────────────────────────
 SAFETY_SETTINGS = [
@@ -183,6 +183,31 @@ async def _execute_tool(
                 print(members)
                 return await room.invite(members)
 
+            # Study time tools
+            case "get_study_time":
+                from bot.study_time.statistic import generate_member_study_time_image
+
+                time_range = tool_args.get("time_range", "Tháng này")
+                statistic_path = await generate_member_study_time_image(
+                    discord_message.author.id, time_range
+                )
+                with open(statistic_path, "rb") as f:
+                    await discord_message.reply(file=discord.File(f))
+                    return
+
+            case "get_leaderboard":
+                from bot.study_time.statistic import generate_leaderboard_info
+
+                time_range = tool_args.get("time_range", "Tất cả")
+                leaderboard_info = await generate_leaderboard_info(
+                    time_range, member_id=discord_message.author.id
+                )
+                with open(leaderboard_info.img_path, "rb") as f:
+                    await discord_message.reply(
+                        content=leaderboard_info.content, file=discord.File(f)
+                    )
+                    return
+
             case _:
                 return f"Unknown function: {tool_name}"
 
@@ -196,7 +221,7 @@ async def _execute_tool(
 async def _handle_func_call(user_message: str, discord_message: discord.Message) -> str:
     """Handle FUNC_CALL purpose using Cloudflare function calling."""
     try:
-        tool_calls = await call_room_function(user_message)
+        tool_calls = await call_function(user_message)
         print("Tool call: ", tool_calls)
 
         if not tool_calls:
@@ -214,7 +239,9 @@ async def _handle_func_call(user_message: str, discord_message: discord.Message)
         if len(tool_results) == 1:
             return tool_results[0]
         else:
-            return "\n".join(f"- {r}" for r in tool_results)
+            msg = "\n".join(f"- {r}" for r in tool_results if r is not None)
+            print(msg)
+            return msg
 
     except Exception as e:
         traceback.print_exc()

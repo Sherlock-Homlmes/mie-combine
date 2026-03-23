@@ -268,6 +268,9 @@ async def handle_chat(message: discord.Message):
                     user_discord_id, updated_history
                 )
 
+            if not response:
+                return
+
             # Send (split nếu quá 1900 ký tự)
             parts = [response[i : i + 1900] for i in range(0, len(response), 1900)]
             for i, part in enumerate(parts):

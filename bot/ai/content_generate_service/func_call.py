@@ -161,6 +161,42 @@ ROOM_TOOLS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_study_time",
+            "description": "Xem thống kê thời gian học của bản thân. Thay thế: thời gian học, bao nhiêu giờ học, check giờ học, xem học bao lâu,...",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "time_range": {
+                        "type": "string",
+                        "enum": ["Tháng này", "Tuần này", "Hôm nay"],
+                        "description": "Khoảng thời gian cần xem thống kê",
+                    }
+                },
+                "required": ["time_range"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_leaderboard",
+            "description": "Xem bảng xếp hạng thời gian học của server. Thay thế: xếp hạng, top học, ai học nhiều nhất, leaderboard, ranking,...",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "time_range": {
+                        "type": "string",
+                        "enum": ["Tất cả", "Tháng này", "Tuần này", "Hôm nay"],
+                        "description": "Khoảng thời gian của bảng xếp hạng",
+                    }
+                },
+                "required": ["time_range"],
+            },
+        },
+    },
 ]
 
 
@@ -169,7 +205,7 @@ ROOM_TOOLS = [
 # ─────────────────────────────────────────────
 
 
-async def call_room_function(user_msg: str) -> list[dict]:
+async def call_function(user_msg: str) -> list[dict]:
     """
     Call Cloudflare AI with function calling to analyze user message.
     Returns list of tool calls with their arguments, empty list if no tool matched.

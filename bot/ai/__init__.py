@@ -30,6 +30,12 @@ from . import (
 DISCORD_MAX_LENGTH_MESSAGE = 2000
 
 
+@bot.listen()
+async def on_ready():
+    await bot._fully_ready.wait()
+    print("11.AI ready")
+
+
 async def send_guard_violation_log(message: discord.Message, violation_content: str):
     """Send violation log to ai_logs channel"""
 

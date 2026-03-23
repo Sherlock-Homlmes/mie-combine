@@ -30,8 +30,8 @@ async def on_member_join(member: discord.Member):
         else:
             pfp = member.default_avatar.url
         field1 = "Hãy đọc kĩ luật ở <#880369537449619476> nha"
-        field2 = "Nếu bạn chưa biết cách dùng Discord thì ở <#915949063403347968> có đó"
-        field3 = "Hãy vào <#891909866355048548> để nhận role tương ứng nha"
+        field3 = "Hãy vào **Channels & Roles** (phía góc trái trên) để nhận role tương ứng nha"
+        field2 = "Nếu bạn có thắc mắc thì cứ hỏi bọn mình nha <#1024083239486377995>"
 
         embed.set_footer(
             text="""Chúc bạn có 1 khoảng thời gian vui vẻ.

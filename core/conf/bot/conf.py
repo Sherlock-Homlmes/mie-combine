@@ -30,6 +30,7 @@ class Bot(commands.Bot):
             ConfessionEndButton,
             ConfessionPrivateReplyButton,
         )
+        from bot.help import HelpView
         from bot.security.bad_words_check import (
             RemoveFalseBadWordButton,
             ReportFalseBadWordButton,
@@ -52,6 +53,7 @@ class Bot(commands.Bot):
             ConfessionPrivateReplyButton,
             RemoveFalseBadWordButton,
             ReportFalseBadWordButton,
+            HelpView,
             GuardViolationView,
         ]:
             view = model(timeout=None)

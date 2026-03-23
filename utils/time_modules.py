@@ -25,7 +25,7 @@ class Now:
         now: datetime.datetime = vn_now()
         self.now: datetime.datetime = now.replace(tzinfo=None)
         self.today: datetime.datetime = now.replace(
-            hour=0, minute=0, second=0, microsecond=0
+            hour=0, minute=0, second=0, microsecond=0, tzinfo=None
         )
 
     def some_day_before(self, days: int) -> datetime.datetime:

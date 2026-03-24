@@ -1,12 +1,13 @@
 # libs
 import discord
-from discord import Interaction, ui
+from discord import Interaction, app_commands, ui
 
 from bot.money import get_vietqr_banks
 
 # local
-from core.conf.bot.conf import bot, server_info
+from core.conf.bot.conf import bot
 from models import CurrencyUnitEnum, Transactions, Users
+from utils.discord_bot.check import is_admin
 
 
 class BalanceCheckView(ui.View):
@@ -38,9 +39,7 @@ class BalanceCheckView(ui.View):
 
     async def generate_qr_button(self, interaction: Interaction):
         # Check if user is admin
-        if not any(
-            role.id == server_info.role_ids.admin for role in interaction.user.roles
-        ):
+        if not is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Bạn không có quyền sử dụng nút này!", ephemeral=True
             )
@@ -85,9 +84,7 @@ class BalanceCheckView(ui.View):
     )
     async def confirm_payment_button(self, interaction: Interaction, button: ui.Button):
         # Check if user is admin
-        if not any(
-            role.id == server_info.role_ids.admin for role in interaction.user.roles
-        ):
+        if not is_admin(interaction):
             await interaction.response.send_message(
                 "❌ Bạn không có quyền sử dụng nút này!", ephemeral=True
             )
@@ -167,16 +164,8 @@ class ConfirmPaymentModal(ui.Modal, title="Xác nhận thanh toán"):
 @bot.tree.command(
     name="balance_check", description="Kiểm tra số dư tất cả người dùng (Chỉ admin)"
 )
+@app_commands.check(is_admin)
 async def balance_check_command(interaction: Interaction):
-    # Check if user is admin
-    if not any(
-        role.id == server_info.role_ids.admin for role in interaction.user.roles
-    ):
-        await interaction.response.send_message(
-            "❌ Bạn không có quyền sử dụng lệnh này!", ephemeral=True
-        )
-        return
-
     await interaction.response.defer()
 
     # Check if in a guild

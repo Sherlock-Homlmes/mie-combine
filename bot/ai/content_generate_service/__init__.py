@@ -182,8 +182,6 @@ async def _execute_tool(
                 members = await get_list_members(tool_args["user_ids"])
                 print(members)
                 return await room.invite(members)
-
-            # Study time tools
             case "get_study_time":
                 from bot.study_time.statistic import generate_member_study_time_image
 
@@ -194,7 +192,6 @@ async def _execute_tool(
                 with open(statistic_path, "rb") as f:
                     await discord_message.reply(file=discord.File(f))
                     return
-
             case "get_leaderboard":
                 from bot.study_time.statistic import generate_leaderboard_info
 

@@ -1,9 +1,12 @@
 import discord
+from discord import app_commands
 
 from core.conf.bot.conf import bot
+from utils.discord_bot.check import is_admin
 
 
 @bot.tree.command(name="join", description="Bot join voice channel của mày")
+@app_commands.check(is_admin)
 async def join(interaction: discord.Interaction):
     if interaction.user.voice is None:
         await interaction.response.send_message(
@@ -22,6 +25,7 @@ async def join(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="leave", description="Bot rời voice channel")
+@app_commands.check(is_admin)
 async def leave(interaction: discord.Interaction):
     if interaction.guild.voice_client is None:
         await interaction.response.send_message(

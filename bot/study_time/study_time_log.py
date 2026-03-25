@@ -97,7 +97,12 @@ async def update_user_positive_student_role(
                     description="Bạn đã học hơn 200h và đạt được danh hiệu học sinh tích cực. Giờ đây bạn có thể đổi màu tên của bạn bất kì lúc nào bạn muốn bằng lệnh `/color`",
                     colour=discord.Colour.gold(),
                 )
-                await member.send(embed=embed)
+                try:
+                    await member.send(embed=embed)
+                except Exception:
+                    print(
+                        "Study time ranking error: Can not send message positive student to user"
+                    )
 
 
 async def update_user_monthly_role(
@@ -177,5 +182,8 @@ async def update_user_monthly_role(
                     if role.id in member_role_ids:
                         await member.remove_roles(role)
                 await member.add_roles(monthly_role_study_time["role"])
-                await member.send(file=icon_rank_img, embed=embed)
+                try:
+                    await member.send(file=icon_rank_img, embed=embed)
+                except Exception:
+                    print("Study time ranking error: Can not send message to user")
                 break

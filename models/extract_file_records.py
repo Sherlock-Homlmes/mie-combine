@@ -16,7 +16,14 @@ class ExtractFileRecords(Document):
 
     original_filename: str
     s3_key: str
-    file_content: str | None = None
+
+    summary: str
+    detail: str
+    subject: str
+    tags: list[str]
+    has_diagram: bool
+    has_table: bool
+
     confidence: float
 
-    uploaded_at: datetime = Field(default_factory=lambda: Now().now)
+    created_at: datetime = Field(default_factory=lambda: Now().now)

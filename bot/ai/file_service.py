@@ -2,6 +2,8 @@
 Handles file upload, text extraction, chunking, and embedding pipeline.
 """
 
+import json
+
 from google.genai import types
 from pydantic import BaseModel, Field
 
@@ -13,7 +15,7 @@ TEXT_EXTENSIONS = {"txt", "md", "py", "js", "ts", "json", "csv"}
 IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 CHUNK_SIZE = 1500  # characters per chunk
 CHUNK_OVERLAP = 200
-MAX_FILE_SIZE_MB = 25
+MAX_FILE_SIZE_MB = 8
 IMAGE_EXTRACT_CONFIDENCE_THRESHOLD = 0.7
 IMAGE_EXTRACT_PROMPT = """
 Act as a high-precision Academic OCR Assistant. Your goal is to transcribe everything from this image into a structured text format that another AI can use to solve the problems later.
@@ -31,8 +33,23 @@ Act as a high-precision Academic OCR Assistant. Your goal is to transcribe every
 
 
 class OCRResponse(BaseModel):
-    value: str = Field(
+    summary: str = Field(
+        description="A short title-like summary of the image content, e.g. 'Calculus integration exercise, page 5'."
+    )
+    subject: str = Field(
+        description="The academic subject of the content, e.g. 'math', 'physics', 'chemistry', 'literature', 'biology'. Use 'unknown' if unclear."
+    )
+    tags: list[str] = Field(
+        description="A list of relevant keywords extracted from the content, e.g. ['integration', 'grade 12', 'definite integral']. Keep each tag short."
+    )
+    detail: str = Field(
         description="The complete and detailed transcription of the image, including LaTeX for math, Markdown for tables, and descriptions for diagrams as requested in the system prompt."
+    )
+    has_diagram: bool = Field(
+        description="True if the image contains any diagram, graph, chart, or figure."
+    )
+    has_table: bool = Field(
+        description="True if the image contains a table or grid of data."
     )
     confidence: float = Field(
         description="A confidence score between 0.0 and 1.0. 1.0 means perfectly clear, 0.5 means some parts are blurry or illegible, and below 0.3 means the content is mostly unreadable."
@@ -42,12 +59,59 @@ class OCRResponse(BaseModel):
     )
 
 
+class ExtractFileRecordsQuery:
+    def __init__(self, files: list[ExtractFileRecords]):
+        self.files = files
+
+    @classmethod
+    async def fetch(
+        cls,
+        user_discord_id: int,
+        channel_id: int,
+        limit: int = 5,
+    ) -> "ExtractFileRecordsQuery":
+        files = (
+            await ExtractFileRecords.find(
+                ExtractFileRecords.user_discord_id == user_discord_id,
+                ExtractFileRecords.channel_id == channel_id,
+            )
+            .sort(-ExtractFileRecords.id)
+            .limit(limit)
+            .to_list()
+        )
+        return cls(files or [])
+
+    def _to_dicts(self) -> list[dict]:
+        return [
+            {
+                **file.model_dump(
+                    include={
+                        "summary",
+                        "detail",
+                        "subject",
+                        "tags",
+                        "has_diagram",
+                        "has_table",
+                    }
+                ),
+                "id": str(file.id),
+            }
+            for file in self.files
+        ]
+
+    def to_object_list(self) -> list[dict]:
+        return self._to_dicts()
+
+    def to_json(self) -> str:
+        return json.dumps(self._to_dicts(), ensure_ascii=False, indent=2)
+
+
 async def extract_image_to_text(file_path: str) -> str:
     """Dùng Gemini Vision để extract toàn bộ nội dung từ ảnh."""
 
     file = await aclient.files.upload(file=file_path)
     response = await aclient.models.generate_content(
-        model=env.GEMINI_MODEL,
+        model=env.GEMINI_LITE_MODEL,
         contents=[
             file,
         ],
@@ -77,18 +141,17 @@ async def add_file_record(
     guild_id: int,
     file_path: str,
     original_filename: str,
-    confidence: float,
-    content: str,
+    extracted: OCRResponse,
 ):
     print("adding file record")
+
     await ExtractFileRecords(
         user_discord_id=user_discord_id,
         guild_id=guild_id,
         channel_id=channel_id,
         original_filename=original_filename,
         s3_key="test",
-        file_content=content,
-        confidence=confidence,
+        **extracted.model_dump(exclude={"reasoning"}),
     ).insert()
 
 

@@ -131,10 +131,10 @@ async def on_message(message):
 
     try:
         # Layer 4: Handle attachments (if any)
-        # attachment_handler = await handle_attachments(message)
-        # if not attachment_handler.success:
-        #     await message.reply(attachment_handler.reason)
-        #     return
+        attachment_handler = await handle_attachments(message)
+        if not attachment_handler.success:
+            await message.reply(attachment_handler.reason)
+            return
         # Handle chat message
         await handle_chat(message)
         await bot.process_commands(message)
@@ -186,25 +186,19 @@ async def handle_attachments(message: discord.Message) -> AttachmentHandler:
                         reason="Bot không thể lấy được nội dung từ ảnh của bạn. Bạn có thể thử  chụp lại với ảnh khác hoặc gửi dưới dạng văn bản nhé!",
                     )
                 else:
-                    await asyncio.gather(
-                        file_service.add_file_record(
-                            user_id,
-                            channel_id,
-                            guild_id,
-                            file_path,
-                            attachment.filename,
-                            extracted.confidence,
-                            extracted.value,
-                        ),
-                        history_service.add_message(
-                            user_id, channel_id, guild_id, "user", extracted.value
-                        ),
+                    await file_service.add_file_record(
+                        user_id,
+                        channel_id,
+                        guild_id,
+                        file_path,
+                        attachment.filename,
+                        extracted,
                     )
                     return AttachmentHandler(success=True)
             # Other file type
             else:
                 return AttachmentHandler(
-                    success=False, reason="Hiện tại Mie chưa hỗ trợ định dạng file này"
+                    success=False, reason="Hiện tại Mie chỉ hỗ trợ file dạng ảnh"
                 )
 
 
@@ -219,9 +213,20 @@ async def handle_chat(message: discord.Message):
 
     async with message.channel.typing():
         try:
+            history = await history_service.get_recent_messages(
+                user_discord_id, channel_id, guild_id, limit=8
+            )
+            extract_file_query = await file_service.ExtractFileRecordsQuery.fetch(
+                user_discord_id, channel_id, limit=2
+            )
             # Layer 5: Classify content and complexity to route to the right model
             try:
-                routing_result = await routing_service.route_message(content)
+                routing_result = await routing_service.route_message(
+                    content, extract_file_query.to_object_list(), history
+                )
+                if isinstance(routing_result, str):
+                    await message.reply("⛔ ", routing_result)
+                    return
                 model_type = routing_result.complexity
                 purpose = routing_result.purpose
                 print("------------------------")
@@ -230,9 +235,6 @@ async def handle_chat(message: discord.Message):
                 raise Exception("Phân loại tin nhắn thất bại")
 
             # Layer 6: Generate content
-            history = await history_service.get_recent_messages(
-                user_discord_id, channel_id, guild_id, limit=8
-            )
             facts = await memory_service.get_user_facts(
                 user_discord_id, only_strong_fact=True
             )
@@ -243,7 +245,7 @@ async def handle_chat(message: discord.Message):
                 history=history,
                 user_facts=facts,
                 user_id=user_discord_id,
-                username=message.author.display_name,
+                extract_file_query=extract_file_query,
                 model_type=model_type,
                 purpose=purpose,
             )

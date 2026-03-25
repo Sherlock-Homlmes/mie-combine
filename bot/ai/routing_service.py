@@ -42,20 +42,20 @@ class RoutingResult(BaseModel):
 # Prompt builder
 # ─────────────────────────────────────────────
 
-SYSTEM_PROMPT = """Mày là một bộ định tuyến tin nhắn (Message Router) cho hệ thống trợ lý phòng học thông minh.
-Đọc tin nhắn người dùng và trả về JSON với 2 trường sau. KHÔNG giải thích, KHÔNG thêm text nào khác ngoài JSON.
+SYSTEM_PROMPT = """Bạn là một bộ định tuyến tin nhắn (Message Router) cho hệ thống trợ lý phòng học tại trường đại học. Người dùng là sinh viên và giảng viên.
+Nhiệm vụ: Đọc tin nhắn và trả về JSON với 2 trường sau. KHÔNG giải thích, KHÔNG thêm text nào khác ngoài JSON.
 ## 1. `complexity`
 - "SIMPLE": Chào hỏi, tán gẫu, nói nhảm/vô nghĩa, dịch thuật nhanh, câu hỏi thường thức đơn giản.
 - "COMPLEX": Hỏi bài, giải toán, viết văn, giải thích kiến thức chuyên sâu.
 ## 2. `purpose`
 Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu conflict:
 1. "FUNC_CALL"     → Điều khiển thiết bị/phòng học vật lý: mở/khóa/quản lý room, bật/tắt đèn/máy chiếu, hỏi thời gian hiện tại (giờ là mấy giờ, hôm nay ngày mấy). HOẶC xem thống kê học tập: thời gian học, bảng xếp hạng, leaderboard, ranking, top học, ai học nhiều nhất. KHÔNG áp dụng cho câu ra lệnh thông thường về hành vi, thái độ hay lời nói.
-2. "SEARCH_IMAGES" → Người dùng đề cập đến ảnh/file đã gửi trước nhưng không thấy trong context. Dấu hiệu: "bài này", "ảnh tao gửi", "cái đó" mà không có attachment.
+2. "SEARCH_IMAGES" → Người dùng đề cập đến bài tập, câu hỏi, đề, ảnh hoặc file cụ thể nhưng KHÔNG có nội dung đó trong context. Dấu hiệu: "bài này", "câu này", "ảnh tao gửi", "cái đó", "giải câu 6", "giúp tao bài này", "làm đề này" mà không có attachment hay nội dung bài tập đi kèm trong context.
 3. "GOOGLE_SEARCH" → Cần tra cứu internet: thời tiết, địa điểm, quán ăn, sự kiện,...
 4. "NORMAL"        → Không cần tool nào, trả lời từ kiến thức có sẵn
 ## Quy tắc (STRICT)
 - Nếu conflict → chọn purpose có độ ưu tiên cao nhất
-- Nếu không chắc complexity → chọn "COMPLEX"
+- Nếu không chắc complexity → chọn "SIMPLE"
 - Nếu không chắc purpose → chọn "NORMAL"
 ## Output format (STRICT)
 {"complexity": "SIMPLE" | "COMPLEX", "purpose": "FUNC_CALL" | "GOOGLE_SEARCH" | "SEARCH_IMAGES" | "NORMAL"}
@@ -100,12 +100,12 @@ def build_user_message(
 
     msg += f"[Tin nhắn hiện tại]\nuser: {conversation_text}"
 
-    if document_summaries and document_summaries.strip():
+    if len(document_summaries):
         msg += f"""
 
 ---
 Tóm tắt tài liệu/ảnh người dùng đã gửi gần đây (dùng để quyết định có cần SEARCH_IMAGES không):
-{document_summaries.strip()}"""
+{json.dumps(document_summaries, ensure_ascii=False, indent=2)}"""
 
     return msg
 
@@ -130,8 +130,8 @@ def parse_router_result(raw: str) -> RoutingResult:
 
     try:
         data = json.loads(text)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Cannot parse JSON from model output: '{raw}' → {e}")
+    except json.JSONDecodeError:
+        return raw
 
     try:
         return RoutingResult(**data)

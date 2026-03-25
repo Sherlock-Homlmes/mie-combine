@@ -148,13 +148,13 @@ class HelpView(ui.View):
             embed.title = "⚠️ Mức phạt khi nói tục"
             embed.description = (
                 "**Các mức phạt của bot cho hành vi nói tục:**\n\n"
-                "• **Lần 1 → 4:** Cảnh báo (Warn)\n"
+                "• **Lần 1 → 6:** Cảnh báo (Warn)\n"
                 "• **Những lần sau:** Timeout tăng dần → Ban\n\n"
                 "**📌 Lưu ý:**\n"
                 "• Sau **30 ngày**, những vi phạm trước đó sẽ được xóa (trừ khi bị ban)\n"
-                "• Bạn sẽ nhận thông báo khi bị ban\n"
+                "• Bạn sẽ nhận thông báo khi bị timeout/ban\n"
                 "• Nếu bot xử lý sai, bạn có thể **report**\n"
-                "• ⚠️ Report sai sẽ bị timeout lâu hơn!"
+                "⚠️ Report sai sẽ bị timeout lâu hơn!"
             )
 
         elif question == "study_qa":

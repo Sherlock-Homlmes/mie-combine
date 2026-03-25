@@ -1,7 +1,7 @@
 # default
-from typing import Set
-from datetime import timedelta
 import re
+from datetime import timedelta
+from typing import Set
 
 #  lib
 import discord
@@ -301,10 +301,10 @@ async def punish(user_id: int, message_content: str, mem_name: str):
         ).to_list()
     )
 
-    # counter <= 4: warn
-    # counter <= 11: mute
-    # counter > 11: ban
-    if counter <= 4:
+    # counter <= 6: warn
+    # counter <= 12: mute
+    # counter > 12: ban
+    if counter <= 6:
         form = BanFormEnum.WARN.value
         hours = 0
         penalize = "Cảnh báo"
@@ -313,13 +313,12 @@ async def punish(user_id: int, message_content: str, mem_name: str):
         colour = discord.Colour.red()
         if counter <= 11:
             mute_hour_count_map = {
-                5: 3,
-                6: 6,
-                7: 12,
-                8: 24,
-                9: 72,
-                10: 180,
-                11: 360,
+                7: 0.5,
+                8: 2,
+                9: 4,
+                10: 24,
+                11: 72,
+                12: 180,
             }
             form = BanFormEnum.MUTE.value
             hours = mute_hour_count_map[counter]

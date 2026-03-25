@@ -258,7 +258,6 @@ async def generate_response(
     history: list[dict],
     user_facts: list[str],
     user_id: int,
-    extract_file_query: list[ExtractFileRecords],
     model_type: str = "COMPLEX",
     purpose: str = "NORMAL",
 ) -> str:
@@ -276,10 +275,6 @@ async def generate_response(
     extract_file_parts = None
     if purpose == Purpose.FUNC_CALL:
         return await _handle_func_call(user_message, discord_message)
-    elif purpose == Purpose.SEARCH_IMAGES:
-        extract_file_parts = await _handle_search_image(
-            user_message, history, extract_file_query
-        )
 
     facts_text = (
         "\n".join(
@@ -309,7 +304,7 @@ Facts you know about this user:
     1. Use plain text and standard keyboard symbols (e.g., For roots, use Unicode symbols('√', '∛', '∜',...), Unicode superscripts (⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻) for exponents, '/' for fractions,  '∫' for integrals).
     2. For complex formulas, use a code block with 'text' or 'python' syntax highlighting (triple backticks).
     3. Use Unicode symbols for math signs (e.g., ±, ≈, ≠, ≥, ≤, π, ∞).
-- Till now, you can not process image
+- Till now, you can not process image/file
 
 ## Thinking Guidelines:
 - Simple questions (greetings, basic facts, casual chat) → reply directly, no need to overthink
@@ -374,68 +369,3 @@ Facts you know about this user:
     # else:
     #     return_text = "\n".join(f"- {r}" for r in tool_results)
     # return "[TOOLS USE]:" + return_text
-
-
-# ─────────────────────────────────────────────
-# SEARCH IMAGES HANDLER
-# ─────────────────────────────────────────────
-
-
-class ImageSearchResult(BaseModel):
-    """Model for a single selected file."""
-
-    file: ExtractFileRecords
-    should_get_original_image: bool
-
-
-async def _handle_search_image(
-    user_message: str, history: list[dict], extract_file_query: ExtractFileRecordsQuery
-) -> str:
-    """Handle SEARCH_IMAGES purpose using Cloudflare AI to select relevant files."""
-
-    # Step 1: Query all files from database
-    if not extract_file_query.files:
-        return []
-    try:
-        # Step 2: Create conversation text by combining history (last 4) + current message
-        conversation_parts = []
-        for msg in history[-4:]:  # Get last 4 messages for context
-            if msg["role"] == "user":
-                conversation_parts.append(f"{msg['role'].value}: {msg['content']}")
-        conversation_parts.append(f"User: {user_message}")
-        conversation_text = "\n".join(conversation_parts)
-
-        # Step 3: Format files data for AI. Create user message with conversation + files
-        user_msg = f"""## Recent conversation:
-{conversation_text}
-
-## Available files:
-{extract_file_query.to_json()}
-"""
-
-        # Step 4: Call AI to select relevant files
-        selected = await select_files(user_msg)
-
-        if not selected.files:
-            return []
-
-        # Step 5: Return selected files info
-        result_parts = []
-        for sf in selected.files:
-            # Find the file to get more info
-            file = next(
-                (f for f in extract_file_query.files if str(f.id) == sf.id), None
-            )
-            if file:
-                result_parts.append(
-                    ImageSearchResult(
-                        file=file,
-                        should_get_original_image=sf.should_get_original_image,
-                    )
-                )
-
-        return result_parts
-
-    except Exception as e:
-        traceback.print_exc()
-        return f"Có lỗi xảy ra khi tìm kiếm file: {e}"

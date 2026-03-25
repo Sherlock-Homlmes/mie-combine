@@ -3,6 +3,7 @@ File selector service - analyze user message and select relevant files.
 Uses Cloudflare AI with JSON structured output.
 """
 
+import aiohttp
 from pydantic import BaseModel
 
 from core.env import env
@@ -77,7 +78,6 @@ async def select_files(user_msg: str) -> SelectedFiles:
     Call Cloudflare AI to select relevant files based on user message.
     Returns SelectedFiles model with list of selected files.
     """
-    import aiohttp
 
     async with aiohttp.ClientSession() as session:
         url = (

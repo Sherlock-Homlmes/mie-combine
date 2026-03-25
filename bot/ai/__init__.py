@@ -131,10 +131,10 @@ async def on_message(message):
 
     try:
         # Layer 4: Handle attachments (if any)
-        attachment_handler = await handle_attachments(message)
-        if not attachment_handler.success:
-            await message.reply(attachment_handler.reason)
-            return
+        # attachment_handler = await handle_attachments(message)
+        # if not attachment_handler.success:
+        #     await message.reply(attachment_handler.reason)
+        #     return
         # Handle chat message
         await handle_chat(message)
         await bot.process_commands(message)
@@ -216,14 +216,10 @@ async def handle_chat(message: discord.Message):
             history = await history_service.get_recent_messages(
                 user_discord_id, channel_id, guild_id, limit=8
             )
-            extract_file_query = await file_service.ExtractFileRecordsQuery.fetch(
-                user_discord_id, channel_id, limit=2
-            )
             # Layer 5: Classify content and complexity to route to the right model
             try:
-                routing_result = await routing_service.route_message(
-                    content, extract_file_query.to_object_list(), history
-                )
+                routing_result = await routing_service.route_message(content, history)
+                print(routing_result)
                 if isinstance(routing_result, str):
                     await message.reply("⛔ ", routing_result)
                     return
@@ -245,7 +241,6 @@ async def handle_chat(message: discord.Message):
                 history=history,
                 user_facts=facts,
                 user_id=user_discord_id,
-                extract_file_query=extract_file_query,
                 model_type=model_type,
                 purpose=purpose,
             )

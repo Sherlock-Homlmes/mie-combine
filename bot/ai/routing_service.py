@@ -25,8 +25,6 @@ class Complexity(str, Enum):
 
 class Purpose(str, Enum):
     FUNC_CALL = "FUNC_CALL"
-    GOOGLE_SEARCH = "GOOGLE_SEARCH"
-    SEARCH_IMAGES = "SEARCH_IMAGES"
     NORMAL = "NORMAL"
 
 
@@ -50,20 +48,16 @@ Nhiệm vụ: Đọc tin nhắn và trả về JSON với 2 trường sau. KHÔN
 ## 2. `purpose`
 Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu conflict:
 1. "FUNC_CALL"     → Điều khiển thiết bị/phòng học vật lý: mở/khóa/quản lý room, bật/tắt đèn/máy chiếu, hỏi thời gian hiện tại (giờ là mấy giờ, hôm nay ngày mấy). HOẶC xem thống kê học tập: thời gian học, bảng xếp hạng, leaderboard, ranking, top học, ai học nhiều nhất. KHÔNG áp dụng cho câu ra lệnh thông thường về hành vi, thái độ hay lời nói.
-2. "SEARCH_IMAGES" → Người dùng đề cập đến bài tập, câu hỏi, đề, ảnh hoặc file cụ thể nhưng KHÔNG có nội dung đó trong context. Dấu hiệu: "bài này", "câu này", "ảnh tao gửi", "cái đó", "giải câu 6", "giúp tao bài này", "làm đề này" mà không có attachment hay nội dung bài tập đi kèm trong context.
-3. "GOOGLE_SEARCH" → Cần tra cứu internet: thời tiết, địa điểm, quán ăn, sự kiện,...
-4. "NORMAL"        → Không cần tool nào, trả lời từ kiến thức có sẵn
+2. "NORMAL"        → Không cần tool nào, trả lời từ kiến thức có sẵn
 ## Quy tắc (STRICT)
 - Nếu conflict → chọn purpose có độ ưu tiên cao nhất
 - Nếu không chắc complexity → chọn "SIMPLE"
 - Nếu không chắc purpose → chọn "NORMAL"
 ## Output format (STRICT)
-{"complexity": "SIMPLE" | "COMPLEX", "purpose": "FUNC_CALL" | "GOOGLE_SEARCH" | "SEARCH_IMAGES" | "NORMAL"}
+{"complexity": "SIMPLE" | "COMPLEX", "purpose": "FUNC_CALL" | "NORMAL"}
 ## Ví dụ
 {"input": "mở cửa treo biển thả chó"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
 {"input": "mở phòng học 101"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
-{"input": "thời tiết hà nội hôm nay"} → {"complexity": "SIMPLE", "purpose": "GOOGLE_SEARCH"}
-{"input": "giải giúp tao bài trong ảnh"} → {"complexity": "COMPLEX", "purpose": "SEARCH_IMAGES"}
 {"input": "2+2 bằng mấy"} → {"complexity": "SIMPLE", "purpose": "NORMAL"}
 {"input": "tìm quán ăn rồi mở phòng học"} → {"complexity": "SIMPLE", "purpose": "FUNC_CALL"}
 {"input": "giải thích định lý Pythagoras"} → {"complexity": "COMPLEX", "purpose": "NORMAL"}
@@ -79,7 +73,6 @@ Chọn MỘT giá trị, ưu tiên theo thứ tự từ cao xuống thấp nếu
 
 def build_user_message(
     conversation_text: str,
-    document_summaries: Optional[str] = None,
     history: Optional[list[dict]] = None,
 ) -> str:
     """Build user message, optionally inject document summaries and chat history."""
@@ -99,14 +92,6 @@ def build_user_message(
             msg += "\n\n"
 
     msg += f"[Tin nhắn hiện tại]\nuser: {conversation_text}"
-
-    if len(document_summaries):
-        msg += f"""
-
----
-Tóm tắt tài liệu/ảnh người dùng đã gửi gần đây (dùng để quyết định có cần SEARCH_IMAGES không):
-{json.dumps(document_summaries, ensure_ascii=False, indent=2)}"""
-
     return msg
 
 
@@ -146,14 +131,13 @@ def parse_router_result(raw: str) -> RoutingResult:
 
 async def route_message(
     conversation_text: str,
-    document_summaries: Optional[str] = None,
     history: Optional[list[dict]] = None,
 ) -> RoutingResult:
     """
     Call Cloudflare AI router model and return structured RouterResult.
     Falls back to COMPLEX/NORMAL on any error.
     """
-    user_msg = build_user_message(conversation_text, document_summaries, history)
+    user_msg = build_user_message(conversation_text, history)
 
     async with aiohttp.ClientSession() as session:
         url = (

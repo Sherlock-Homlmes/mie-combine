@@ -78,8 +78,6 @@ class HelpView(ui.View):
                 "**💰 Thông tin ủng hộ server:**\n\n"
                 "🔗 **Link sao kê:**\n"
                 "https://share.timo.vn/VN/transaction/trwbvmnta0de\n\n"
-                "🔑 **Mật khẩu:** `35UBUKS0`\n\n"
-                "Cảm ơn bạn đã ủng hộ server! 💕"
             ),
             color=discord.Colour.gold(),
         )

@@ -298,7 +298,9 @@ async def on_command_error(interaction, error):
                     },
                     {
                         "name": "📍 Channel",
-                        "value": interaction.channel.mention
+                        "value": "DM"
+                        if isinstance(interaction.channel, discord.DMChannel)
+                        else interaction.channel.mention
                         + f" (`{interaction.channel.id}`)",
                         "inline": True,
                     },

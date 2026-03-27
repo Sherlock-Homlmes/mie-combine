@@ -155,7 +155,7 @@ alternative_words = {
 }
 
 
-def check_bad_words(self, content: str) -> Set[str | None]:
+def check_bad_words(content: str) -> Set[str | None]:
     alternative_content = content
     for key, value in alternative_words.items():
         alternative_content = alternative_content.replace(key, value)

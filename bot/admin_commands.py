@@ -1,11 +1,11 @@
 # libs
 import discord
 from discord import Interaction, app_commands, ui
+from discord.ext import commands
 
 from bot.money import get_vietqr_banks
 
 # local
-from core.conf.bot.conf import bot
 from models import CurrencyUnitEnum, Transactions, Users
 from utils.discord_bot.check import is_admin
 
@@ -161,76 +161,95 @@ class ConfirmPaymentModal(ui.Modal, title="Xác nhận thanh toán"):
             await interaction.message.edit(view=original_view)
 
 
-@bot.tree.command(
-    name="balance_check", description="Kiểm tra số dư tất cả người dùng (Chỉ admin)"
-)
-@app_commands.check(is_admin)
-async def balance_check_command(interaction: Interaction):
-    await interaction.response.defer()
+class AdminCommandsCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
-    # Check if in a guild
-    if not interaction.guild:
-        await interaction.followup.send(
-            "❌ Lệnh này chỉ có thể sử dụng trong server!", ephemeral=True
-        )
-        return
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot._fully_ready.wait()
+        self.bot.module_count += 1
+        print(f"{self.bot.module_count}. Admin commands module ready")
 
-    # Create a thread
-    thread = await interaction.channel.create_thread(
-        name=f"Balance Check - {interaction.user.name}",
-        type=discord.ChannelType.private_thread,
+    @app_commands.command(
+        name="balance_check", description="Kiểm tra số dư tất cả người dùng (Chỉ admin)"
     )
+    @app_commands.check(is_admin)
+    async def balance_check_command(self, interaction: Interaction):
+        await interaction.response.defer()
 
-    await interaction.followup.send(f"Đã tạo thread: {thread.mention}", ephemeral=True)
+        # Check if in a guild
+        if not interaction.guild:
+            await interaction.followup.send(
+                "❌ Lệnh này chỉ có thể sử dụng trong server!", ephemeral=True
+            )
+            return
 
-    # Get all unique user IDs from transactions
-    all_transactions = await Transactions.find(
-        {"currency_unit": CurrencyUnitEnum.VND}
-    ).to_list()
+        # Create a thread
+        thread = await interaction.channel.create_thread(
+            name=f"Balance Check - {interaction.user.name}",
+            type=discord.ChannelType.private_thread,
+        )
 
-    # Get unique user IDs from both from_user_id and to_user_id
-    user_ids = set()
-    for trans in all_transactions:
-        user_ids.add(trans.from_user_id)
-        user_ids.add(trans.to_user_id)
+        await interaction.followup.send(
+            f"Đã tạo thread: {thread.mention}", ephemeral=True
+        )
 
-    currency_unit = CurrencyUnitEnum.VND
-
-    for user_id in user_ids:
-        # Calculate balance
-        all_income_transaction = await Transactions.find(
-            {"to_user_id": user_id, "currency_unit": currency_unit}
+        # Get all unique user IDs from transactions
+        all_transactions = await Transactions.find(
+            {"currency_unit": CurrencyUnitEnum.VND}
         ).to_list()
-        all_outcome_transaction = await Transactions.find(
-            {"from_user_id": user_id, "currency_unit": currency_unit}
-        ).to_list()
 
-        total_amount = sum(
-            [income_transaction.amount for income_transaction in all_income_transaction]
-        ) - sum(
-            [
-                outcome_transaction.amount
-                for outcome_transaction in all_outcome_transaction
-            ]
-        )
+        # Get unique user IDs from both from_user_id and to_user_id
+        user_ids = set()
+        for trans in all_transactions:
+            user_ids.add(trans.from_user_id)
+            user_ids.add(trans.to_user_id)
 
-        # Skip users with 0 balance
-        if total_amount == 0:
-            continue
+        currency_unit = CurrencyUnitEnum.VND
 
-        # Check if user has bank account
-        user = await Users.find_one(Users.discord_id == user_id)
-        has_bank_account = (
-            user and user.metadata and user.metadata.bank_account is not None
-        )
+        for user_id in user_ids:
+            # Calculate balance
+            all_income_transaction = await Transactions.find(
+                {"to_user_id": user_id, "currency_unit": currency_unit}
+            ).to_list()
+            all_outcome_transaction = await Transactions.find(
+                {"from_user_id": user_id, "currency_unit": currency_unit}
+            ).to_list()
 
-        # Create view with buttons
-        view = BalanceCheckView(
-            interaction.user.id, user_id, total_amount, has_bank_account
-        )
+            total_amount = sum(
+                [
+                    income_transaction.amount
+                    for income_transaction in all_income_transaction
+                ]
+            ) - sum(
+                [
+                    outcome_transaction.amount
+                    for outcome_transaction in all_outcome_transaction
+                ]
+            )
 
-        # Send message for each user
-        await thread.send(
-            f"<@{user_id}>: {total_amount:,.0f} VNĐ",
-            view=view,
-        )
+            # Skip users with 0 balance
+            if total_amount == 0:
+                continue
+
+            # Check if user has bank account
+            user = await Users.find_one(Users.discord_id == user_id)
+            has_bank_account = (
+                user and user.metadata and user.metadata.bank_account is not None
+            )
+
+            # Create view with buttons
+            view = BalanceCheckView(
+                interaction.user.id, user_id, total_amount, has_bank_account
+            )
+
+            # Send message for each user
+            await thread.send(
+                f"<@{user_id}>: {total_amount:,.0f} VNĐ",
+                view=view,
+            )
+
+
+async def setup(bot):
+    await bot.add_cog(AdminCommandsCog(bot))

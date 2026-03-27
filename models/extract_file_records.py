@@ -14,8 +14,8 @@ class ExtractFileRecords(Document):
     channel_id: int
     guild_id: Optional[int] = None
 
-    original_filename: str
     s3_key: str
+    s3_pre_process_key: str
 
     summary: str
     detail: str
@@ -25,5 +25,6 @@ class ExtractFileRecords(Document):
     has_table: bool
 
     confidence: float
+    embedding_vector: list[float]
 
     created_at: datetime = Field(default_factory=lambda: Now().now)

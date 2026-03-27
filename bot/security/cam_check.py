@@ -6,9 +6,7 @@ from typing import List
 
 # lib
 import discord
-
-# local
-from core.conf.bot.conf import bot
+from discord.ext import commands
 
 
 @dataclass
@@ -78,75 +76,87 @@ class CheckCamEmbedMessage:
         self.coulour = discord.Colour.green()
 
 
-check_cam_member_ids = []
-sleep_time = [30, 50]
-cam_channel_names = ["full cam", "full 🍊", "desk cam"]
-cam_stream_channel_names = ["cam/stream", "cam or stream", "🍊/💻", "🍊 or 💻"]
+class CamCheckCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.check_cam_member_ids = []
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot._fully_ready.wait()
+        self.bot.module_count += 1
+        print(f"{self.bot.module_count}. Cam check module ready")
 
-@bot.listen()
-async def on_voice_state_update(
-    member: discord.Member,
-    _: discord.VoiceState,
-    member_after: discord.VoiceState,
-):
-    global check_cam_member_ids
+    @commands.Cog.listener()
+    async def on_voice_state_update(
+        self,
+        member: discord.Member,
+        _: discord.VoiceState,
+        member_after: discord.VoiceState,
+    ):
+        sleep_time = [30, 50]
+        cam_channel_names = ["full cam", "full 🍊", "desk cam"]
+        cam_stream_channel_names = ["cam/stream", "cam or stream", "🍊/💻", "🍊 or 💻"]
 
-    current_channel = member_after.channel
-    if current_channel is None:
-        return
-
-    def get_channel_check_types(
-        current_channel: discord.VoiceChannel,
-    ) -> List[str] | None:
-        if current_channel is None or member.id in check_cam_member_ids:
-            return None
-        channel_name = current_channel.name.lower()
-        check_types = None
-        if any(x in channel_name for x in cam_channel_names):
-            check_types = ["cam"]
-        elif any(x in channel_name for x in cam_stream_channel_names):
-            check_types = ["cam", "stream"]
-        return check_types
-
-    def pass_conditions(check_types: List[str]) -> bool:
-        if member.voice is None or member.voice.channel.id != current_channel_id:
-            return "LEAVE"
-        check_type_map = {
-            "cam": member.voice.self_video,
-            "stream": member.voice.self_stream,
-        }
-        if any(check_type_map[check_type] for check_type in check_types):
-            return "PASS"
-        return "FAIL"
-
-    current_channel_id = current_channel.id
-    check_types = get_channel_check_types(current_channel)
-    if check_types is None:
-        return
-
-    check_cam_member_ids.append(member.id)
-    await asyncio.sleep(sleep_time[0])
-    try:
-        # warn
-        if pass_conditions(check_types) in ["LEAVE", "PASS"]:
+        current_channel = member_after.channel
+        if current_channel is None:
             return
 
-        embed = CheckCamEmbedMessage(member=member, check_types=check_types)
-        embed.warn()
-        await embed.send()
+        def get_channel_check_types(
+            current_channel: discord.VoiceChannel,
+        ) -> List[str] | None:
+            if current_channel is None or member.id in self.check_cam_member_ids:
+                return None
+            channel_name = current_channel.name.lower()
+            check_types = None
+            if any(x in channel_name for x in cam_channel_names):
+                check_types = ["cam"]
+            elif any(x in channel_name for x in cam_stream_channel_names):
+                check_types = ["cam", "stream"]
+            return check_types
 
-        # kick
-        await asyncio.sleep(sleep_time[1])
-        condition = pass_conditions(check_types)
-        if condition == "PASS":
-            embed.thanks_for_accept()
-        elif condition == "FAIL":
-            await member.move_to(None)
-            embed.punish()
-        else:
-            embed.thanks_for_leave()
-        await embed.update()
+        def pass_conditions(check_types: List[str]) -> bool:
+            if member.voice is None or member.voice.channel.id != current_channel_id:
+                return "LEAVE"
+            check_type_map = {
+                "cam": member.voice.self_video,
+                "stream": member.voice.self_stream,
+            }
+            if any(check_type_map[check_type] for check_type in check_types):
+                return "PASS"
+            return "FAIL"
 
-    finally:
-        check_cam_member_ids.remove(member.id)
+        current_channel_id = current_channel.id
+        check_types = get_channel_check_types(current_channel)
+        if check_types is None:
+            return
+
+        self.check_cam_member_ids.append(member.id)
+        await asyncio.sleep(sleep_time[0])
+        try:
+            # warn
+            if pass_conditions(check_types) in ["LEAVE", "PASS"]:
+                return
+
+            embed = CheckCamEmbedMessage(member=member, check_types=check_types)
+            embed.warn()
+            await embed.send()
+
+            # kick
+            await asyncio.sleep(sleep_time[1])
+            condition = pass_conditions(check_types)
+            if condition == "PASS":
+                embed.thanks_for_accept()
+            elif condition == "FAIL":
+                await member.move_to(None)
+                embed.punish()
+            else:
+                embed.thanks_for_leave()
+            await embed.update()
+
+        finally:
+            self.check_cam_member_ids.remove(member.id)
+
+
+async def setup(bot):
+    await bot.add_cog(CamCheckCog(bot))

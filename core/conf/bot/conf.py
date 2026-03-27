@@ -21,6 +21,7 @@ class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._fully_ready = asyncio.Event()
+        self.module_count = 0
 
     async def wait_until_fully_ready(self):
         """Override wait_until_ready để thêm logic custom"""
@@ -79,6 +80,63 @@ class Bot(commands.Bot):
 
     # auto sync command on ready
     async def setup_hook(self):
+        print("Loading extensions...")
+        from bot import (
+            admin_commands,
+            ai,
+            confession,
+            create_vc,
+            help,
+            money,
+            voice_channel,
+        )
+        from bot.errands import color as errand_color
+        from bot.errands import topic as errand_topic
+        from bot.errands import welcome as errand_welcome
+        from bot.guild_event import on_member_join as guild_event_member_join
+        from bot.guild_event import on_member_leave as guild_event_member_leave
+        from bot.guild_event import on_member_update as guild_event_member_update
+        from bot.schedule import monthly_leaderboard as shedule_monthly_leaderboard
+        from bot.schedule import scan_user_name as schedule_scan_user_name
+        from bot.schedule import static_channels as schedule_static_channels
+        from bot.security import bad_words_check as security_bad_words_check
+        from bot.security import cam_check as security_cam_check
+        from bot.security import introduce_form as security_introduce_form
+        from bot.study_time import commands as study_time_commands
+        from bot.study_time import statistic as study_time_statistic
+        from bot.study_time import study_time_log as study_time_study_time_log
+
+        for module in [
+            ai,
+            create_vc,
+            help,
+            admin_commands,
+            confession,
+            money,
+            voice_channel,
+            #
+            errand_color,
+            errand_topic,
+            errand_welcome,
+            #
+            guild_event_member_join,
+            guild_event_member_leave,
+            guild_event_member_update,
+            #
+            schedule_scan_user_name,
+            shedule_monthly_leaderboard,
+            schedule_static_channels,
+            #
+            security_bad_words_check,
+            security_cam_check,
+            security_introduce_form,
+            #
+            study_time_study_time_log,
+            study_time_statistic,
+            study_time_commands,
+        ]:
+            await module.setup(self)
+
         await self.tree.sync()
         print(f"Synced slash commands for {self.user}.")
 

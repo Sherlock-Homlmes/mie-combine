@@ -12,35 +12,18 @@ import discord
 import pymongo
 from cache import AsyncTTL
 from discord import app_commands
+from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel
 from quickchart import QuickChart
 
 # local
-from core.conf.bot.conf import bot
 from models import UserDailyStudyTimes, Users
 from utils.image_handle import save_image
 from utils.time_modules import Now, generate_date_strings
 
 
-@bot.tree.command(name="member_study_time")
-@app_commands.describe(member="Member")
-@app_commands.default_permissions(administrator=True)
-async def member_study_time(interaction: discord.Interaction, member: discord.Member):
-    user_daily_study_time = await UserDailyStudyTimes.find(
-        UserDailyStudyTimes.user_discord_id == member.id
-    ).to_list()
-    total_time = sum([sum(x.study_time) for x in user_daily_study_time])
-    if not total_time:
-        total_time = 0
-
-    if total_time:
-        content = f"Tổng thời gian học: {total_time // 60}h {total_time % 60}'"
-    else:
-        content = "Bạn chưa học trong BetterMe"
-    await interaction.response.send_message(content)
-
-
+# ============ UTILITY FUNCTIONS ============
 async def generate_member_study_time_image(
     member_id: int, time_range: Optional[str] = "Tất cả"
 ) -> str:
@@ -251,33 +234,6 @@ async def generate_member_study_time_image(
     final_img.paste(chart_img, (50, 50))
     final_img.save(file_path)
     return file_path
-
-
-@bot.tree.command(name="study_time", description="Xem tổng thời gian học")
-@app_commands.describe(time_range="Khoảng thời gian")
-@app_commands.choices(
-    time_range=[
-        # app_commands.Choice(name="Tất cả", value=1),
-        app_commands.Choice(name="Tháng này", value=2),
-        app_commands.Choice(name="Tuần này", value=3),
-        app_commands.Choice(name="Hôm nay", value=4),
-    ]
-)
-async def study_time(
-    interaction: discord.Interaction, time_range: app_commands.Choice[int]
-):
-    await interaction.response.defer()
-
-    try:
-        statistic_path = await generate_member_study_time_image(
-            interaction.user.id, time_range.name
-        )
-        with open(statistic_path, "rb") as f:
-            await interaction.followup.send(file=discord.File(f))
-    except ValueError:
-        await interaction.followup.send(
-            content="Bạn chưa học trong khoảng thời gian này"
-        )
 
 
 data_format_infos_top = [
@@ -642,8 +598,8 @@ async def generate_leaderboard_info(
             result["idx_text_font_size"] = data_info["idx_text_font_size"]
 
         result["time_position"] = calculate_position(
-            data_info["time_position"][0],
-            data_info["time_position"][1],
+            result["time_position"][0],
+            result["time_position"][1],
             total_study_time,
             data_info["time_font_size"],
         )
@@ -665,30 +621,90 @@ async def generate_leaderboard_info(
     )
 
 
-@bot.tree.command(name="leaderboard", description="Bảng xếp hạng thời gian học")
-@app_commands.describe(time_range="Khoảng thời gian")
-@app_commands.choices(
-    time_range=[
-        app_commands.Choice(name="Tất cả", value=1),
-        app_commands.Choice(name="Tháng này", value=2),
-        app_commands.Choice(name="Tuần này", value=3),
-        app_commands.Choice(name="Hôm nay", value=4),
-    ]
-)
-async def leaderboard(
-    interaction: discord.Interaction, time_range: app_commands.Choice[int]
-):
-    await interaction.response.defer()
-    # BUG: last one in list
-    try:
-        leaderboard_info = await generate_leaderboard_info(
-            time_range.name, member_id=interaction.user.id
-        )
-        with open(leaderboard_info.img_path, "rb") as f:
-            await interaction.followup.send(
-                content=leaderboard_info.content, file=discord.File(f)
+# ============ COG CLASS ============
+class StatisticCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot._fully_ready.wait()
+        self.bot.module_count += 1
+        print(f"{self.bot.module_count}. Statistic module ready")
+
+    @app_commands.command(name="member_study_time")
+    @app_commands.describe(member="Member")
+    @app_commands.default_permissions(administrator=True)
+    async def member_study_time(
+        self, interaction: discord.Interaction, member: discord.Member
+    ):
+        user_daily_study_time = await UserDailyStudyTimes.find(
+            UserDailyStudyTimes.user_discord_id == member.id
+        ).to_list()
+        total_time = sum([sum(x.study_time) for x in user_daily_study_time])
+        if not total_time:
+            total_time = 0
+
+        if total_time:
+            content = f"Tổng thời gian học: {total_time // 60}h {total_time % 60}'"
+        else:
+            content = "Bạn chưa học trong BetterMe"
+        await interaction.response.send_message(content)
+
+    @app_commands.command(name="study_time", description="Xem tổng thời gian học")
+    @app_commands.describe(time_range="Khoảng thời gian")
+    @app_commands.choices(
+        time_range=[
+            # app_commands.Choice(name="Tất cả", value=1),
+            app_commands.Choice(name="Tháng này", value=2),
+            app_commands.Choice(name="Tuần này", value=3),
+            app_commands.Choice(name="Hôm nay", value=4),
+        ]
+    )
+    async def study_time(
+        self, interaction: discord.Interaction, time_range: app_commands.Choice[int]
+    ):
+        await interaction.response.defer()
+
+        try:
+            statistic_path = await generate_member_study_time_image(
+                interaction.user.id, time_range.name
             )
-    except ValueError:
-        await interaction.followup.send(
-            content="Bạn chưa học trong khoảng thời gian này"
-        )
+            with open(statistic_path, "rb") as f:
+                await interaction.followup.send(file=discord.File(f))
+        except ValueError:
+            await interaction.followup.send(
+                content="Bạn chưa học trong khoảng thời gian này"
+            )
+
+    @app_commands.command(name="leaderboard", description="Bảng xếp hạng thời gian học")
+    @app_commands.describe(time_range="Khoảng thời gian")
+    @app_commands.choices(
+        time_range=[
+            app_commands.Choice(name="Tất cả", value=1),
+            app_commands.Choice(name="Tháng này", value=2),
+            app_commands.Choice(name="Tuần này", value=3),
+            app_commands.Choice(name="Hôm nay", value=4),
+        ]
+    )
+    async def leaderboard(
+        self, interaction: discord.Interaction, time_range: app_commands.Choice[int]
+    ):
+        await interaction.response.defer()
+        # BUG: last one in list
+        try:
+            leaderboard_info = await generate_leaderboard_info(
+                time_range.name, member_id=interaction.user.id
+            )
+            with open(leaderboard_info.img_path, "rb") as f:
+                await interaction.followup.send(
+                    content=leaderboard_info.content, file=discord.File(f)
+                )
+        except ValueError:
+            await interaction.followup.send(
+                content="Bạn chưa học trong khoảng thời gian này"
+            )
+
+
+async def setup(bot):
+    await bot.add_cog(StatisticCog(bot))

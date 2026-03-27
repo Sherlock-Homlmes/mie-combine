@@ -1,4 +1,3 @@
-from bot import *
 from core.conf.bot.event_handlers import *
 from core.env import env
 

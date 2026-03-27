@@ -1,53 +1,70 @@
 # lib
 import discord
 from beanie.odm.operators.update.general import Set
+from discord.ext import commands
 
 # local
-from core.conf.bot.conf import bot, server_info
+from core.conf.bot.conf import server_info
 from core.env import env
 from models import Users
 from utils.ai_coversation import aclient
 
 
-# TODO: refactor this. duplicate with on_member_join
-@bot.listen()
-async def on_member_update(member_before: discord.Member, member_after: discord.Member):
-    await bot._fully_ready.wait()
+class OnMemberUpdateCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
-    if not member_after.avatar:
-        avatar = member_after.default_avatar.url
-    else:
-        avatar = member_after.avatar.url
-    await Users.find_one(Users.discord_id == member_after.id).upsert(
-        Set(
-            {
-                Users.name: member_after.name,
-                Users.nick: member_after.nick,
-                Users.is_bot: member_after.bot,
-                Users.avatar: avatar,
-                Users.joined_at: member_after.joined_at,
-            }
-        ),
-        on_insert=Users(
-            discord_id=member_after.id,
-            name=member_after.name,
-            nick=member_after.nick,
-            avatar=avatar,
-            is_bot=member_after.bot,
-            created_at=member_after.created_at,
-            joined_at=member_after.joined_at,
-        ),
-    )
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot._fully_ready.wait()
+        self.bot.module_count += 1
+        print(f"{self.bot.module_count}. On member update module ready")
 
-    if "Server Booster" in str(member_after.roles) and "Server Booster" not in str(
-        member_before.roles
+    # TODO: refactor this. duplicate with on_member_join
+    @commands.Cog.listener()
+    async def on_member_update(
+        self, member_before: discord.Member, member_after: discord.Member
     ):
-        response = await aclient.aio.models.generate_content(
-            model=env.GEMINI_MODEL,
-            contents=[
-                f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"
-            ],
+        await self.bot._fully_ready.wait()
+
+        if not member_after.avatar:
+            avatar = member_after.default_avatar.url
+        else:
+            avatar = member_after.avatar.url
+        await Users.find_one(Users.discord_id == member_after.id).upsert(
+            Set(
+                {
+                    Users.name: member_after.name,
+                    Users.nick: member_after.nick,
+                    Users.is_bot: member_after.bot,
+                    Users.avatar: avatar,
+                    Users.joined_at: member_after.joined_at,
+                }
+            ),
+            on_insert=Users(
+                discord_id=member_after.id,
+                name=member_after.name,
+                nick=member_after.nick,
+                avatar=avatar,
+                is_bot=member_after.bot,
+                created_at=member_after.created_at,
+                joined_at=member_after.joined_at,
+            ),
         )
-        await server_info.channels.general_chat.send(
-            content=f"<@{member_after.id}> {response.text}",
-        )
+
+        if "Server Booster" in str(member_after.roles) and "Server Booster" not in str(
+            member_before.roles
+        ):
+            response = await aclient.aio.models.generate_content(
+                model=env.GEMINI_MODEL,
+                contents=[
+                    f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"
+                ],
+            )
+            await server_info.channels.general_chat.send(
+                content=f"<@{member_after.id}> {response.text}",
+            )
+
+
+async def setup(bot):
+    await bot.add_cog(OnMemberUpdateCog(bot))

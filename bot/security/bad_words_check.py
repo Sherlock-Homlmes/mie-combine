@@ -6,9 +6,10 @@ from typing import Set
 #  lib
 import discord
 from discord import ui
+from discord.ext import commands
 
 # local
-from core.conf.bot.conf import bot, server_info
+from core.conf.bot.conf import server_info
 from models import BadUsers, BanFormEnum, Users
 from utils.time_modules import Now
 
@@ -154,6 +155,57 @@ alternative_words = {
 }
 
 
+def check_bad_words(self, content: str) -> Set[str | None]:
+    alternative_content = content
+    for key, value in alternative_words.items():
+        alternative_content = alternative_content.replace(key, value)
+    should_use_alternative = alternative_content != content
+
+    content = content.lower()
+    content = re.sub(r"\s+", " ", content)
+    content_words = content.split(" ")
+    match_bad_word: str | None = None
+    match_type: str | None = None
+    tempo_content = []
+
+    for word in content_words:
+        # check exact
+        if word in exact_bad_words:
+            match_bad_word = word
+            match_type = "Exact"
+            return (match_bad_word, match_type)
+
+        # check included
+        if word.startswith("http") or word.startswith(":"):
+            tempo_content.append(word)
+            pass
+        else:
+            for bad_word in included_bad_words:
+                if bad_word in word:
+                    match_bad_word = bad_word
+                    match_type = "Included"
+                    return (match_bad_word, match_type)
+
+    # check space bad word
+    for tempo in tempo_content:
+        content_words.remove(tempo)
+
+    content = "".join(content_words)
+
+    for seper in seperate:
+        content = content.replace(seper, "")
+
+    for bad_word in space_bad_words:
+        if bad_word in content:
+            match_bad_word = bad_word
+            match_type = "Included(remove seperate)"
+            return (match_bad_word, match_type)
+
+    if should_use_alternative:
+        return check_bad_words(alternative_content)
+    return (None, None)
+
+
 class ReportFalseBadWordButton(ui.View):
     @ui.button(
         label="Báo cáo sai",
@@ -224,185 +276,148 @@ class RemoveFalseBadWordButton(ui.View):
         await interaction.followup.send("Đã xóa cảnh báo thành công!", ephemeral=True)
 
 
-def check_bad_words(content: str) -> Set[str | None]:
-    alternative_content = content
-    for key, value in alternative_words.items():
-        alternative_content = alternative_content.replace(key, value)
-    should_use_alternative = alternative_content != content
+class BadWordsCheckCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
-    content = content.lower()
-    content = re.sub(r"\s+", " ", content)
-    content_words = content.split(" ")
-    match_bad_word: str | None = None
-    match_type: str | None = None
-    tempo_content = []
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot._fully_ready.wait()
+        self.bot.module_count += 1
+        print(f"{self.bot.module_count}. Bad words check module ready")
 
-    for word in content_words:
-        # check exact
-        if word in exact_bad_words:
-            match_bad_word = word
-            match_type = "Exact"
-            return (match_bad_word, match_type)
-
-        # check included
-        if word.startswith("http") or word.startswith(":"):
-            tempo_content.append(word)
-            pass
-        else:
-            for bad_word in included_bad_words:
-                if bad_word in word:
-                    match_bad_word = bad_word
-                    match_type = "Included"
-                    return (match_bad_word, match_type)
-
-    # check space bad word
-    for tempo in tempo_content:
-        content_words.remove(tempo)
-
-    content = "".join(content_words)
-
-    for seper in seperate:
-        content = content.replace(seper, "")
-
-    for bad_word in space_bad_words:
-        if bad_word in content:
-            match_bad_word = bad_word
-            match_type = "Included(remove seperate)"
-            return (match_bad_word, match_type)
-
-    if should_use_alternative:
-        return check_bad_words(alternative_content)
-    return (None, None)
-
-
-async def remove_exprired_bad_user(user_id: int):
-    delete_bad_users = await BadUsers.find(
-        BadUsers.user.discord_id == user_id, fetch_links=True
-    ).to_list()
-
-    for bad_user in delete_bad_users:
-        if (Now().now - bad_user.created_at).days >= 30:
-            await bad_user.delete()
-
-
-async def punish(user_id: int, message_content: str, mem_name: str):
-    await remove_exprired_bad_user(user_id)
-
-    model = await BadUsers(
-        user=await Users.find_one(Users.discord_id == user_id),
-        bad_content=message_content,
-        created_at=Now().now,
-    ).insert()
-
-    # number of mistake in recent 1 month
-    counter = len(
-        await BadUsers.find(
+    async def remove_exprired_bad_user(self, user_id: int):
+        delete_bad_users = await BadUsers.find(
             BadUsers.user.discord_id == user_id, fetch_links=True
         ).to_list()
-    )
 
-    # counter <= 6: warn
-    # counter <= 12: mute
-    # counter > 12: ban
-    if counter <= 6:
-        form = BanFormEnum.WARN.value
-        hours = 0
-        penalize = "Cảnh báo"
-        colour = discord.Colour.orange()
-    else:
-        colour = discord.Colour.red()
-        if counter <= 11:
-            mute_hour_count_map = {
-                7: 0.5,
-                8: 2,
-                9: 4,
-                10: 24,
-                11: 72,
-                12: 180,
-            }
-            form = BanFormEnum.MUTE.value
-            hours = mute_hour_count_map[counter]
-            penalize = f"Thời gian chờ {hours} tiếng"
+        for bad_user in delete_bad_users:
+            if (Now().now - bad_user.created_at).days >= 30:
+                await bad_user.delete()
 
-        elif counter > 11:
-            form = BanFormEnum.BAN.value
+    async def punish(self, user_id: int, message_content: str, mem_name: str):
+        await self.remove_exprired_bad_user(user_id)
+
+        model = await BadUsers(
+            user=await Users.find_one(Users.discord_id == user_id),
+            bad_content=message_content,
+            created_at=Now().now,
+        ).insert()
+
+        # number of mistake in recent 1 month
+        counter = len(
+            await BadUsers.find(
+                BadUsers.user.discord_id == user_id, fetch_links=True
+            ).to_list()
+        )
+
+        # counter <= 6: warn
+        # counter <= 12: mute
+        # counter > 12: ban
+        if counter <= 6:
+            form = BanFormEnum.WARN.value
             hours = 0
-            penalize = "BAN !!!"
+            penalize = "Cảnh báo"
+            colour = discord.Colour.orange()
+        else:
+            colour = discord.Colour.red()
+            if counter <= 11:
+                mute_hour_count_map = {
+                    7: 0.5,
+                    8: 2,
+                    9: 4,
+                    10: 24,
+                    11: 72,
+                    12: 180,
+                }
+                form = BanFormEnum.MUTE.value
+                hours = mute_hour_count_map[counter]
+                penalize = f"Thời gian chờ {hours} tiếng"
 
-    return (form, hours, penalize, colour, model)
+            elif counter > 11:
+                form = BanFormEnum.BAN.value
+                hours = 0
+                penalize = "BAN !!!"
+
+        return (form, hours, penalize, colour, model)
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        await self.bot._fully_ready.wait()
+
+        if message.author.bot:
+            return
+        match_bad_word, match_type = check_bad_words(message.content)
+        if not match_bad_word:
+            return
+
+        try:
+            await message.delete()
+        except discord.errors.NotFound:
+            print("Bad word error: Not found message")
+
+        # process mute time
+        form, hours, penalize, colour, model = await self.punish(
+            message.author.id, message.content, message.author.name
+        )
+        reason = "Ngôn từ không phù hợp"
+        if form == BanFormEnum.BAN.value:
+            await message.author.ban(reason=reason)
+        elif form == BanFormEnum.MUTE.value:
+            unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
+            await message.author.timeout(unmuted_time, reason=reason)
+        elif form == BanFormEnum.WARN.value:
+            pass
+
+        # send to channel
+        warn_embed = discord.Embed(
+            title=None, description=f"**Lý do:** {reason}", colour=colour
+        )
+        warn_embed.set_author(
+            name=f"[{form}] {message.author.name}#{message.author.discriminator}",
+            icon_url=message.author.avatar.url,
+        )
+        await message.channel.send(content=message.author.mention, embed=warn_embed)
+
+        # send to diary
+        log_embed = discord.Embed(colour=colour)
+        log_embed.set_author(
+            name=f"[{form}] {message.author.name}#{message.author.discriminator}",
+            icon_url=message.author.avatar.url,
+        )
+        log_embed.add_field(name="User", value=message.author.mention, inline=True)
+        log_embed.add_field(
+            name="Channel", value=f"<#{message.channel.id}>", inline=True
+        )
+        log_embed.add_field(name="Penalize", value=penalize, inline=True)
+        log_embed.add_field(name="Message", value=message.content, inline=False)
+        log_embed.add_field(
+            name="Bad word", value=f"{match_type}: {match_bad_word}", inline=False
+        )
+
+        diary_message = await server_info.bad_word_log_channel.send(
+            embed=log_embed, view=RemoveFalseBadWordButton()
+        )
+        model.diary_message_id = diary_message.id
+        await model.save()
+
+        # send to user
+        user_warn_embed = discord.Embed(
+            title=None, description=f"**Lý do:** {reason}", colour=colour
+        )
+        user_warn_embed.add_field(
+            name="Channel", value=f"<#{message.channel.id}>", inline=True
+        )
+        user_warn_embed.add_field(name="Message", value=message.content, inline=False)
+        user_warn_embed.add_field(name="Bad word", value=match_bad_word, inline=False)
+        user_warn_message = await message.author.send(
+            content='Bấm nút "Báo cáo sai" nếu từ bạn bị warn không đúng',
+            embed=user_warn_embed,
+            view=ReportFalseBadWordButton(),
+        )
+        model.user_message_id = user_warn_message.id
+        await model.save()
 
 
-@bot.listen()
-async def on_message(message: discord.Message):
-    await bot._fully_ready.wait()
-
-    if message.author.bot:
-        return
-    match_bad_word, match_type = check_bad_words(message.content)
-    if not match_bad_word:
-        return
-
-    try:
-        await message.delete()
-    except discord.errors.NotFound:
-        print("Bad word error: Not found message")
-
-    # process mute time
-    form, hours, penalize, colour, model = await punish(
-        message.author.id, message.content, message.author.name
-    )
-    reason = "Ngôn từ không phù hợp"
-    if form == BanFormEnum.BAN.value:
-        await message.author.ban(reason=reason)
-    elif form == BanFormEnum.MUTE.value:
-        unmuted_time = discord.utils.utcnow() + timedelta(hours=hours)
-        await message.author.timeout(unmuted_time, reason=reason)
-    elif form == BanFormEnum.WARN.value:
-        pass
-
-    # send to channel
-    warn_embed = discord.Embed(
-        title=None, description=f"**Lý do:** {reason}", colour=colour
-    )
-    warn_embed.set_author(
-        name=f"[{form}] {message.author.name}#{message.author.discriminator}",
-        icon_url=message.author.avatar.url,
-    )
-    await message.channel.send(content=message.author.mention, embed=warn_embed)
-
-    # send to diary
-    log_embed = discord.Embed(colour=colour)
-    log_embed.set_author(
-        name=f"[{form}] {message.author.name}#{message.author.discriminator}",
-        icon_url=message.author.avatar.url,
-    )
-    log_embed.add_field(name="User", value=message.author.mention, inline=True)
-    log_embed.add_field(name="Channel", value=f"<#{message.channel.id}>", inline=True)
-    log_embed.add_field(name="Penalize", value=penalize, inline=True)
-    log_embed.add_field(name="Message", value=message.content, inline=False)
-    log_embed.add_field(
-        name="Bad word", value=f"{match_type}: {match_bad_word}", inline=False
-    )
-
-    diary_message = await server_info.bad_word_log_channel.send(
-        embed=log_embed, view=RemoveFalseBadWordButton()
-    )
-    model.diary_message_id = diary_message.id
-    await model.save()
-
-    # send to user
-    user_warn_embed = discord.Embed(
-        title=None, description=f"**Lý do:** {reason}", colour=colour
-    )
-    user_warn_embed.add_field(
-        name="Channel", value=f"<#{message.channel.id}>", inline=True
-    )
-    user_warn_embed.add_field(name="Message", value=message.content, inline=False)
-    user_warn_embed.add_field(name="Bad word", value=match_bad_word, inline=False)
-    user_warn_message = await message.author.send(
-        content='Bấm nút "Báo cáo sai" nếu từ bạn bị warn không đúng',
-        embed=user_warn_embed,
-        view=ReportFalseBadWordButton(),
-    )
-    model.user_message_id = user_warn_message.id
-    await model.save()
+async def setup(bot):
+    await bot.add_cog(BadWordsCheckCog(bot))

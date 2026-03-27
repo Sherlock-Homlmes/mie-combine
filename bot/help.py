@@ -1,9 +1,9 @@
 # default
 import discord
-from discord import ui
+from discord import app_commands, ui
+from discord.ext import commands
 
 # local
-from core.conf.bot.conf import bot
 
 QR_BANK_PATH = "assets/qr-bank-server.jpg"
 
@@ -189,27 +189,35 @@ class HelpView(ui.View):
         return embed
 
 
-@bot.listen()
-async def on_ready():
-    await bot._fully_ready.wait()
-    print("-1.Help ready")
+class HelpCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot._fully_ready.wait()
+        self.bot.module_count += 1
+        print(f"{self.bot.module_count}. Help module ready")
+
+    @app_commands.command(name="help", description="Hướng dẫn sử dụng server")
+    async def help_command(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title="❓ Trung tâm hỗ trợ BetterMe",
+            description=(
+                "Chào mừng bạn đến với BetterMe! 🎉\n\n"
+                "Hãy chọn câu hỏi bên dưới để được hỗ trợ.\n"
+                "Mọi câu hỏi sẽ được trả lời riêng tư."
+            ),
+            color=discord.Colour.gold(),
+        )
+        embed.set_footer(text="BetterMe - Better everyday")
+
+        view = HelpView()
+        is_public = interaction.user.id == 880359404036317215
+        await interaction.response.send_message(
+            embed=embed, view=view, ephemeral=not is_public
+        )
 
 
-@bot.tree.command(name="help", description="Hướng dẫn sử dụng server")
-async def help_command(interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="❓ Trung tâm hỗ trợ BetterMe",
-        description=(
-            "Chào mừng bạn đến với BetterMe! 🎉\n\n"
-            "Hãy chọn câu hỏi bên dưới để được hỗ trợ.\n"
-            "Mọi câu hỏi sẽ được trả lời riêng tư."
-        ),
-        color=discord.Colour.gold(),
-    )
-    embed.set_footer(text="BetterMe - Better everyday")
-
-    view = HelpView()
-    is_public = interaction.user.id == 880359404036317215
-    await interaction.response.send_message(
-        embed=embed, view=view, ephemeral=not is_public
-    )
+async def setup(bot):
+    await bot.add_cog(HelpCog(bot))

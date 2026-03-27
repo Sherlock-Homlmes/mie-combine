@@ -15,6 +15,7 @@ class Env(BaseSettings):
     GEMINI_AI_API_KEY: str
     GEMINI_MODEL: str = "gemini-flash-latest"
     GEMINI_LITE_MODEL: str = "gemini-flash-lite-latest"
+    GEMINI_EMBED_MODEL: str = "gemini-embedding-2-preview"
     CLOUDFLARE_API_KEY: str | None = None
     CLOUDFLARE_ACCOUNT_ID: str | None = None
     CLOUDFLARE_GUARD_MODEL: str = "@cf/meta/llama-3.1-8b-instruct-fast"

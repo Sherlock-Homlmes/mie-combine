@@ -7,6 +7,7 @@ from typing import Optional, Union
 # library
 import discord
 from discord import ui
+from discord.ext import commands
 from discord.ext.commands import context, has_permissions
 
 from bot.security.bad_words_check import check_bad_words
@@ -23,30 +24,8 @@ from utils.discord_bot.channel_name import rewrite_confession_channel_name
 from utils.image_handle import delete_image, save_image
 from utils.time_modules import Now
 
-confession_thread_ids = []
-
 
 # Create choose confession message
-class ConfessionOption(ui.View):
-    @ui.select(
-        placeholder="Lựa chọn",
-        options=[
-            discord.SelectOption(
-                label="Confession ẩn danh",
-                value="private-confession",
-                description="Nơi bạn tâm sự những câu chuyện thầm kín",
-            ),
-            discord.SelectOption(
-                label="Confession công khai",
-                value="public-confession",
-                description="Nơi bạn tâm sự những câu chuyện thầm kín",
-            ),
-        ],
-    )
-    async def select_callback(self, select, interaction):
-        pass
-
-
 class ConfessionCreateButton(ui.View):
     cfs_type: ConfessionTypeEnum = None
     interaction = None
@@ -110,13 +89,13 @@ class ConfessionEndButton(ui.View):
             OpenConfessions.channel_id == interaction.channel.id
         )
         if confession:
-            confession = Confession(
+            confession_obj = Confession(
                 channel=interaction.channel,
                 member=await interaction.guild.fetch_member(confession.created_by),
                 cfs_type=confession.type,
                 files=[],
             )
-            await confession.end_confession()
+            await confession_obj.end_confession()
         else:
             await interaction.channel.delete()
 
@@ -189,22 +168,52 @@ class ConfessionPrivateReplyModal(ui.Modal, title="Questionnaire Response"):
         )
 
 
-@bot.listen()
-async def on_ready():
-    await bot._fully_ready.wait()
-    print("5.Confession ready")
-    await fix_confession()
+class ConfessionCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot._fully_ready.wait()
+        self.bot.module_count += 1
+        print(f"{self.bot.module_count}. Confession module ready")
+        await self.fix_confession()
 
-@bot.command(name="test-confession")
-@has_permissions(administrator=True)
-async def confession_choose(ctx: context.Context):
-    # v1
-    # view = ConfessionOption()
-    # v2
-    view = ConfessionCreateButton(timeout=None)
-    await ctx.message.delete()
-    await ctx.send(view=view)
+    @commands.command(name="test-confession")
+    @has_permissions(administrator=True)
+    async def confession_choose(self, ctx: context.Context):
+        view = ConfessionCreateButton()
+        await ctx.message.delete()
+        await ctx.send(view=view)
+
+    async def fix_confession(self):
+        now = Now().now
+        async for confession_data in OpenConfessions.find():
+            channel: discord.TextChannel
+            member: discord.Member | discord.User
+            channel, member = await asyncio.gather(
+                *[
+                    server_info.guild.fetch_channel(confession_data.channel_id),
+                    server_info.guild.fetch_member(confession_data.created_by),
+                ]
+            )
+            # delete if confession channel last longer than 40 minutes
+            if channel and (now - channel.created_at).seconds >= 2400:
+                await Confession(
+                    channel=channel,
+                    member=member,
+                    cfs_type=confession_data.type,
+                    files=[],
+                ).end_confession()
+        print("fix confession done")
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message):
+        await self.bot._fully_ready.wait()
+        if message.channel.id == server_info.confession_channel.id:
+            await CloseConfessions.find_one(
+                CloseConfessions.message_id == message.id
+            ).delete()
 
 
 # confession process
@@ -242,7 +251,9 @@ class Confession:
         )
         embed.set_footer(text="""BetterMe - Better everyday""")
         await self.channel.send(
-            content=self.member.mention, embed=embed, view=ConfessionEndButton()
+            content=self.member.mention,
+            embed=embed,
+            view=ConfessionEndButton(),
         )
 
         # wait 30 minutes
@@ -364,32 +375,5 @@ class Confession:
         )
 
 
-async def fix_confession():
-    now = Now().now
-    async for confession_data in OpenConfessions.find():
-        channel: discord.TextChannel
-        member: discord.Member | discord.User
-        channel, member = await asyncio.gather(
-            *[
-                server_info.guild.fetch_channel(confession_data.channel_id),
-                server_info.guild.fetch_member(confession_data.created_by),
-            ]
-        )
-        # delete if confession channel last longer than 40 minutes
-        if channel and (now - channel.created_at).seconds >= 2400:
-            await Confession(
-                channel=channel,
-                member=member,
-                cfs_type=confession_data.type,
-                files=[],
-            ).end_confession()
-    print("fix confession done")
-
-
-@bot.listen()
-async def on_message_delete(message):
-    await bot._fully_ready.wait()
-    if message.channel.id == server_info.confession_channel.id:
-        await CloseConfessions.find_one(
-            CloseConfessions.message_id == message.id
-        ).delete()
+async def setup(bot):
+    await bot.add_cog(ConfessionCog(bot))

@@ -475,6 +475,8 @@ class CreateVCListener(commands.Cog):
                     vc = await VoiceChannels.find_one(
                         VoiceChannels.vc_id == voice_channel_before.id
                     )
+                    if not vc:
+                        return
 
                     # TODO: refactor
                     if not len(voice_channel_before.members):

@@ -519,7 +519,8 @@ class CreateVCListener(commands.Cog):
                 # set member's permission to text channel
                 # create channel + set role
                 if (
-                    voice_channel_after.id not in all_created_vc_id
+                    not member.bot
+                    and voice_channel_after.id not in all_created_vc_id
                     and str(voice_channel_after.id) in server_info.channel_cre.keys()
                 ):
                     if check_avaiable_name(member.name) is False:

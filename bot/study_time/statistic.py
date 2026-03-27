@@ -542,7 +542,7 @@ async def generate_leaderboard_info(
     users = await asyncio.gather(
         *[Users.find_one({Users.discord_id: result["_id"]}) for result in results]
     )
-    print("-----statistic users", users)
+    # print("-----statistic users", users)
     users_avatar = await asyncio.gather(
         *[
             save_image(
@@ -598,8 +598,8 @@ async def generate_leaderboard_info(
             result["idx_text_font_size"] = data_info["idx_text_font_size"]
 
         result["time_position"] = calculate_position(
-            result["time_position"][0],
-            result["time_position"][1],
+            data_info["time_position"][0],
+            data_info["time_position"][1],
             total_study_time,
             data_info["time_font_size"],
         )

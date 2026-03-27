@@ -175,9 +175,9 @@ class ConfessionCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         await self.bot._fully_ready.wait()
+        await self.fix_confession()
         self.bot.module_count += 1
         print(f"{self.bot.module_count}. Confession module ready")
-        await self.fix_confession()
 
     @commands.command(name="test-confession")
     @has_permissions(administrator=True)
@@ -205,7 +205,6 @@ class ConfessionCog(commands.Cog):
                     cfs_type=confession_data.type,
                     files=[],
                 ).end_confession()
-        print("fix confession done")
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):

@@ -25,7 +25,7 @@ class Now:
         now: datetime.datetime = vn_now()
         self.now: datetime.datetime = now.replace(tzinfo=None)
         self.today: datetime.datetime = now.replace(
-            hour=0, minute=0, second=0, microsecond=0
+            hour=0, minute=0, second=0, microsecond=0, tzinfo=None
         )
 
     def some_day_before(self, days: int) -> datetime.datetime:
@@ -119,6 +119,21 @@ def generate_date_strings(
     """
     date_strings = []
     current_dt = start_date
+
+    # TODO: fix this
+    # if not start_date.tzinfo:
+    #     start_date = start_date.replace(tzinfo=pytz.timezone("Asia/Ho_Chi_Minh"))
+    # if not end_date.tzinfo:
+    #     end_date = end_date.replace(tzinfo=pytz.timezone("Asia/Ho_Chi_Minh"))
+    # if not current_dt.tzinfo:
+    #     current_dt = current_dt.replace(tzinfo=pytz.timezone("Asia/Ho_Chi_Minh"))
+    # if start_date.tzinfo:
+    #     start_date = start_date.replace(tzinfo=None)
+    # if end_date.tzinfo:
+    #     end_date = end_date.replace(tzinfo=None)
+    # if current_dt.tzinfo:
+    #     current_dt = current_dt.replace(tzinfo=None)
+    # end fix
 
     if start_date > end_date:
         raise ValueError("Start date cannot be after end date.")

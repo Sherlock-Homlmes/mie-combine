@@ -18,7 +18,7 @@ class WelcomeCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Welcome module ready")
+        print(f"{self.bot.module_count}. Errand - Welcome module ready")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):

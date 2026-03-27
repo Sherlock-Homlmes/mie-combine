@@ -19,7 +19,7 @@ class AutoScanUserNameCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Auto scan user name module ready")
+        print(f"{self.bot.module_count}. Schedule - Auto scan user name module ready")
         self.scan_user_name.start()
 
     @tasks.loop(hours=24)

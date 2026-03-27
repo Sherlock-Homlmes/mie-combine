@@ -12,7 +12,7 @@ class IntroduceCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Introduce module ready")
+        print(f"{self.bot.module_count}. Security - Introduce module ready")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):

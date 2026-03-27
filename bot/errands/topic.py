@@ -17,7 +17,7 @@ class TopicCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Topic module ready")
+        print(f"{self.bot.module_count}. Errand - Topic module ready")
 
     async def get_topic(self, interaction: Interaction, topic: TopicEnum):
         server_info = await ErrandData.find_one(ErrandData.name == "server_info")

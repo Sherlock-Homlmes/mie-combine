@@ -85,7 +85,7 @@ class CamCheckCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Cam check module ready")
+        print(f"{self.bot.module_count}. Security - Cam check module ready")
 
     @commands.Cog.listener()
     async def on_voice_state_update(

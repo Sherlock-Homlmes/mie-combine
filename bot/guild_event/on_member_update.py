@@ -18,7 +18,7 @@ class OnMemberUpdateCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. On member update module ready")
+        print(f"{self.bot.module_count}. Guild event - On member update module ready")
 
     # TODO: refactor this. duplicate with on_member_join
     @commands.Cog.listener()

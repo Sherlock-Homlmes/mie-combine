@@ -21,7 +21,7 @@ class StaticChannelsCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Static channels module ready")
+        print(f"{self.bot.module_count}. Schedule - Static channels module ready")
         self.static_channels.start()
 
     @tasks.loop(minutes=10)

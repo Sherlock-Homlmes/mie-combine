@@ -14,7 +14,7 @@ class ColorCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Color module ready")
+        print(f"{self.bot.module_count}. Errand - Color module ready")
 
     async def remove_color_role_from_user(
         self, role_names: list[Role], user: User

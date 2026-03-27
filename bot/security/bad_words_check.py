@@ -284,7 +284,7 @@ class BadWordsCheckCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Bad words check module ready")
+        print(f"{self.bot.module_count}. Security - Bad words check module ready")
 
     async def remove_exprired_bad_user(self, user_id: int):
         delete_bad_users = await BadUsers.find(

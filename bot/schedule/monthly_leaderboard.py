@@ -21,7 +21,7 @@ class MonthlyLeaderboardCog(commands.Cog):
     async def on_ready(self):
         await self.bot._fully_ready.wait()
         self.bot.module_count += 1
-        print(f"{self.bot.module_count}. Monthly leaderboard module ready")
+        print(f"{self.bot.module_count}. Schedule - Monthly leaderboard module ready")
         self.leaderboard_monthly.start()
         self.auto_reset_role_monthly.start()
 

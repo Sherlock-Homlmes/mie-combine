@@ -55,7 +55,7 @@ class OnMemberUpdateCog(commands.Cog):
         if "Server Booster" in str(member_after.roles) and "Server Booster" not in str(
             member_before.roles
         ):
-            response = await aclient.aio.models.generate_content(
+            response = await aclient.models.generate_content(
                 model=env.GEMINI_MODEL,
                 contents=[
                     f"Viết 1 đoạn văn ngắn cảm ơn bạn {member_after.name} đã boost cho server betterme"
